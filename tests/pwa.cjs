@@ -73,7 +73,8 @@ async function checkScope(scope){
     if(mode==='navigate')assert.equal(result.redirected,false);
     return result.text();
   }
-  assert.equal(await request(scope+'chord-identifier.html','navigate'),'network');
+  assert.equal(await request(scope+'chord-identifier.html','navigate'),'./chord-identifier.html');
+  assert.equal(await request(scope+'identify.html','navigate'),'network');
   online=false;
   assert.equal(await request(scope,'navigate'),'./');
   assert.equal(await request(scope+'index.html?from=home','navigate'),'./');

@@ -1,14 +1,17 @@
 'use strict';
 // Increment when changing any app-shell file so installed copies refresh together.
-const VERSION='v21-tuner-home-and-navigation';
+const VERSION='v22-fast-menu-navigation';
 // Keep the storage namespace so activation also removes pre-rebrand caches.
 const CACHE_PREFIX=`six-strings:${self.registration.scope}:`;
 const CACHE_NAME=CACHE_PREFIX+VERSION;
 const scope=new URL(self.registration.scope);
 const pages=['chord-search','chord-identifier','score-key-transposer'];
+const menuRoutes=new Map([
+  ['', './'],
+  ...pages.flatMap(name=>[[name, `./${name}.html`], [`${name}.html`, `./${name}.html`]])
+]);
 const pageRoutes=new Map([
-  ['', './'], ['index.html', './'],
-  ...pages.flatMap(name=>[[name, `./${name}.html`], [`${name}.html`, `./${name}.html`]]),
+  ...menuRoutes, ['index.html', './'],
   ...[['tuner','./'], ['identify','./chord-identifier.html'], ['score','./score-key-transposer.html']]
     .flatMap(([name,path])=>[[name,path],[`${name}.html`,path]])
 ]);
@@ -33,15 +36,20 @@ self.addEventListener('fetch',event=>{
   const request=event.request,url=new URL(request.url);
   if(request.method!=='GET'||url.origin!==self.location.origin||!url.href.startsWith(self.registration.scope))return;
   if(request.mode==='navigate'){
-    const page=pageRoutes.get(url.pathname.slice(scope.pathname.length));
+    const route=url.pathname.slice(scope.pathname.length);
+    const page=pageRoutes.get(route);
     if(!page)return;
-    // Let the browser follow the host's canonical URL online.
-    event.respondWith(fetch(request).catch(async error=>{
+    const cachedPage=async()=>{
       const cache=await caches.open(CACHE_NAME);
       const cached=await cache.match(new URL(page,scope).href);
-      if(!cached)throw error;
       // A cached HTML response may have followed Cloudflare's .html redirect.
-      return cached.redirected?new Response(cached.body,{status:cached.status,headers:cached.headers}):cached;
+      return cached?.redirected?new Response(cached.body,{status:cached.status,headers:cached.headers}):cached;
+    };
+    if(menuRoutes.has(route))event.respondWith(cachedPage().then(cached=>cached||fetch(request)));
+    else event.respondWith(fetch(request).catch(async error=>{
+      const cached=await cachedPage();
+      if(!cached)throw error;
+      return cached;
     }));
     return;
   }
