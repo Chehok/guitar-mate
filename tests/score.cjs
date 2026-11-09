@@ -2,7 +2,7 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
-const html=fs.readFileSync('index.html','utf8');
+const html=fs.readFileSync('score-key-transposer.html','utf8');
 assert.match(html,/카포 없이 키 바꾸기 \(반음 ±\)/);
 assert.match(html,/<button id="score-semi-minus"[^>]*>−1<\/button>/);
 assert.match(html,/<button id="score-semi-plus"[^>]*>\+1<\/button>/);
@@ -131,8 +131,9 @@ const painter={drawImage(...a){paint.push(['image',...a]);},getImageData(_x,_y,w
 const elements=new Map(),$=id=>{if(!elements.has(id))elements.set(id,new Element());return elements.get(id);};
 $('score-key-select').value='auto';
 const documentHandlers={};
-const head=new Element(),ui=script.slice(script.indexOf('// Score editor: images'),script.indexOf('// Mode hashes are routes'));
-Object.assign(context,{painter,$,document:{addEventListener:(name,handler)=>{documentHandlers[name]=handler;},createElement:()=>new Element(),head,querySelectorAll:()=>[]},window:{},navigator:{onLine:true},setTimeout,clearTimeout,localStorage:{getItem:()=>null}});
+const head=new Element(),start=script.indexOf('// Score editor: images');
+const ui=script.slice(start,script.indexOf("if(ready(['chords']))",start));
+Object.assign(context,{painter,$,ready:modes=>modes.includes('score'),document:{addEventListener:(name,handler)=>{documentHandlers[name]=handler;},createElement:()=>new Element(),head,querySelectorAll:()=>[]},window:{},navigator:{onLine:true},setTimeout,clearTimeout,localStorage:{getItem:()=>null}});
 vm.runInContext(ui,context);
 context.loadScoreRecognizer=async()=>{throw Error('Exercise legacy fallback in DOM doubles');};
 assert.equal(head.children.length,0,'OCR must not download at app startup');

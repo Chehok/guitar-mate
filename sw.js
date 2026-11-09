@@ -1,15 +1,24 @@
 'use strict';
 // Increment when changing any app-shell file so installed copies refresh together.
-const VERSION='v20-multipage-identify-playback';
+const VERSION='v21-tuner-home-and-navigation';
 // Keep the storage namespace so activation also removes pre-rebrand caches.
 const CACHE_PREFIX=`six-strings:${self.registration.scope}:`;
 const CACHE_NAME=CACHE_PREFIX+VERSION;
-const APP_FILES=['./','./index.html','./identify.html','./tuner.html','./score.html','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png','./icons/maskable-512.png','./icons/apple-touch-icon.png','./favicon.svg','./favicon-32.png','./favicon-16.png'];
-const APP_URLS=new Set(APP_FILES.map(path=>new URL(path,self.registration.scope).href));
+const scope=new URL(self.registration.scope);
+const pages=['chord-search','chord-identifier','score-key-transposer'];
+const pageRoutes=new Map([
+  ['', './'], ['index.html', './'],
+  ...pages.flatMap(name=>[[name, `./${name}.html`], [`${name}.html`, `./${name}.html`]]),
+  ...[['tuner','./'], ['identify','./chord-identifier.html'], ['score','./score-key-transposer.html']]
+    .flatMap(([name,path])=>[[name,path],[`${name}.html`,path]])
+]);
+const assets=['./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png','./icons/maskable-512.png','./icons/apple-touch-icon.png','./favicon.svg','./favicon-32.png','./favicon-16.png'];
+const assetURLs=new Set(assets.map(path=>new URL(path,scope).href));
+const appURLs=new Set([...assetURLs,...[...pageRoutes.values()].map(path=>new URL(path,scope).href)]);
 self.addEventListener('install',event=>{
   event.waitUntil((async()=>{
     const cache=await caches.open(CACHE_NAME);
-    await cache.addAll(APP_FILES.map(path=>new Request(new URL(path,self.registration.scope),{cache:'reload'})));
+    await cache.addAll([...appURLs].map(url=>new Request(url,{cache:'reload'})));
     await self.skipWaiting();
   })());
 });
@@ -23,25 +32,22 @@ self.addEventListener('activate',event=>{
 self.addEventListener('fetch',event=>{
   const request=event.request,url=new URL(request.url);
   if(request.method!=='GET'||url.origin!==self.location.origin||!url.href.startsWith(self.registration.scope))return;
-  // Queries and deep navigation within this scope share the offline app shell.
-  const key=request.mode==='navigate'?new URL(url.pathname,self.location.origin).href:url.href;
-  if(request.mode==='navigate'&&key===new URL('./index.html',self.registration.scope).href){
-    event.respondWith(caches.open(CACHE_NAME).then(cache=>cache.match(new URL('./',self.registration.scope).href)));
+  if(request.mode==='navigate'){
+    const page=pageRoutes.get(url.pathname.slice(scope.pathname.length));
+    if(!page)return;
+    // Let the browser follow the host's canonical URL online.
+    event.respondWith(fetch(request).catch(async error=>{
+      const cache=await caches.open(CACHE_NAME);
+      const cached=await cache.match(new URL(page,scope).href);
+      if(!cached)throw error;
+      // A cached HTML response may have followed Cloudflare's .html redirect.
+      return cached.redirected?new Response(cached.body,{status:cached.status,headers:cached.headers}):cached;
+    }));
     return;
   }
-  if(request.mode==='navigate'&&key===new URL('./',self.registration.scope).href){
-    event.respondWith((async()=>{const cache=await caches.open(CACHE_NAME);return await cache.match(key)||await cache.match(new URL('./index.html',self.registration.scope).href)||fetch(request);})());
-    return;
-  }
-  if(!APP_URLS.has(key)){
-    if(request.mode!=='navigate'||url.search||url.hash)return;
-    const page=key.slice(self.registration.scope.length),fallback=page.endsWith('/')?'index.html':page+'.html';
-    if(!APP_URLS.has(new URL(fallback,self.registration.scope).href))return;
-    event.respondWith(caches.open(CACHE_NAME).then(cache=>cache.match(new URL(fallback,self.registration.scope).href)));
-    return;
-  }
+  if(!assetURLs.has(url.href))return;
   event.respondWith((async()=>{
-    const cache=await caches.open(CACHE_NAME),cached=await cache.match(key);
+    const cache=await caches.open(CACHE_NAME),cached=await cache.match(url.href);
     return cached||fetch(request);
   })());
 });

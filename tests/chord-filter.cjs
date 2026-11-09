@@ -2,7 +2,7 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
-const html=fs.readFileSync('index.html','utf8');
+const html=fs.readFileSync('chord-search.html','utf8');
 const script=html.match(/<script data-main-app[^>]*>([\s\S]*?)<\/script>/)[1];
 const ctx=vm.createContext({});
 vm.runInContext(script.slice(script.indexOf('const mod='),script.indexOf('let current=null')),ctx);

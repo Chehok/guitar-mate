@@ -27,9 +27,11 @@ if(url==='https://cdn.jsdelivr.net/npm/@tesseract.js-data/eng@1.0.0/4.0.0_best_i
 return route.abort();
 });
 await page.goto(process.env.SCORE_URL||'http://127.0.0.1:8765/');
-for(const tab of ['chords-tab','tuner-tab','identify-tab','score-tab']){
+assert.equal(await page.locator('#tuner-tab').getAttribute('aria-current'),'page');
+for(const tab of ['chords-tab','identify-tab','score-tab']){
 await page.locator('#'+tab).click();
-assert(await page.locator('#'+tab).getAttribute('aria-selected')==='true');
+assert.equal(await page.locator('#'+tab).getAttribute('aria-current'),'page');
+assert(await page.locator('#'+tab.replace('-tab','-panel')).isVisible());
 assert(await page.evaluate(()=>document.body.scrollWidth<=innerWidth),'Page overflow at '+width);
 }
 const images=await page.evaluate(()=>{
