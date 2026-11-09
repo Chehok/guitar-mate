@@ -70,13 +70,13 @@ function make(contexts,audioSession){
     await new Promise(r=>setTimeout(r,450));assert.equal(failed,1,'superseded playback is not reported');
   }
   // source wiring
-  assert.equal((html.match(/await prepareAudio\(\)/g)||[]).length,2,'chord and tuner buttons share the helper');
+  assert.equal((html.match(/await prepareAudio\(\)/g)||[]).length,3,'chord, identify and tuner buttons share the helper');
   assert.match(html,/setAudioSession\('auto'\);context=new Audio\(\)/,'mic start restores the automatic session');
   assert(!/\.play\(\)\s*;?\s*\}\s*\)\s*;?\s*\/\/ autoplay/.test(html));
   assert.match(html,/referenceWeights=\[1,\.6,\.45,\.35,\.25,\.15\]/,'reference overtones');
   assert.match(html,/captureActive=\(\)=>!!micStream;/);
   assert.match(html,/stopPlayback\(\);retirePlaybackContext\(\);setAudioSession\('auto'\)/,'mic start rebuilds output');
   assert.match(html,/if\(wasCapturing\)retirePlaybackContext\(\);/,'mic stop rebuilds output');
-  assert.equal((html.match(/confirmPlayback\(/g)||[]).length,3,'chord and reference verify playback');
+  assert.equal((html.match(/confirmPlayback\(/g)||[]).length,4,'chord, identify, reference verify playback');
   console.log('Audio preparation: resume, interrupted recovery, failure reporting and session type passed (mocked, no browser).');
 })().catch(error=>{console.error(error);process.exitCode=1;});
