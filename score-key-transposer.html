@@ -403,10 +403,14 @@ function noteName(chord,pc){const tone=chord.tones.find(t=>mod(chord.pc+t[0])===
 const open={
 A:[['x02220','001230']],Am:[['x02210','002310']],A7:[['x02020','001020']],Amaj7:[['x02120','002130']],Am7:[['x02010','002010']],Asus2:[['x02200','001200']],Asus4:[['x02230','001240']],
 B:[['x24442','013331']],Bm:[['x24432','013421']],B7:[['x21202','021304']],
-C:[['x32010','032010']],C7:[['x32310','032410']],Cmaj7:[['x32000','032000']],Cadd9:[['x32033','032034']],
+C:[['x32010','032010']],C7:[['x32310','032410']],Cmaj7:[['x32000','032000']],Cadd9:[['x32033','021034']],
 D:[['xx0232','000132']],Dm:[['xx0231','000231']],D7:[['xx0212','000213']],Dmaj7:[['xx0222','000111']],Dsus2:[['xx0230','000130']],Dsus4:[['xx0233','000134']],
 E:[['022100','023100']],Em:[['022000','023000']],E7:[['020100','020100']],Em7:[['020000','020000']],Esus4:[['022200','023400']],
-F:[['133211','134211']],Fmaj7:[['xx3210','003210']],G:[['320003','210003']],G7:[['320001','320001']]
+F:[['133211','134211'],['xx3211','003211']],Fmaj7:[['xx3210','003210']],
+G:[['320003','210003'],['320033','210034']],G7:[['320001','320001']],
+'C/E':[['032010','032010']],'C/G':[['332010','432010']],
+'D/A':[['x00232','000132']],'D/F#':[['2x0232','100243']],
+'G/B':[['x20033','010034']],'Am/C':[['x32210','042310']]
 };
 const eShapes={'':[0,2,2,1,0,0],m:[0,2,2,0,0,0],'7':[0,2,0,1,0,0],m7:[0,2,0,0,0,0],maj7:[0,2,1,1,0,0],sus4:[0,2,2,2,0,0],sus2:[0,2,4,4,0,0]};
 const aShapes={'':[-1,0,2,2,2,0],m:[-1,0,2,2,1,0],'7':[-1,0,2,0,2,0],m7:[-1,0,2,0,1,0],maj7:[-1,0,2,1,2,0],sus2:[-1,0,2,2,0,0],sus4:[-1,0,2,2,3,0]};
@@ -438,18 +442,14 @@ seen.add(key);const first=frets.findIndex(f=>f>=0),positive=frets.filter(f=>f>0)
 result.push({frets,...fing,name,bass:mod(tuning[first]+frets[first]),score:(played[0]===chord.pc?0:100)+(manual?-30:0)+(name.includes('폼')?-10:0)+max*2+span+frets.filter(f=>f<0).length});
 }
 // Match open shapes by pitch too, so enharmonic roots retain useful open voicings.
-for(const [name,shapes] of Object.entries(open)){const c=parse(name);if(c.pc===chord.pc&&c.quality===chord.quality)shapes.forEach(([shape,fingers])=>add([...shape].map(f=>f==='x'?-1:Number(f)),'기본 운지',fingers));}
+for(const [name,shapes] of Object.entries(open)){const c=parse(name);if(c.pc===chord.pc&&c.quality===chord.quality&&c.bassPc===chord.bassPc)shapes.forEach(([shape,fingers])=>add([...shape].map(f=>f==='x'?-1:Number(f)),'기본 운지',fingers));}
+if(chord.bassPc!==null)return result;
 for(const [shapeSet,rootPc,name] of [[eShapes,4,'E폼'],[aShapes,9,'A폼']]){
 const shape=shapeSet[chord.quality];if(!shape)continue;const first=mod(chord.pc-rootPc);for(const base of [first,first+12])if(Math.max(...shape)+base<=15)add(shape.map(f=>f<0?-1:f+base),base?name+' 바레':name+' 개방형');
 }
 // Additional movable triads and diminished/augmented forms, all checked above.
 const special={dim:[-1,0,1,2,1,-1],dim7:[-1,0,1,-1,1,2],aug:[-1,3,2,1,1,-1],m7b5:[-1,0,1,0,1,-1],'6':[-1,0,2,2,2,2],m6:[-1,0,2,2,1,2],'9':[-1,2,1,2,2,2],add9:[-1,0,2,4,2,0]};
 if(special[chord.quality]){const shape=special[chord.quality],reference=chord.quality==='aug'?0:chord.quality==='9'?11:9;const offset=mod(chord.pc-reference);for(const base of [offset,offset+12])if(Math.max(...shape)+base<=15)add(shape.map(f=>f<0?-1:f+base),'이동형 운지');}
-// Search compact, contiguous 3–5-string grips as a fallback and for extra choices.
-if(result.length<4){for(let base=0;base<=12;base++){for(let start=0;start<=3;start++){for(let count=3;count<=5&&start+count<=6;count++){
-const choices=[];for(let i=start;i<start+count;i++){let options=[];for(let f=base===0?0:base;f<=Math.min(15,base+3);f++)if(pcs.includes(mod(tuning[i]+f)))options.push(f);choices.push(options);}
-const visit=(k,frets)=>{if(k===count){const all=Array(6).fill(-1);frets.forEach((f,j)=>all[start+j]=f);add(all,'컴팩트 운지');return;}for(const f of choices[k])visit(k+1,[...frets,f]);};visit(0,[]);
-}}}}
 result.sort((a,b)=>a.score-b.score);return result.slice(0,12);
 }
 // A barre can cross higher frets, but never an open or muted string.
@@ -463,32 +463,42 @@ if(++finger>4)return null;
 for(let j=i;j<=end;j++)if(frets[j]===fret)fingers[j]=finger;
 if(end>i)barres.push({fret,from:i,to:end,finger});
 }}
+// shortcut: skip crowded four-finger grips until finger reach and barre angles can be modeled.
+const splitsOpenString=frets.some((f,i)=>f>0&&frets.slice(i+1,frets.lastIndexOf(f)).includes(0));
+if(finger===4&&(splitsOpenString||barres.some(barre=>barre.finger!==1)))return null;
 return {fingers,barres};
 }
+function voicingSubset(a,b){return a.every((fret,i)=>fret<0||fret===b[i]);}
+const maxFretSpan=3;
 function makeVoicings(chord){
 // Preserve the established grips and their ordering for the original vocabulary.
-const legacy=!chord.bassNote&&types[chord.quality]?legacyVoicings(chord):[];
+const legacy=types[chord.quality]?legacyVoicings(chord):[];
 const pcs=chord.tones.map(t=>mod(chord.pc+t[0])),allowed=new Set(pcs);
 if(chord.bassPc!==null)allowed.add(chord.bassPc);
 const seen=new Set(),result=[];
 function add(frets,name,manual){
-const key=frets.join(',');if(seen.has(key))return;
+const key=frets.join(',');if(seen.has(key))return;seen.add(key);
 const sounded=frets.flatMap((f,i)=>f<0?[]:[tuning[i]+f]);if(sounded.length<3)return;
 const positive=frets.filter(f=>f>0),low=positive.length?Math.min(...positive):0,high=positive.length?Math.max(...positive):0;
-if(high-low>4||high>15||sounded.some(n=>!allowed.has(mod(n))))return;
+const span=high-low;
+if(span>maxFretSpan||high>15||sounded.some(n=>!allowed.has(mod(n))))return;
 const bass=mod(Math.min(...sounded));if(chord.bassPc!==null&&bass!==chord.bassPc)return;
 const played=new Set(sounded.map(mod));const missing=chord.tones.map((t,i)=>played.has(pcs[i])?-1:i).filter(i=>i>=0);
 if(missing.some(i=>!chord.optional.includes(chord.degrees[i])))return;
 const fing=manual||generatedFingering(frets);if(!fing)return;
-seen.add(key);
 const omitted=missing.map(i=>chord.tones[i][1]);
 const omissionCost=missing.reduce((n,i)=>n+({5:1,1:2,11:3,9:4}[chord.degrees[i]]||0),0);
-result.push({frets:[...frets],...fing,name,bass,omitted,score:(bass===chord.pc?0:100000)+missing.length*10000+omissionCost*100+low*10+high-sounded.length});
+const inside=frets.slice(frets.findIndex(f=>f>=0),frets.findLastIndex(f=>f>=0)+1);
+const mutedInside=inside.filter(f=>f<0).length;
+const fingersUsed=new Set(fing.fingers.filter(Boolean)).size;
+const upperBarres=fing.barres.filter(barre=>barre.finger>1).length;
+const effort=mutedInside*24+span*10+fingersUsed**2*4+fing.barres.length*10+upperBarres*14;
+result.push({frets:[...frets],...fing,name,bass,omitted,span,score:(bass===chord.pc?0:100000)+missing.length*10000+omissionCost*100+low*10+high+effort-sounded.length});
 }
 legacy.forEach(v=>add(v.frets,v.name,{fingers:v.fingers,barres:v.barres}));
 // Windows include open strings at every position; permit one interior muted string.
 for(let base=1;base<=15;base++){
-const choices=tuning.map(n=>[-1,...Array.from({length:Math.min(15,base+4)-base+1},(_,j)=>base+j),0].filter(f=>f<0||allowed.has(mod(n+f))));
+const choices=tuning.map(n=>[-1,...Array.from({length:Math.min(15,base+maxFretSpan)-base+1},(_,j)=>base+j),0].filter(f=>f<0||allowed.has(mod(n+f))));
 const visit=(i,frets,count,gaps,ended)=>{
 if(i===6){if(count>=3)add(frets,'생성 운지');return;}
 if(count+6-i<3)return;
@@ -499,27 +509,63 @@ visit(i+1,[...frets,f],count+1,nextGaps,false);
 }};
 visit(0,[],0,0,false);
 }
-result.sort((a,b)=>a.score-b.score);
-const preserved=legacy.map(v=>result.find(r=>r.frets.join(',')===v.frets.join(','))).filter(Boolean);
-return [...preserved,...result.filter(v=>!preserved.includes(v))].slice(0,10);
+result.sort((a,b)=>Number(a.span===maxFretSpan)-Number(b.span===maxFretSpan)||a.score-b.score);
+const preserved=legacy.map(v=>result.find(r=>r.frets.join(',')===v.frets.join(','))).filter(Boolean)
+  .filter((v,i)=>v.span<maxFretSpan&&(i===0||v.name==='기본 운지'));
+const groups=new Map(),distinct=[];
+for(const voicing of [...preserved,...result.filter(v=>!preserved.includes(v))]){
+  const notes=voicing.frets.flatMap((fret,i)=>fret<0?[]:[tuning[i]+fret]);
+  const pitchMask=notes.reduce((mask,note)=>mask|(1<<mod(note)),0);
+  const key=`${voicing.bass}:${pitchMask}`;
+  const group=groups.get(key)||[];
+  // Keep the better-ranked grip when the other only adds or drops doubled notes.
+  if(group.some(frets=>voicingSubset(frets,voicing.frets)||voicingSubset(voicing.frets,frets)))continue;
+  group.push(voicing.frets);
+  groups.set(key,group);
+  distinct.push(voicing);
+  if(distinct.length===10)break;
+}
+return distinct;
 }
 // Optional regression check: run checkChordVoicings() in a console or Node VM.
 function checkChordVoicings(){
 const assert=(ok,message)=>{if(!ok)throw Error(message);};
-const first={A:'-1,0,2,2,2,0',B:'-1,2,4,4,4,2',Am:'-1,0,2,2,1,0',C:'-1,3,2,0,1,0',G:'3,2,0,0,0,3',F:'1,3,3,2,1,1',E7:'0,2,0,1,0,0',Bm:'-1,2,4,4,3,2',Dmaj7:'-1,-1,0,2,2,2'};
-const names=['F#m11','G#m7b13','Am9','Bm11','C#m7','C/G','E7#9','D/F#','C7b9b13','Cm(maj7)','C6/9',...Object.keys(first)];
+const cmaj7=makeVoicings(parse('Cmaj7')).map(v=>v.frets.join(','));
+assert(cmaj7[0]==='-1,3,2,0,0,0'&&!cmaj7.includes('-1,3,2,0,0,-1'),'Cmaj7: keep one open grip');
+assert(!['-1,3,2,0,0,3','-1,3,2,-1,0,3'].every(grip=>cmaj7.includes(grip)),'Cmaj7: doubled G variants');
+assert(cmaj7.length===10,'Cmaj7: keep the ten highest-ranked distinct voicings');
+const d=makeVoicings(parse('D')).map(v=>v.frets.join(','));
+assert(d.includes('-1,-1,0,7,7,5')&&!d.includes('-1,-1,-1,7,7,5'),'D: keep the grip with the open bass');
+for(const [name,standard,awkward] of [
+['Cm','-1,3,5,5,4,3','-1,3,1,0,1,3'],
+['D','-1,-1,0,2,3,2','-1,5,4,7,7,5']
+]){
+const grips=makeVoicings(parse(name));
+assert(grips[0]?.frets.join(',')===standard,name+': standard grip must come first');
+assert(generatedFingering(awkward.split(',').map(Number))===null,name+': awkward grip passed generation');
+assert(!grips.some(v=>v.frets.join(',')===awkward),name+': awkward grip shown');
+}
+const first={A:'-1,0,2,2,2,0',B:'-1,2,4,4,4,2',Am:'-1,0,2,2,1,0',C:'-1,3,2,0,1,0',Cadd9:'-1,3,2,0,3,3',G:'3,2,0,0,0,3',F:'1,3,3,2,1,1',E7:'0,2,0,1,0,0',Bm:'-1,2,4,4,3,2',Dmaj7:'-1,-1,0,2,2,2'};
+Object.assign(first,{'C/E':'0,3,2,0,1,0','C/G':'3,3,2,0,1,0','D/A':'-1,0,0,2,3,2','D/F#':'2,-1,0,2,3,2','G/B':'-1,2,0,0,3,3','Am/C':'-1,3,2,2,1,0'});
+const names=['F#m11','G#m7b13','Am9','Bm11','C#m7','E7#9','C7b9b13','Cm(maj7)','C6/9',...Object.keys(first)];
 for(const name of names){
 const chord=parse(name),grips=makeVoicings(chord),allowed=new Set(chord.tones.map(t=>mod(chord.pc+t[0])));
 if(chord.bassPc!==null)allowed.add(chord.bassPc);
 assert(grips.length>0,name+': no voicings');
+assert(grips.every((v,i)=>v.span!==maxFretSpan||grips.slice(i).every(grip=>grip.span===maxFretSpan)),name+': narrow grips must come first');
 if(first[name])assert(grips[0].frets.join(',')===first[name],name+': first voicing changed');
 assert(new Set(grips.map(v=>v.frets.join(','))).size===grips.length,name+': duplicate');
 for(const v of grips){
 const notes=v.frets.flatMap((f,i)=>f<0?[]:[tuning[i]+f]),fretted=v.frets.filter(f=>f>0);
 assert(notes.every(n=>allowed.has(mod(n))),name+': non-chord tone');
 assert(v.frets.every(f=>f>=-1&&f<=15),name+': fret range');
-assert(!fretted.length||Math.max(...fretted)-Math.min(...fretted)<=4,name+': span');
+assert(!fretted.length||Math.max(...fretted)-Math.min(...fretted)<=3,name+': span');
 assert(v.fingers.every((f,i)=>v.frets[i]>0?f>=1&&f<=4:f===0),name+': fingers');
+for(const finger of new Set(v.fingers.filter(Boolean))){
+const strings=v.fingers.flatMap((f,i)=>f===finger?[i]:[]);
+if(strings.length<2)continue;
+assert(v.barres.some(b=>b.finger===finger&&b.from===strings[0]&&b.to===strings.at(-1)&&strings.every(i=>v.frets[i]===b.fret)&&v.frets.slice(b.from,b.to+1).every(f=>f>=b.fret)),name+': finger assigned to separate strings');
+}
 assert(chord.bassPc===null||mod(Math.min(...notes))===chord.bassPc,name+': slash bass');
 assert(chord.tones.every((t,i)=>notes.some(n=>mod(n)===mod(chord.pc+t[0]))||chord.optional.includes(chord.degrees[i])),name+': required tone omitted');
 }}
@@ -579,9 +625,14 @@ return true;
 let current=null,voicings=[],position=0;
 const svg=(body,view,cls,label)=>`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${view}" class="${cls}" role="img" aria-label="${label}">${body}</svg>`;
 function diagram(v,editBase=null){
-if(!v)return '<p class="empty">이 코드의 운지를 찾지 못했습니다.</p>';
+if(!v)return '<p class="empty">4프렛 범위에서 추천할 운지를 찾지 못했습니다.</p>';
 const f=v.frets,max=Math.max(...f),positive=f.filter(n=>n>0),base=editBase??(max<=5?1:Math.min(...positive)),x=i=>editBase===null?59+i*35:22+i*44,rowHeight=editBase===null?40:44,y=n=>67+(n-base+.5)*rowHeight;
-let s='';if(base>1)s+=`<text x="${editBase===null?10:0}" y="${editBase===null?94:16}" font-size="14" fill="var(--muted)">${base}fr</text>`;
+let s='';if(base>1)s+=`<text x="${editBase===null?10:0}" y="${editBase===null?49:16}" font-size="14" fill="var(--muted)">${base}fr</text>`;
+for(let fret=base;fret<base+5;fret++){
+  const position=fret%12;
+  const dots=position===0?[-5,5]:[3,5,7,9].includes(position)?[0]:[];
+  for(const offset of dots)s+=`<circle cx="${x(0)-22}" cy="${y(fret)+offset}" r="3" fill="var(--inlay)" aria-hidden="true" pointer-events="none"/>`;
+}
 for(let n=0;n<=5;n++)s+=`<line x1="${x(0)}" x2="${x(5)}" y1="${67+n*rowHeight}" y2="${67+n*rowHeight}" stroke="var(--fret)" stroke-width="${n===0&&base===1?6:1.3}"/>`;
 for(let i=0;i<6;i++){s+=`<line x1="${x(i)}" x2="${x(i)}" y1="67" y2="${67+5*rowHeight}" stroke="var(--string)" stroke-width="${2-i*.18}"/>`;
 if(f[i]<=0||editBase!==null)s+=`<text x="${x(i)}" y="49" text-anchor="middle" font-size="17" fill="var(--ink)">${f[i]===0?'O':f[i]<0?'X':'—'}</text>`;
@@ -593,7 +644,7 @@ for(let i=0;i<6;i++)for(let row=-1;row<5;row++){
 const fret=row<0?0:base+row,top=row<0?23:67+row*44;
 s+=`<g class="identify-hit" role="button" tabindex="0" data-string="${i}" data-fret="${fret}" aria-label="${6-i}번 줄 ${row<0?'개방현 / 뮤트 전환':fret+'프렛'}" aria-pressed="${row<0?f[i]===0:f[i]===fret}"><rect x="${x(i)-22}" y="${top}" width="44" height="44" fill="transparent"/></g>`;
 }
-return svg(s,'0 0 264 330','diagram diagram-editor',`운지 입력, ${base}–${base+4}프렛`).replace('role="img"','role="group"');
+return svg(s,'-8 0 272 330','diagram diagram-editor',`운지 입력, ${base}–${base+4}프렛`).replace('role="img"','role="group"');
 }
 return svg(s,'0 0 290 310','diagram',`${current.label} 운지, 6번 줄부터 ${f.map(n=>n<0?'뮤트':n+'프렛').join(', ')}`);
 }
