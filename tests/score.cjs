@@ -6,7 +6,7 @@ const html=fs.readFileSync('index.html','utf8');
 assert.match(html,/카포 없이 키 바꾸기 \(반음 ±\)/);
 assert.match(html,/<button id="score-semi-minus"[^>]*>−1<\/button>/);
 assert.match(html,/<button id="score-semi-plus"[^>]*>\+1<\/button>/);
-const script=html.match(/<script>([\s\S]*?)<\/script>/)[1];
+const script=html.match(/<script data-main-app[^>]*>([\s\S]*?)<\/script>/)[1];
 new vm.Script(script);
 const pure=script.slice(script.indexOf('// Score music functions:'),script.indexOf('// End score music functions.'));
 const context=vm.createContext({});vm.runInContext(pure,context);

@@ -2,8 +2,8 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
-const html=fs.readFileSync('index.html','utf8');
-const script=html.match(/<script>([\s\S]*?)<\/script>/)[1];
+const html=fs.readFileSync('identify.html','utf8');
+const script=html.match(/<script data-main-app[^>]*>([\s\S]*?)<\/script>/)[1];
 for(const id of ['identify-audio-status','identify-candidates','identify-panel','identify-play']){
   assert.match(html,new RegExp(`id="${id}"`));
 }

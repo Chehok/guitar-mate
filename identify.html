@@ -1,0 +1,1872 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#245b47" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#131713" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="기타메이트와 함께 코드 추천, 마이크 튜닝, 코드 판별까지. 오프라인에서도 함께하는 기타 연습 도우미.">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="./favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="./favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="기타메이트">
+<title>기타메이트 · 코드 판별</title>
+<style>
+:root {
+  color-scheme: light;
+  --paper: #f6f4ec;
+  --panel: #fffef9;
+  --soft: #ecefe5;
+  --ink: #203a33;
+  --muted: #596b62;
+  --line: #d9dfd3;
+  --control: #7c8e7d;
+  --green: #245b47;
+  --on-green: #fffef9;
+  --green-hover: #194a38;
+  --lime: #dfea9c;
+  --orange: #a34625;
+  --error: #a12f20;
+  --focus: #9a651b;
+  --fret: #72816e;
+  --string: #71816d;
+  --neck: #f1eee3;
+  --inlay: #b0b39f;
+  --note: #dce4d3;
+  --note-ink: #314a3c;
+  --hit: #245b4718;
+  --radius: 16px;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: system-ui, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; font-size: 15px; line-height: 1.6; word-break: keep-all; overflow-wrap: anywhere; }
+button, input { font: inherit; }
+button, .mode-tabs a, input { -webkit-tap-highlight-color: transparent; }
+button { min-height: 44px; padding: 10px 14px; border: 1px solid var(--control); border-radius: 10px; background: var(--panel); color: var(--ink); cursor: pointer; font-weight: 550; line-height: 1.4; transition: background-color .16s ease, border-color .16s ease, transform .16s ease; }
+button:active:not(:disabled) { transform: translateY(1px); background: var(--soft); }
+button:disabled { color: var(--muted); border-color: var(--line); background: var(--soft); cursor: default; }
+:where(button, input, a, [tabindex]):focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+input { min-height: 44px; border: 1px solid var(--control); border-radius: 10px; background: var(--panel); color: var(--ink); font-size: 16px; }
+input::placeholder { color: var(--muted); opacity: 1; }
+input[type=range] { accent-color: var(--green); cursor: pointer; }
+::selection { background: var(--lime); color: #203a33; }
+p { margin: 0; }
+/* 1100px canvas: twelve 77px columns + eleven 16px gutters.
+   Main row spans 4 / 8: 356px + 16px + 728px = 1100px. */
+.wrap { width: 100%; max-width: 1164px; min-width: 0; margin: auto; padding: 24px 16px 20px; }
+header { display: flex; flex-wrap: nowrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 24px; }
+.brand { display: flex; align-items: center; gap: 10px; flex: 0 1 auto; min-width: 0; }
+.brand img { display: block; width: 40px; height: 40px; border-radius: 12px; flex: none; }
+.brand-name { white-space: nowrap; font-size: 21px; font-weight: 800; letter-spacing: -.8px; line-height: 1.25; }
+.brand-subtitle { display: block; font-size: 12px; color: var(--muted); font-weight: 450; letter-spacing: 0; margin-top: 3px; }
+.badge { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.mode-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; margin-bottom: 28px; border-bottom: 1px solid var(--line); }
+.mode-tabs a { display: flex; align-items: center; justify-content: center; min-width: 0; min-height: 48px; padding: 10px 4px 12px; border-bottom: 3px solid transparent; color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 550; white-space: nowrap; transition: color .16s ease, background-color .16s ease, border-color .16s ease; }
+.mode-tabs a[aria-current=page] { color: var(--ink); border-bottom-color: var(--green); font-weight: 750; }
+.mode-tabs a:active { background: var(--soft); }
+h1 { margin: 0 0 8px; font-size: clamp(24px, 3vw, 30px); font-weight: 700; line-height: 1.4; letter-spacing: -.9px; text-wrap: balance; }
+.intro { margin-bottom: 24px; color: var(--muted); font-size: 14px; line-height: 1.7; }
+.search { display: flex; gap: 8px; max-width: 728px; }
+.search input { min-width: 0; flex: 1; width: 100%; min-height: 52px; padding: 10px 14px; font-size: 20px; font-weight: 550; }
+.search button { flex: none; padding-inline: 14px; }
+.primary { background: var(--green); border-color: var(--green); color: var(--on-green); font-weight: 650; }
+button.primary:active:not(:disabled) { background: var(--green-hover); border-color: var(--green-hover); }
+.hint { margin: 10px 0 0; font-size: 12px; color: var(--muted); line-height: 1.8; }
+.error { min-height: 24px; margin-top: 4px; color: var(--error); font-size: 13px; }
+.quick { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 24px; }
+.quick button { min-width: 44px; padding: 8px 13px; font-size: 14px; border-color: var(--line); }
+.quick button[aria-pressed=true] { background: var(--soft); border-color: var(--green); color: var(--green); }
+.chord-filter { margin: 12px 0 20px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
+.filter-selects { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.filter-select { display: block; min-width: 0; font-size: 12px; font-weight: 650; color: var(--muted); }
+.filter-select span { display: block; margin-bottom: 3px; }
+.filter-select select { width: 100%; min-width: 0; min-height: 44px; padding: 6px 4px 6px 8px; font: inherit; font-size: 16px; font-weight: 650; color: var(--ink); background: var(--panel); border: 1px solid var(--control); border-radius: 10px; text-overflow: ellipsis; }
+.filter-select select:focus-visible { outline: 3px solid var(--green); outline-offset: 1px; }
+.filter-summary { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
+.filter-status { margin: 0; flex: 1; min-width: 0; font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+.filter-status strong { color: var(--ink); font-size: 15px; }
+.filter-reset { flex: none; min-height: 44px; padding: 4px 12px; font-size: 13px; }
+.chord-filter .quick.results { margin: 8px 0 0; max-height: 220px; overflow-y: auto; overscroll-behavior: contain; }
+.chord-filter .quick.results button { min-height: 44px; }
+.layout, .tuner-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start; }
+.panel { min-width: 0; padding: 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
+.diagram-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.diagram-head > div { min-width: 0; flex: 1; }
+.chord-title { font-size: 36px; font-weight: 500; line-height: 1.2; letter-spacing: -1px; margin: 0; overflow-wrap: anywhere; }
+.quality { color: var(--muted); font-size: 13px; margin-top: 6px; }
+.play { flex: none; padding: 8px 10px; font-size: 13px; }
+.diagram { display: block; width: 100%; max-width: 290px; height: auto; margin: 8px auto; overflow: visible; }
+.diagram text, .neck text { font-family: inherit; }
+.diagram-editor { max-width: 330px; min-width: 0; }
+.nav { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
+.nav button { padding-inline: 12px; }
+.counter { color: var(--muted); text-align: center; font-size: 13px; font-variant-numeric: tabular-nums; }
+.overline { margin: 0 0 20px; color: var(--muted); font-size: 14px; font-weight: 600; letter-spacing: 0; }
+.tones { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+.tone { min-width: 64px; padding: 12px 16px; background: var(--soft); border-radius: 10px; text-align: center; }
+.tone.root { background: var(--green); color: var(--on-green); }
+.tone strong { display: block; font-size: 24px; font-weight: 500; }
+.tone small { font-size: 12px; }
+.details { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 12px; border-top: 1px solid var(--line); padding-top: 20px; }
+.details span { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+.details strong { font-size: 14px; font-weight: 550; font-variant-numeric: tabular-nums; }
+.explain { margin-top: 24px; color: var(--muted); font-size: 13px; line-height: 1.9; }
+.fret-panel { margin-top: 16px; padding: 20px 0 12px; overflow: hidden; }
+.fret-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 0 20px; }
+.fret-header h2, .tuner-controls h2 { font-size: 16px; font-weight: 650; margin: 0; }
+.legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--muted); }
+.legend span { display: flex; align-items: center; gap: 6px; }
+.key { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: var(--note); border: 1px solid var(--fret); }
+.key.root { background: var(--orange); border-color: var(--orange); }
+.key.current { background: var(--green); outline: 2px solid var(--ink); outline-offset: 2px; border: 0; }
+.scroll { overflow-x: auto; overscroll-behavior-x: contain; margin-top: 12px; padding: 8px 16px; scrollbar-color: var(--control) var(--soft); }
+.scroll:focus-visible { outline-offset: -4px; }
+.neck { display: block; width: 100%; min-width: 1010px; height: auto; }
+.scroll-note { padding: 8px 20px 0; font-size: 12px; color: var(--muted); }
+.empty { padding: 48px 8px; text-align: center; color: var(--muted); }
+footer { padding: 24px 0 8px; color: var(--muted); font-size: 12px; line-height: 1.8; }
+.install-action { display: flex; align-items: center; flex: none; }
+.install-action button { min-width: 44px; min-height: 44px; white-space: nowrap; }
+.install-action button:not([hidden]) + .badge { display: none; }
+.install-action button, .install-guide button { border-radius: 24px; font-size: 12px; padding: 8px 14px; }
+.install-guide { width: calc(100% - 32px); max-width: 352px; max-height: calc(100% - 32px); padding: 24px; border: 1px solid var(--line); border-radius: 24px; background: var(--panel); color: var(--ink); text-align: center; overflow-wrap: anywhere; }
+.install-guide::backdrop { background: #0006; }
+.install-guide h2 { margin: 0 0 12px; font-size: 18px; }
+.install-steps { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; text-align: left; }
+.install-steps li { display: grid; grid-template-columns: 24px minmax(0, 1fr); column-gap: 10px; align-items: start; }
+.install-steps .step-no { grid-row: 1 / span 2; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--green); color: var(--on-green); font-size: 13px; font-weight: 700; }
+.install-steps p { margin: 4px 0 0; font-size: 14px; line-height: 1.6; }
+.step-art { display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 12px; background: var(--soft); font-size: 13px; min-width: 0; }
+.step-art img { border-radius: 9px; flex: none; }
+.mock-bar { display: flex; flex: 1; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; padding: 6px 10px; border-radius: 16px; background: var(--panel); }
+.mock-bar b { padding: 2px 8px; border-radius: 10px; background: var(--green); color: var(--on-green); white-space: nowrap; font-size: 12px; }
+.mock-row { flex: 1; padding: 6px 10px; border-radius: 10px; background: var(--panel); min-width: 0; }
+.install-note { margin: 14px 0 0; font-size: 12px; line-height: 1.6; color: var(--muted); text-align: left; }
+.install-guide form { margin-top: 20px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+#audio-status { min-height: 18px; margin-top: 8px; font-size: 12px; color: var(--muted); }
+.tuner-display { text-align: center; }
+.tuner-target { color: var(--muted); font-size: 14px; }
+.tuner-note { font-size: 64px; font-weight: 550; line-height: 1.2; margin: 16px 0 4px; letter-spacing: -2px; }
+.tuner-frequency { min-height: 24px; color: var(--muted); font-size: 14px; }
+.tuner-gauge { display: block; width: 100%; max-width: 430px; margin: 24px auto 8px; color: var(--orange); overflow: visible; }
+.tuner-gauge text { font-family: inherit; font-weight: 600; }
+.tuner-display.in-tune .tuner-gauge, .tuner-display.in-tune .tuner-advice { color: var(--green); }
+.tuner-display.waiting .tuner-gauge, .tuner-display.waiting .tuner-advice { color: var(--muted); }
+#tuner-needle { transform-origin: 200px 172px; transition: transform .12s ease-out; }
+.tuner-cents { font-size: 24px; font-weight: 500; }
+.tuner-note, .tuner-frequency, .tuner-cents, .calibration input, .mic-sensitivity output { font-variant-numeric: tabular-nums; }
+.tuner-advice { min-height: 24px; margin: 8px 0 24px; color: var(--orange); font-size: 14px; font-weight: 650; }
+#mic-toggle { width: 100%; max-width: 280px; min-height: 48px; }
+#mic-status { min-height: 40px; max-width: 420px; margin: 12px auto 0; color: var(--muted); font-size: 12px; line-height: 1.8; }
+#auto-string { width: 100%; margin-top: 16px; }
+.string-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 12px 0; }
+.string-grid button { padding: 10px 4px; border-color: var(--line); }
+.string-grid strong { display: block; font-size: 22px; font-weight: 500; }
+.string-grid small { font-size: 12px; }
+.string-grid button[aria-pressed=true], #auto-string[aria-pressed=true] { color: var(--green); background: var(--soft); border-color: var(--green); }
+.string-grid button.detected { outline: 2px solid var(--orange); outline-offset: 2px; }
+.string-grid button:focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }
+.reference-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+.reference-grid button { padding: 8px 4px; font-size: 13px; }
+.tuner-settings { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); }
+.calibration { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 14px; }
+.calibration input { width: 88px; padding: 8px 10px; }
+#reference-status { min-height: 20px; margin-top: 10px; color: var(--muted); font-size: 12px; }
+.mic-sensitivity { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; font-size: 14px; }
+.mic-sensitivity input { grid-column: 1 / -1; width: 100%; margin: 0; }
+.identify-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.identify-controls label { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.identify-controls input { width: 65px; padding: 8px; }
+.identify-candidates { display: grid; gap: 8px; padding-left: 24px; }
+.identify-candidates li::marker { color: var(--muted); font-size: 13px; }
+.identify-candidates button { width: 100%; padding: 12px 14px; text-align: left; border-color: var(--line); }
+.identify-candidates strong { display: block; font-size: 22px; font-weight: 550; }
+.identify-candidates small { display: block; color: var(--muted); font-size: 12px; margin-top: 4px; }
+#identify-status { font-size: 14px; }
+.identify-hit { cursor: pointer; touch-action: manipulation; }
+.identify-hit:focus { outline: none; }
+.identify-hit:focus-visible rect { fill: var(--hit); stroke: var(--focus); stroke-width: 2.5; }
+@media (hover: hover) {
+  button:hover:not(:disabled) { background: var(--soft); border-color: var(--green); }
+  button.primary:hover:not(:disabled) { background: var(--green-hover); color: var(--on-green); border-color: var(--green-hover); }
+  .mode-tabs a:hover { color: var(--ink); background: var(--soft); }
+  .identify-hit:hover rect { fill: var(--hit); stroke: var(--green); stroke-width: 2; }
+}
+@media (min-width: 760px) {
+  .wrap { padding: 32px; }
+  header { margin-bottom: 28px; }
+  .brand { gap: 12px; }
+  .brand-name { font-size: 24px; }
+  .brand-subtitle { font-size: 13px; }
+  .mode-tabs { grid-template-columns: repeat(4, 160px); margin-bottom: 32px; }
+  .mode-tabs a { font-size: 15px; }
+  .layout { grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); }
+  .tuner-layout { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+  .panel { padding: 24px; }
+  .fret-panel { padding: 24px 0 16px; }
+  .fret-header { padding-inline: 24px; }
+  .intro { font-size: 15px; }
+}
+@media (min-width: 760px) and (max-width: 1023px) {
+  .layout { grid-template-columns: minmax(300px, 1fr) minmax(0, 1fr); }
+  .panel { padding: 20px; }
+  .tuner-layout { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --paper: #131713; --panel: #1c221d; --soft: #29332b;
+    --ink: #f0f1e6; --muted: #b2beb1; --line: #374438; --control: #7c907d;
+    --green: #a2d2b5; --on-green: #172c21; --green-hover: #b9e0c8;
+    --lime: #dfea9c; --orange: #efb17f; --error: #ffa392; --focus: #e8c879;
+    --fret: #83977e; --string: #92a58d; --neck: #242c24; --inlay: #67755f;
+    --note: #3c513d; --note-ink: #ecf1e5; --hit: #a2d2b524;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
+/* Score editor uses the existing paper, panel and guitar palette in both themes. */
+.score-guide,.score-upload,.score-controls,.score-list { margin-bottom:16px; }
+.score-guide h2 { font-size:16px; margin:0; }
+.score-guide ol { padding-left:24px; }
+.score-row { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-top:12px; }
+#score-panel label { display:inline-flex; align-items:center; gap:6px; }
+#score-paste-area { min-height:80px; padding:12px; border:1px dashed var(--control); border-radius:10px; }
+#score-paste-area:focus-visible { outline:3px solid var(--focus); outline-offset:3px; }
+#score-file { display:block; max-width:100%; width:100%; padding:10px; margin-top:8px; }
+#score-panel input[type=radio],#score-panel input[type=checkbox] { width:18px; min-height:18px; height:18px; accent-color:var(--green); }
+#score-panel fieldset { border:0; margin:16px 0; padding:0; min-width:0; }
+#score-panel legend { font-weight:650; font-size:14px; }
+#score-panel select { font:inherit; color:var(--ink); background:var(--panel); border:1px solid var(--control); border-radius:10px; min-height:44px; padding:8px; margin-top:8px; max-width:100%; }
+#score-panel select:focus-visible { outline:3px solid var(--focus); outline-offset:3px; }
+#score-panel output { min-width:100px; text-align:center; font-variant-numeric:tabular-nums; }
+.score-fret-scroll { overflow-x:auto; margin-top:12px; padding:4px; }
+.score-frets { display:flex; min-width:576px; background:var(--neck); }
+.score-frets button { flex:1; border:0; border-right:2px solid var(--fret); border-radius:0; min-width:48px; min-height:100px; position:relative; background:transparent; padding:0; isolation:isolate; }
+.score-frets button::before { content:''; position:absolute; inset:22px 0; background:repeating-linear-gradient(to bottom,var(--string) 0,var(--string) 1px,transparent 1px,transparent 10px); z-index:-1; }
+.score-frets button:first-child { border-right:5px solid var(--fret); }
+.score-frets button span { background:var(--neck); padding:3px; }
+.score-frets button[aria-pressed=true] { background:var(--green); color:var(--on-green); }
+.score-frets button[aria-pressed=true] span { background:var(--green); }
+.score-preview-scroll { overflow-x:auto; margin:16px 0; border:1px solid var(--line); border-radius:10px; background:var(--soft); }
+.score-stage { position:relative; width:100%; }
+#score-canvas { display:block; width:100%; height:auto; touch-action:pan-y; }
+#score-hit-layer { position:absolute; inset:0; pointer-events:none; }
+.score-code-hit { position:absolute; min-height:26px; min-width:28px; padding:0; border:1px dashed transparent; border-radius:3px; background:transparent; pointer-events:auto; transform:translateY(-3px); }
+.score-code-hit:focus-visible,.score-code-hit:hover { border-color:var(--orange); background:var(--hit); }
+.score-stage.adding { cursor:crosshair; outline:3px solid var(--focus); outline-offset:-3px; }
+.score-stage.adding #score-hit-layer { display:none; }
+.score-list summary { cursor:pointer; min-height:44px; padding:8px 0; }
+#score-code-list { margin-bottom:0; }
+#score-edit-text { display:block; width:100%; padding:10px; margin:10px 0; }
+#score-editor .score-row { justify-content:center; }
+@media (min-width:760px) { .score-controls { max-width:none; } }
+
+</style>
+<script data-goatcounter="https://guitar-mate.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script></head>
+<body>
+<main class="wrap">
+<header><div class="brand"><img src="./favicon.svg" width="40" height="40" alt=""><div class="brand-name">기타메이트<span class="brand-subtitle">기타 연습 도우미</span></div></div><div class="install-action"><button id="install-button" type="button" hidden>홈 화면에 추가</button><span class="badge">오프라인 지원</span></div></header>
+<nav class="mode-tabs" aria-label="연습 모드"><a id="chords-tab" href="./">코드 검색</a><a id="identify-tab" href="./identify.html" aria-current="page">코드 판별</a><a id="tuner-tab" href="./tuner.html">튜닝</a><a id="score-tab" href="./score.html">악보 키 변환</a></nav>
+<section id="identify-panel" role="tabpanel" aria-labelledby="identify-tab" hidden>
+<h1>이 운지, 무슨 코드일까요?</h1>
+<p class="intro">지판에 음을 찍으면 가능한 코드 이름을 순서대로 보여줍니다.</p>
+<div class="layout">
+<section class="panel" aria-label="판별할 운지 입력">
+<div class="identify-controls"><label for="identify-start">시작 프렛 <input id="identify-start" type="number" min="1" max="20" step="1" value="1" inputmode="numeric"></label><button id="identify-play" type="button">소리 듣기</button><button id="identify-reset" type="button">초기화</button></div><p id="identify-audio-status" role="status" aria-live="polite"></p>
+<div id="identify-diagram"></div><p id="identify-frets" class="counter"></p>
+<p class="hint">왼쪽부터 6번 → 1번 줄 · 5프렛씩 표시<br>칸을 클릭하면 점을 찍고, 같은 칸을 다시 클릭하면 해제합니다. 너트 위 표시를 클릭하면 O(개방현) / X(뮤트)로 전환합니다. 프렛을 옮겨도 입력한 음은 유지됩니다.</p>
+</section>
+<section class="panel info-panel" aria-label="코드 판별 결과"><h2 class="overline">코드 후보</h2><p id="identify-status" role="status" aria-live="polite"></p><ol id="identify-candidates" class="identify-candidates"></ol><p class="hint">최저음이 근음인 해석을 우선하며, 생략음이 적은 후보를 앞에 표시합니다. 후보를 클릭하면 코드 검색에서 검색합니다.</p></section>
+</div>
+</section>
+<div class="panel" data-ad-slot aria-label="광고"></div>
+<footer>한 번 열어 두면, 오프라인에서도 연습을 이어가세요. 소리는 기기의 음량과 무음 설정을 확인해 주세요.</footer>
+</main>
+<dialog id="install-guide" class="install-guide" aria-labelledby="install-guide-title" aria-describedby="install-guide-description">
+<h2 id="install-guide-title">홈 화면에 추가</h2>
+<p id="install-guide-description">Chrome에서 공유 메뉴로 홈 화면에 추가하세요.</p>
+<ol class="install-steps">
+<li><span class="step-no" aria-hidden="true">1</span><div class="step-art" aria-hidden="true"><span class="mock-bar"><span>🔒 기타메이트</span><b id="install-share-mark">⬆️ 공유</b></span></div><p id="install-step-1">주소창 오른쪽의 공유 아이콘(⬆️)을 누르세요.</p></li>
+<li><span class="step-no" aria-hidden="true">2</span><div class="step-art" aria-hidden="true"><span class="mock-row">➕ 홈 화면에 추가</span></div><p>목록을 아래로 밀어 <strong>홈 화면에 추가</strong>를 고르세요.</p></li>
+<li><span class="step-no" aria-hidden="true">3</span><div class="step-art" aria-hidden="true"><img src="./icons/icon-192.png" width="40" height="40" alt=""><span class="mock-row">기타메이트 · <b>추가</b></span></div><p>이름을 확인하고 <strong>추가</strong>를 누르면 홈 화면에 아이콘이 생겨요 🏠</p></li>
+</ol>
+<p class="install-note">그림은 이해를 돕는 설명용이며 실제 화면과 다를 수 있어요. iOS 16.4 이상이 필요하고, 추가된 아이콘이 앱처럼 열릴지는 iOS 설정에 따라 달라요. 직접 따라 해야 추가됩니다.</p>
+<form method="dialog"><button autofocus>닫기</button></form>
+</dialog>
+<script data-main-app data-mode="identify">
+
+'use strict';
+const $=id=>document.getElementById(id);
+const ready=names=>names.includes(document.querySelector('[data-main-app]').dataset.mode);
+const mod=n=>((n%12)+12)%12;
+const tuning=[40,45,50,55,59,64], letters=['C','D','E','F','G','A','B'], natural=[0,2,4,5,7,9,11];
+// Each tone stores semitones, interval label and diatonic distance for correct spelling.
+const types={
+'':{name:'메이저 · 장3화음',tones:[[0,'R',0],[4,'3',2],[7,'5',4]]},
+m:{name:'마이너 · 단3화음',tones:[[0,'R',0],[3,'♭3',2],[7,'5',4]]},
+'7':{name:'도미넌트 세븐',tones:[[0,'R',0],[4,'3',2],[7,'5',4],[10,'♭7',6]]},
+maj7:{name:'메이저 세븐',tones:[[0,'R',0],[4,'3',2],[7,'5',4],[11,'7',6]]},
+m7:{name:'마이너 세븐',tones:[[0,'R',0],[3,'♭3',2],[7,'5',4],[10,'♭7',6]]},
+sus2:{name:'서스펜디드 세컨드',tones:[[0,'R',0],[2,'2',1],[7,'5',4]]},
+sus4:{name:'서스펜디드 포스',tones:[[0,'R',0],[5,'4',3],[7,'5',4]]},
+dim:{name:'디미니시드 · 감3화음',tones:[[0,'R',0],[3,'♭3',2],[6,'♭5',4]]},
+aug:{name:'어그먼티드 · 증3화음',tones:[[0,'R',0],[4,'3',2],[8,'♯5',4]]},
+dim7:{name:'디미니시드 세븐',tones:[[0,'R',0],[3,'♭3',2],[6,'♭5',4],[9,'♭♭7',6]]},
+m7b5:{name:'하프 디미니시드',tones:[[0,'R',0],[3,'♭3',2],[6,'♭5',4],[10,'♭7',6]]},
+'6':{name:'메이저 식스',tones:[[0,'R',0],[4,'3',2],[7,'5',4],[9,'6',5]]},
+m6:{name:'마이너 식스',tones:[[0,'R',0],[3,'♭3',2],[7,'5',4],[9,'6',5]]},
+'9':{name:'도미넌트 나인',tones:[[0,'R',0],[4,'3',2],[7,'5',4],[10,'♭7',6],[2,'9',1]]},
+add9:{name:'애드 나인',tones:[[0,'R',0],[4,'3',2],[7,'5',4],[2,'9',1]]}
+};
+function parse(text){
+const s=text.trim().replace(/♯/g,'#').replace(/♭/g,'b').replace(/[−–]/g,'-').replace(/\s+/g,'');
+const match=/^([A-Ga-g])([#b]?)(.*)$/.exec(s);
+if(!match)throw Error('코드 이름을 확인해 주세요. A–G로 시작해 주세요. 예: C, F#m, Bb7');
+const root=match[1].toUpperCase()+match[2];
+const pitch=n=>mod(natural[letters.indexOf(n[0].toUpperCase())]+(n[1]==='#'?1:n[1]==='b'?-1:0));
+let raw=match[3],bassNote=null;
+raw=raw.replace(/\/([A-Ga-g][#b]?)$/,(_,n)=>{bassNote=n[0].toUpperCase()+n.slice(1);return '';});
+// Parentheses and commas group tokens without changing their meaning.
+let tokens=raw.replace(/[(),]/g,'').replace(/^69$/, '6add9').replace(/^6\/9$/, '6add9');
+tokens=tokens.replace(/^minor|^min/,'m').replace(/^major|^maj|^M(?!$)/,'maj').replace(/^-/, 'm');
+if(tokens==='M')tokens='';
+if(/^ø7?$/.test(tokens))tokens='m7b5';
+tokens=tokens.replace(/^[°o]/,'dim').replace(/^\+/,'aug');
+let triad='major',seventh=0,top=0,six=false,majorSeventh=false;
+if(tokens.startsWith('m')&&!tokens.startsWith('maj')){triad='minor';tokens=tokens.slice(1);}
+else if(tokens.startsWith('dim')){triad='dim';tokens=tokens.slice(3);}
+else if(tokens.startsWith('aug')){triad='aug';tokens=tokens.slice(3);}
+if(tokens.startsWith('maj')||tokens.startsWith('M')){majorSeventh=true;tokens=tokens.replace(/^(maj|M)/,'');if(!tokens&&triad==='major')majorSeventh=false;else if(!tokens)seventh=11;}
+const extension=/^(13|11|9|7|6)/.exec(tokens);
+if(extension){top=Number(extension[1]);tokens=tokens.slice(extension[0].length);if(top===6)six=true;else seventh=majorSeventh?11:triad==='dim'?9:10;}
+const tones=new Map([[1,[0,'R',0]],[3,[triad==='major'||triad==='aug'?4:3,triad==='major'||triad==='aug'?'3':'b3',2]],[5,[triad==='dim'?6:triad==='aug'?8:7,triad==='dim'?'b5':triad==='aug'?'#5':'5',4]]]);
+const intervals={2:2,3:4,4:5,5:7,6:9,7:10,9:2,11:5,13:9};
+const put=(degree,alter=0,label)=>{const d=(degree-1)%7;tones.set(degree,[mod(intervals[degree]+alter),label||(alter<0?'b':alter>0?'#':'')+degree,d]);};
+if(seventh)tones.set(7,[seventh,seventh===11?'7':seventh===9?'bb7':'b7',6]);
+if(six)put(6);
+if(top>=9)put(9);if(top>=11)put(11);if(top>=13)put(13);
+const protectedDegrees=new Set();let suspended=false;
+while(tokens){
+const token=/^(sus[24]?|add[#b]?(?:13|11|9|[2-7])|(?:omit|no)(?:13|11|9|[1-7])|[#b](?:13|11|9|[2-7]))/.exec(tokens);
+if(!token)throw Error('코드 종류를 확인해 주세요. 예: F#m11, C7b9b13, Cm(maj7), C6/9, D/F#');
+const t=token[0];tokens=tokens.slice(t.length);
+if(t.startsWith('sus')){tones.delete(3);const d=t==='sus2'?2:4;put(d);protectedDegrees.add(d);suspended=true;}
+else if(/^(omit|no)/.test(t))tones.delete(Number(t.replace(/^(omit|no)/,'')));
+else {const part=t.replace(/^add/,'');const a=part[0]==='b'?-1:part[0]==='#'?1:0;const d=Number(part.replace(/^[#b]/,''));put(d,a);protectedDegrees.add(d);}
+}
+if(top>=9)protectedDegrees.add(top);
+const quality=raw.replace(/[(),]/g,'').replace(/^minor|^min/,'m').replace(/^major|^M(?=\d)/,'maj').replace(/^-/,'m').replace(/^[°o]/,'dim').replace(/^\+/,'aug');
+const aliases={'major':'','maj':'','M':'','maj6':'6','sus':'sus4','ø':'m7b5','ø7':'m7b5','mmaj7':'m(maj7)','mM7':'m(maj7)'};
+const canonical=Object.prototype.hasOwnProperty.call(aliases,quality)?aliases[quality]:quality;
+const ordered=[...tones.entries()].sort((a,b)=>a[0]-b[0]);
+const optional=[];
+// Retain the original seventh/sixth grips that omit the perfect fifth.
+if(tones.size>=4&&tones.has(5)&&tones.get(5)[0]===7&&!protectedDegrees.has(5))optional.push(5);
+if(tones.size>4){
+if(!bassNote&&tones.has(3)&&tones.has(7))optional.push(1);
+if(top===13&&tones.has(11)&&!protectedDegrees.has(11))optional.push(11);
+if(top>=11&&tones.has(9)&&!protectedDegrees.has(9))optional.push(9);}
+return {root,pc:pitch(root),quality:canonical,label:root+canonical+(bassNote?'/'+bassNote:''),tones:ordered.map(e=>e[1]),degrees:ordered.map(e=>e[0]),optional,bassNote,bassPc:bassNote?pitch(bassNote):null,name:types[canonical]?.name||'확장 · 변화 코드',suspended};
+}
+function toneName(chord,interval){const [semitones,,degree]=interval;const i=(letters.indexOf(chord.root[0])+degree)%7;let delta=mod(chord.pc+semitones-natural[i]);if(delta>6)delta-=12;return letters[i]+(delta>0?'#'.repeat(delta):'b'.repeat(-delta));}
+function noteName(chord,pc){const tone=chord.tones.find(t=>mod(chord.pc+t[0])===pc);return tone?toneName(chord,tone):chord.bassNote||'';}
+// Hand-checked shapes, low E to high e. A negative fret means a muted string.
+const open={
+A:[['x02220','001230']],Am:[['x02210','002310']],A7:[['x02020','001020']],Amaj7:[['x02120','002130']],Am7:[['x02010','002010']],Asus2:[['x02200','001200']],Asus4:[['x02230','001240']],
+B:[['x24442','013331']],Bm:[['x24432','013421']],B7:[['x21202','021304']],
+C:[['x32010','032010']],C7:[['x32310','032410']],Cmaj7:[['x32000','032000']],Cadd9:[['x32033','032034']],
+D:[['xx0232','000132']],Dm:[['xx0231','000231']],D7:[['xx0212','000213']],Dmaj7:[['xx0222','000111']],Dsus2:[['xx0230','000130']],Dsus4:[['xx0233','000134']],
+E:[['022100','023100']],Em:[['022000','023000']],E7:[['020100','020100']],Em7:[['020000','020000']],Esus4:[['022200','023400']],
+F:[['133211','134211']],Fmaj7:[['xx3210','003210']],G:[['320003','210003']],G7:[['320001','320001']]
+};
+const eShapes={'':[0,2,2,1,0,0],m:[0,2,2,0,0,0],'7':[0,2,0,1,0,0],m7:[0,2,0,0,0,0],maj7:[0,2,1,1,0,0],sus4:[0,2,2,2,0,0],sus2:[0,2,4,4,0,0]};
+const aShapes={'':[-1,0,2,2,2,0],m:[-1,0,2,2,1,0],'7':[-1,0,2,0,2,0],m7:[-1,0,2,0,1,0],maj7:[-1,0,2,1,2,0],sus2:[-1,0,2,2,0,0],sus4:[-1,0,2,2,3,0]};
+function fingering(frets){
+const positive=frets.filter(f=>f>0), fingers=frets.map(()=>0);if(!positive.length)return {fingers,barres:[]};
+const min=Math.min(...positive), at=frets.map((f,i)=>f===min?i:-1).filter(i=>i>=0);let barres=[],next=1;
+if(at.length>=2&&frets.slice(at[0],at.at(-1)+1).every(f=>f>=min)){
+barres.push({fret:min,from:at[0],to:at.at(-1),finger:1});at.forEach(i=>fingers[i]=1);next=2;
+}
+const indexBarre=barres.length>0;
+const rest=frets.map((f,i)=>({f,i})).filter(o=>o.f>0&&!fingers[o.i]).sort((a,b)=>a.f-b.f||a.i-b.i);
+// Same-fret adjacent notes may share a finger as a small barre.
+for(let k=0;k<rest.length;){let j=k+1;while(j<rest.length&&rest[j].f===rest[k].f&&rest[j].i===rest[j-1].i+1)j++;
+// Above an index barre, leave room for the middle finger and use ring/pinky for paired notes.
+if(indexBarre)next=Math.max(next,Math.min(4,rest[k].f-min+1));
+if(indexBarre&&j-k===2&&next===3)j=k+1;
+const group=rest.slice(k,j);if(next>4)return null;group.forEach(o=>fingers[o.i]=next);if(group.length>1)barres.push({fret:group[0].f,from:group[0].i,to:group.at(-1).i,finger:next});next++;k=j;}
+return {fingers,barres};
+}
+function legacyVoicings(chord){
+const pcs=chord.tones.map(t=>mod(chord.pc+t[0])),seen=new Set(),result=[];
+function add(frets,name,manual){
+const played=frets.map((f,i)=>f<0?null:mod(tuning[i]+f)).filter(p=>p!==null);
+if(played.length<3||played.some(p=>!pcs.includes(p))||!chord.tones.filter(t=>!(chord.tones.length>=4&&t[0]===7)).every(t=>played.includes(mod(chord.pc+t[0]))))return;
+const key=frets.join(',');if(seen.has(key))return;
+const fing=fingering(frets);if(!fing)return;
+if(manual){fing.fingers=manual.split('').map(Number);fing.barres=[];for(let finger=1;finger<=4;finger++){const indices=frets.map((f,i)=>f>0&&fing.fingers[i]===finger?i:-1).filter(i=>i>=0);if(indices.length>1){const start=indices[0],end=indices.at(-1),fret=frets[start];if(indices.every(i=>frets[i]===fret)&&frets.slice(start,end+1).every(f=>f>=fret))fing.barres.push({fret,from:start,to:end,finger});}}}
+seen.add(key);const first=frets.findIndex(f=>f>=0),positive=frets.filter(f=>f>0);const max=Math.max(...frets),span=positive.length?max-Math.min(...positive):0;
+result.push({frets,...fing,name,bass:mod(tuning[first]+frets[first]),score:(played[0]===chord.pc?0:100)+(manual?-30:0)+(name.includes('폼')?-10:0)+max*2+span+frets.filter(f=>f<0).length});
+}
+// Match open shapes by pitch too, so enharmonic roots retain useful open voicings.
+for(const [name,shapes] of Object.entries(open)){const c=parse(name);if(c.pc===chord.pc&&c.quality===chord.quality)shapes.forEach(([shape,fingers])=>add([...shape].map(f=>f==='x'?-1:Number(f)),'기본 운지',fingers));}
+for(const [shapeSet,rootPc,name] of [[eShapes,4,'E폼'],[aShapes,9,'A폼']]){
+const shape=shapeSet[chord.quality];if(!shape)continue;const first=mod(chord.pc-rootPc);for(const base of [first,first+12])if(Math.max(...shape)+base<=15)add(shape.map(f=>f<0?-1:f+base),base?name+' 바레':name+' 개방형');
+}
+// Additional movable triads and diminished/augmented forms, all checked above.
+const special={dim:[-1,0,1,2,1,-1],dim7:[-1,0,1,-1,1,2],aug:[-1,3,2,1,1,-1],m7b5:[-1,0,1,0,1,-1],'6':[-1,0,2,2,2,2],m6:[-1,0,2,2,1,2],'9':[-1,2,1,2,2,2],add9:[-1,0,2,4,2,0]};
+if(special[chord.quality]){const shape=special[chord.quality],reference=chord.quality==='aug'?0:chord.quality==='9'?11:9;const offset=mod(chord.pc-reference);for(const base of [offset,offset+12])if(Math.max(...shape)+base<=15)add(shape.map(f=>f<0?-1:f+base),'이동형 운지');}
+// Search compact, contiguous 3–5-string grips as a fallback and for extra choices.
+if(result.length<4){for(let base=0;base<=12;base++){for(let start=0;start<=3;start++){for(let count=3;count<=5&&start+count<=6;count++){
+const choices=[];for(let i=start;i<start+count;i++){let options=[];for(let f=base===0?0:base;f<=Math.min(15,base+3);f++)if(pcs.includes(mod(tuning[i]+f)))options.push(f);choices.push(options);}
+const visit=(k,frets)=>{if(k===count){const all=Array(6).fill(-1);frets.forEach((f,j)=>all[start+j]=f);add(all,'컴팩트 운지');return;}for(const f of choices[k])visit(k+1,[...frets,f]);};visit(0,[]);
+}}}}
+result.sort((a,b)=>a.score-b.score);return result.slice(0,12);
+}
+// A barre can cross higher frets, but never an open or muted string.
+function generatedFingering(frets){
+const fingers=Array(6).fill(0),barres=[];let finger=0;
+for(const fret of [...new Set(frets.filter(f=>f>0))].sort((a,b)=>a-b)){
+for(let i=0;i<6;i++){
+if(frets[i]!==fret||fingers[i])continue;
+let end=i;for(let j=i+1;j<6&&frets[j]>=fret;j++)if(frets[j]===fret)end=j;
+if(++finger>4)return null;
+for(let j=i;j<=end;j++)if(frets[j]===fret)fingers[j]=finger;
+if(end>i)barres.push({fret,from:i,to:end,finger});
+}}
+return {fingers,barres};
+}
+function makeVoicings(chord){
+// Preserve the established grips and their ordering for the original vocabulary.
+const legacy=!chord.bassNote&&types[chord.quality]?legacyVoicings(chord):[];
+const pcs=chord.tones.map(t=>mod(chord.pc+t[0])),allowed=new Set(pcs);
+if(chord.bassPc!==null)allowed.add(chord.bassPc);
+const seen=new Set(),result=[];
+function add(frets,name,manual){
+const key=frets.join(',');if(seen.has(key))return;
+const sounded=frets.flatMap((f,i)=>f<0?[]:[tuning[i]+f]);if(sounded.length<3)return;
+const positive=frets.filter(f=>f>0),low=positive.length?Math.min(...positive):0,high=positive.length?Math.max(...positive):0;
+if(high-low>4||high>15||sounded.some(n=>!allowed.has(mod(n))))return;
+const bass=mod(Math.min(...sounded));if(chord.bassPc!==null&&bass!==chord.bassPc)return;
+const played=new Set(sounded.map(mod));const missing=chord.tones.map((t,i)=>played.has(pcs[i])?-1:i).filter(i=>i>=0);
+if(missing.some(i=>!chord.optional.includes(chord.degrees[i])))return;
+const fing=manual||generatedFingering(frets);if(!fing)return;
+seen.add(key);
+const omitted=missing.map(i=>chord.tones[i][1]);
+const omissionCost=missing.reduce((n,i)=>n+({5:1,1:2,11:3,9:4}[chord.degrees[i]]||0),0);
+result.push({frets:[...frets],...fing,name,bass,omitted,score:(bass===chord.pc?0:100000)+missing.length*10000+omissionCost*100+low*10+high-sounded.length});
+}
+legacy.forEach(v=>add(v.frets,v.name,{fingers:v.fingers,barres:v.barres}));
+// Windows include open strings at every position; permit one interior muted string.
+for(let base=1;base<=15;base++){
+const choices=tuning.map(n=>[-1,...Array.from({length:Math.min(15,base+4)-base+1},(_,j)=>base+j),0].filter(f=>f<0||allowed.has(mod(n+f))));
+const visit=(i,frets,count,gaps,ended)=>{
+if(i===6){if(count>=3)add(frets,'생성 운지');return;}
+if(count+6-i<3)return;
+for(const f of choices[i]){
+if(f<0){visit(i+1,[...frets,f],count,gaps,count>0?true:ended);continue;}
+const nextGaps=gaps+(ended?1:0);if(nextGaps>1)continue;
+visit(i+1,[...frets,f],count+1,nextGaps,false);
+}};
+visit(0,[],0,0,false);
+}
+result.sort((a,b)=>a.score-b.score);
+const preserved=legacy.map(v=>result.find(r=>r.frets.join(',')===v.frets.join(','))).filter(Boolean);
+return [...preserved,...result.filter(v=>!preserved.includes(v))].slice(0,10);
+}
+// Optional regression check: run checkChordVoicings() in a console or Node VM.
+function checkChordVoicings(){
+const assert=(ok,message)=>{if(!ok)throw Error(message);};
+const first={A:'-1,0,2,2,2,0',B:'-1,2,4,4,4,2',Am:'-1,0,2,2,1,0',C:'-1,3,2,0,1,0',G:'3,2,0,0,0,3',F:'1,3,3,2,1,1',E7:'0,2,0,1,0,0',Bm:'-1,2,4,4,3,2',Dmaj7:'-1,-1,0,2,2,2'};
+const names=['F#m11','G#m7b13','Am9','Bm11','C#m7','C/G','E7#9','D/F#','C7b9b13','Cm(maj7)','C6/9',...Object.keys(first)];
+for(const name of names){
+const chord=parse(name),grips=makeVoicings(chord),allowed=new Set(chord.tones.map(t=>mod(chord.pc+t[0])));
+if(chord.bassPc!==null)allowed.add(chord.bassPc);
+assert(grips.length>0,name+': no voicings');
+if(first[name])assert(grips[0].frets.join(',')===first[name],name+': first voicing changed');
+assert(new Set(grips.map(v=>v.frets.join(','))).size===grips.length,name+': duplicate');
+for(const v of grips){
+const notes=v.frets.flatMap((f,i)=>f<0?[]:[tuning[i]+f]),fretted=v.frets.filter(f=>f>0);
+assert(notes.every(n=>allowed.has(mod(n))),name+': non-chord tone');
+assert(v.frets.every(f=>f>=-1&&f<=15),name+': fret range');
+assert(!fretted.length||Math.max(...fretted)-Math.min(...fretted)<=4,name+': span');
+assert(v.fingers.every((f,i)=>v.frets[i]>0?f>=1&&f<=4:f===0),name+': fingers');
+assert(chord.bassPc===null||mod(Math.min(...notes))===chord.bassPc,name+': slash bass');
+assert(chord.tones.every((t,i)=>notes.some(n=>mod(n)===mod(chord.pc+t[0]))||chord.optional.includes(chord.degrees[i])),name+': required tone omitted');
+}}
+return true;
+}
+// Reuse the search parser for chord formulas, spellings and optional degrees.
+const identifyRoots=['C','C#','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
+const identifyEnharmonics={'C#':'Db','Eb':'D#','F#':'Gb','Ab':'G#','Bb':'A#'};
+const identifyQualities=[...new Set([...Object.keys(types),'m9','maj9','11','m11','maj11','13','m13','maj13','madd9','add11','madd11','6add9','m6add9','m(maj7)','m(maj9)','7sus2','7sus4','9sus4','13sus4','7b5','7#5','7b9','7#9','7b13','7b9b13','7#9b13','9#11','maj7#11','maj9#11','m7b13'])];
+const identifyFormulas=identifyRoots.flatMap(root=>identifyQualities.map(quality=>parse(root+quality)));
+function identifyChord(frets){
+if(!Array.isArray(frets)||frets.length!==6||frets.some(f=>!Number.isInteger(f)||f< -1||f>24))throw Error('6개 줄에 -1부터 24까지의 프렛을 입력해 주세요.');
+const notes=frets.flatMap((f,i)=>f<0?[]:[tuning[i]+f]);
+const pcs=[...new Set(notes.map(mod))];if(pcs.length<2)return [];
+const bass=mod(Math.min(...notes)),result=[];
+for(const chord of identifyFormulas){
+const chordPcs=chord.tones.map(t=>mod(chord.pc+t[0]));
+const extra=pcs.filter(pc=>!chordPcs.includes(pc));
+// A non-chord pedal bass is supported only below a complete chord.
+if(extra.some(pc=>pc!==bass)||extra.length>1)continue;
+const missing=chord.tones.filter((t,i)=>!pcs.includes(chordPcs[i]));
+if(missing.some(t=>!chord.optional.includes(chord.degrees[chord.tones.indexOf(t)])&&t[1]!=='5'))continue;
+if(pcs.filter(pc=>chordPcs.includes(pc)).length<2||(extra.length&&missing.length))continue;
+const omitted=missing.map(t=>t[1]);
+const suffix=missing.map(t=>'no'+chord.degrees[chord.tones.indexOf(t)]).join('');
+const slash=bass!==chord.pc;
+// The search parser accepts single accidentals in slash bass names.
+const bassSpelling=c=>{const name=noteName(c,bass);return chordPcs.includes(bass)&&name.length<=2?name:identifyRoots[bass];};
+const bassName=bassSpelling(chord);
+const label=chord.root+chord.quality+(suffix?'('+suffix+')':'')+(slash?'/'+bassName:'');
+const alternate=identifyEnharmonics[chord.root];
+let alias=null;
+if(alternate){const alt=parse(alternate+chord.quality);const altBass=bassSpelling(alt);alias=alternate+chord.quality+(suffix?'('+suffix+')':'')+(slash?'/'+altBass:'');}
+result.push({label,alias,chord,bass,omitted,notes:pcs,slash,nonChordBass:extra.length>0,score:(slash?1000:0)+missing.length*100+extra.length*30+chord.tones.length});
+}
+return result.sort((a,b)=>a.score-b.score||a.label.localeCompare(b.label)).slice(0,12);
+}
+// Optional pure-function regression check for Node VM: checkChordIdentification().
+function checkChordIdentification(){
+const assert=(ok,message)=>{if(!ok)throw Error(message);};
+for(const [shape,name] of Object.entries({x02220:'A','133211':'F',x32010:'C','022000':'Em',x43121:'C#',x02413:'Am9'})){
+const candidates=identifyChord([...shape].map(f=>f==='x'?-1:Number(f)));
+assert(candidates[0]?.label===name,shape+': expected '+name+', got '+candidates[0]?.label);
+}
+assert(identifyChord([-1,0,2,0,1,0])[0].label==='Am7','bass root preferred over C6/A');
+assert(identifyChord([-1,4,3,1,2,1])[0].alias==='Db','enharmonic name');
+assert(identifyChord([-1,-1,-1,-1,-1,-1]).length===0,'empty input');
+assert(identifyChord([0,-1,-1,-1,-1,0]).length===0,'single pitch class');
+assert(identifyChord([12,3,2,0,1,0])[0].label==='C','actual lowest pitch');
+assert(identifyChord([0,3,2,0,1,0]).some(c=>c.label==='C/E'),'inversion');
+assert(identifyChord([2,3,2,0,1,0]).some(c=>c.label==='C/F#'),'non-chord slash bass');
+assert(identifyChord([-1,0,-1,0,2,-1]).some(c=>c.label==='A7(no5)'),'omitted fifth');
+assert(identifyChord([-1,-1,2,4,1,3]).some(c=>c.label==='Am9(no1)/E'),'omitted root');
+let rejected=false;try{identifyChord([25,0,0,0,0,0]);}catch(_){rejected=true;}assert(rejected,'invalid fret');
+return true;
+}
+let current=null,voicings=[],position=0;
+const svg=(body,view,cls,label)=>`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${view}" class="${cls}" role="img" aria-label="${label}">${body}</svg>`;
+function diagram(v,editBase=null){
+if(!v)return '<p class="empty">이 코드의 운지를 찾지 못했습니다.</p>';
+const f=v.frets,max=Math.max(...f),positive=f.filter(n=>n>0),base=editBase??(max<=5?1:Math.min(...positive)),x=i=>editBase===null?59+i*35:22+i*44,rowHeight=editBase===null?40:44,y=n=>67+(n-base+.5)*rowHeight;
+let s='';if(base>1)s+=`<text x="${editBase===null?10:0}" y="${editBase===null?94:16}" font-size="14" fill="var(--muted)">${base}fr</text>`;
+for(let n=0;n<=5;n++)s+=`<line x1="${x(0)}" x2="${x(5)}" y1="${67+n*rowHeight}" y2="${67+n*rowHeight}" stroke="var(--fret)" stroke-width="${n===0&&base===1?6:1.3}"/>`;
+for(let i=0;i<6;i++){s+=`<line x1="${x(i)}" x2="${x(i)}" y1="67" y2="${67+5*rowHeight}" stroke="var(--string)" stroke-width="${2-i*.18}"/>`;
+if(f[i]<=0||editBase!==null)s+=`<text x="${x(i)}" y="49" text-anchor="middle" font-size="17" fill="var(--ink)">${f[i]===0?'O':f[i]<0?'X':'—'}</text>`;
+s+=`<text x="${x(i)}" y="${90+5*rowHeight}" text-anchor="middle" font-size="12" fill="var(--muted)">${['E','A','D','G','B','e'][i]}</text>`;}
+for(const b of v.barres.filter(b=>editBase===null||(b.fret>=base&&b.fret<base+5)))s+=`<line x1="${x(b.from)}" x2="${x(b.to)}" y1="${y(b.fret)}" y2="${y(b.fret)}" stroke="var(--green)" stroke-width="25" stroke-linecap="round"/>`;
+f.forEach((n,i)=>{if(n>0&&(editBase===null||(n>=base&&n<base+5)))s+=`<circle cx="${x(i)}" cy="${y(n)}" r="12.5" fill="var(--green)"/><text x="${x(i)}" y="${y(n)+4.5}" text-anchor="middle" font-size="13" font-weight="700" fill="var(--on-green)">${editBase===null?v.fingers[i]:''}</text>`;});
+if(editBase!==null){
+for(let i=0;i<6;i++)for(let row=-1;row<5;row++){
+const fret=row<0?0:base+row,top=row<0?23:67+row*44;
+s+=`<g class="identify-hit" role="button" tabindex="0" data-string="${i}" data-fret="${fret}" aria-label="${6-i}번 줄 ${row<0?'개방현 / 뮤트 전환':fret+'프렛'}" aria-pressed="${row<0?f[i]===0:f[i]===fret}"><rect x="${x(i)-22}" y="${top}" width="44" height="44" fill="transparent"/></g>`;
+}
+return svg(s,'0 0 264 330','diagram diagram-editor',`운지 입력, ${base}–${base+4}프렛`).replace('role="img"','role="group"');
+}
+return svg(s,'0 0 290 310','diagram',`${current.label} 운지, 6번 줄부터 ${f.map(n=>n<0?'뮤트':n+'프렛').join(', ')}`);
+}
+function neck(v){const x=f=>f===0?59:112+(f-1)*62,y=i=>35+(5-i)*35;let s='';
+for(let f=0;f<=15;f++)s+=`<text x="${x(f)}" y="17" text-anchor="middle" fill="var(--muted)" font-size="12">${f}</text>`;
+s+='<rect x="81" y="30" width="930" height="185" rx="4" fill="var(--neck)"/>';
+for(let f=0;f<=15;f++){const xx=81+f*62;s+=`<line x1="${xx}" x2="${xx}" y1="30" y2="215" stroke="var(--fret)" stroke-width="${f===0?5:1}"/>`;}
+for(const f of [3,5,7,9,12,15]){if(f===12){for(const yy of [87.5,157.5])s+=`<circle cx="${x(f)}" cy="${yy}" r="4" fill="var(--inlay)"/>`;}else s+=`<circle cx="${x(f)}" cy="122.5" r="4" fill="var(--inlay)"/>`;}
+for(let i=0;i<6;i++){
+s+=`<text x="17" y="${y(i)+4}" text-anchor="middle" font-size="12" fill="var(--muted)">${['E','A','D','G','B','e'][i]}</text><line x1="43" x2="1011" y1="${y(i)}" y2="${y(i)}" stroke="var(--string)" stroke-width="${1+i*.15}"/>`;
+for(let f=0;f<=15;f++){const pc=mod(tuning[i]+f),selected=v&&v.frets[i]===f;if(!selected&&!current.tones.some(t=>mod(current.pc+t[0])===pc))continue;const root=pc===current.pc;
+s+=`<circle cx="${x(f)}" cy="${y(i)}" r="${selected?14:12}" fill="${root?'var(--orange)':selected?'var(--green)':'var(--note)'}" ${selected?'stroke="var(--ink)" stroke-width="2.5"':''}/><text x="${x(f)}" y="${y(i)+4}" text-anchor="middle" font-size="${noteName(current,pc).length>2?9:11}" font-weight="${root||selected?700:500}" fill="${root||selected?'var(--on-green)':'var(--note-ink)'}">${noteName(current,pc)}</text>`;
+}}
+return svg(s,'0 0 1040 237','neck',`${current.label} 코드 구성음의 전체 지판 위치. 근음은 주황색, 현재 운지는 테두리로 표시.`);}
+function render(){const v=voicings[position];$('chord-title').textContent=current.label;$('quality').textContent=current.name;$('diagram').innerHTML=diagram(v);$('counter').textContent=voicings.length?`보이싱 ${position+1}/${voicings.length}`:'보이싱 없음';$('prev').disabled=$('next').disabled=voicings.length<2;$('play').disabled=!v;
+$('tones').replaceChildren(...current.tones.map(t=>{const div=document.createElement('div');div.className='tone'+(t[0]===0?' root':'');const strong=document.createElement('strong'),small=document.createElement('small');strong.textContent=toneName(current,t);small.textContent=t[1];div.append(strong,small);return div;}));
+$('frets').textContent=v?v.frets.map(f=>f<0?'X':f).join(' · '):'—';$('bass').textContent=v?noteName(current,v.bass)+(v.bass===current.pc?' · 근음':' · 전위형'):'—';$('shape').textContent=v?v.name+(v.omitted.length?' · 생략: '+v.omitted.join(', '):''):'—';$('neck').innerHTML=neck(v);$('audio-status').textContent='';document.querySelectorAll('#quick button').forEach(b=>b.setAttribute('aria-pressed',String(b.textContent===current.label)));}
+function syncFilters(chord){const kind=filterKinds.find(k=>k.quality===chord.quality),bass=chord.bassNote||'none';if(!kind||!filterRoots.includes(chord.root)||(bass!=='none'&&!filterRoots.includes(bass)))return;if(!chordFilterResults(filterRoot,filterKind,filterBass).includes(chord.label)){filterRoot=chord.root;filterKind=kind.label;filterBass=bass;}if(document.getElementById('root-filter'))renderFilters();}
+function find(value){try{const parsed=parse(value);const shapes=makeVoicings(parsed);current=parsed;voicings=shapes;position=0;syncFilters(parsed);$('error').textContent='';$('chord-input').removeAttribute('aria-invalid');render();}catch(error){$('error').textContent=error.message;$('chord-input').setAttribute('aria-invalid','true');}}
+let identifyFrets=Array(6).fill(-1),identifyStart=1;
+const displayChord=name=>name.replace(/#/g,'♯').replace(/b/g,'♭');
+let identifyPlaybackRequest=0;
+async function playIdentifyFrets(){
+const sounding=identifyFrets.filter(f=>f>=0).length,pcs=[...new Set(identifyFrets.flatMap((f,i)=>f<0?[]:[mod(tuning[i]+f)]))].length;
+if(sounding<2||pcs<2){$('identify-audio-status').textContent='소리를 들으려면 치는 줄이 두 개 이상이고 서로 다른 음이 두 개 이상 있어야 합니다.';return;}
+try{
+await prepareAudio();if($('identify-panel').hidden)return;
+const request=++identifyPlaybackRequest;stopPlayback();
+const ctx=audioContext,voices=scheduleChord(ctx,identifyFrets,ctx.currentTime+.03).map(t=>t.voice);
+if(!voices.length){$('identify-audio-status').textContent='치는 줄이 없어 재생할 수 없습니다.';return;}
+playing=voices;$('identify-audio-status').textContent='입력 운지 재생 중';
+confirmPlayback(ctx,()=>request===identifyPlaybackRequest&&!$('identify-panel').hidden,()=>{$('identify-audio-status').textContent=audioFailure;});
+}catch(_){$('identify-audio-status').textContent=audioFailure;}
+}
+function renderIdentify(){
+identifyPlaybackRequest++;$('identify-audio-status').textContent='';
+// Display barres independently of whether a grip fits within four fingers.
+const barres=[];
+for(const fret of new Set(identifyFrets.filter(f=>f>0))){
+for(let i=0;i<6;i++){if(identifyFrets[i]!==fret)continue;let end=i;for(let j=i+1;j<6&&identifyFrets[j]>=fret;j++)if(identifyFrets[j]===fret)end=j;if(end>i){barres.push({fret,from:i,to:end});i=end;}}
+}
+$('identify-diagram').innerHTML=diagram({frets:identifyFrets,fingers:[],barres},identifyStart);
+$('identify-frets').textContent=identifyFrets.map(f=>f<0?'X':f).join(' · ');
+const candidates=identifyChord(identifyFrets);
+const pcs=[...new Set(identifyFrets.flatMap((f,i)=>f<0?[]:[mod(tuning[i]+f)]))];
+const offscreen=identifyFrets.some(f=>f>0&&(f<identifyStart||f>=identifyStart+5));
+$('identify-status').textContent=(pcs.length<2?'서로 다른 음을 두 개 이상 선택해 주세요.':candidates.length?`${candidates.length}개 후보 · 최저음 ${displayChord(identifyRoots[candidates[0].bass])}`:`일치하는 후보가 없습니다. 구성음: ${pcs.map(pc=>displayChord(identifyRoots[pc])).join(' · ')}`)+(offscreen?' · 표시 범위 밖에도 누른 음이 있습니다.':'');
+const sounding=identifyFrets.filter(f=>f>=0).length,canPlay=sounding>=2&&pcs.length>=2;
+$('identify-play').disabled=!canPlay;
+$('identify-play').setAttribute('aria-label',canPlay?'입력 운지 소리 듣기':'입력 운지가 부족해 소리를 들을 수 없습니다');
+$('identify-candidates').replaceChildren(...candidates.map(candidate=>{
+const li=document.createElement('li'),button=document.createElement('button'),title=document.createElement('strong'),details=document.createElement('small'),tones=document.createElement('small');
+button.type='button';title.textContent=displayChord(candidate.label)+(candidate.alias?' / '+displayChord(candidate.alias):'');
+details.textContent=(candidate.slash?(candidate.nonChordBass?'슬래시 코드 · 비구성음 베이스':'슬래시 코드 · 전위형'):'최저음 = 근음')+(candidate.omitted.length?' · 생략: '+candidate.omitted.join(', '):' · 구성음 일치');
+tones.textContent='구성음 · 음정: '+candidate.chord.tones.filter(t=>candidate.notes.includes(mod(candidate.chord.pc+t[0]))).map(t=>displayChord(toneName(candidate.chord,t))+' ('+t[1]+')').join(' · ')+(candidate.nonChordBass?' · 베이스 '+displayChord(identifyRoots[candidate.bass]):'');
+button.append(title,details,tones);button.addEventListener('click',()=>{$('chord-input').value=candidate.label;find(candidate.label);$('chords-tab').click();$('chord-input').focus();});li.append(button);return li;
+}));
+}
+function toggleIdentify(event){
+const target=event.target.closest('[data-string]');if(!target)return;
+if(event.type==='keydown'){if(!['Enter',' '].includes(event.key))return;event.preventDefault();}
+const i=Number(target.dataset.string),fret=Number(target.dataset.fret);
+identifyFrets[i]=fret===0?(identifyFrets[i]===0?-1:0):(identifyFrets[i]===fret?-1:fret);
+renderIdentify();$('identify-diagram').querySelector(`[data-string="${i}"][data-fret="${fret}"]`).focus();
+}
+if(ready(['identify'])){$('identify-diagram').addEventListener('click',toggleIdentify);$('identify-diagram').addEventListener('keydown',toggleIdentify);$('identify-start').addEventListener('change',()=>{identifyStart=Math.max(1,Math.min(20,Math.round(Number($('identify-start').value)||1)));$('identify-start').value=identifyStart;renderIdentify();});$('identify-reset').addEventListener('click',()=>{identifyFrets=Array(6).fill(-1);identifyStart=1;$('identify-start').value=1;renderIdentify();});$('identify-play').addEventListener('click',playIdentifyFrets);renderIdentify();}
+if(ready(['chords']))$('search').addEventListener('submit',e=>{e.preventDefault();find($('chord-input').value);});
+// Chord filter functions:
+const filterRoots=['C','D','E','F','G','A','B','C#','D#','F#','G#','A#'];
+const filterKinds=[['M','',''],['m','m','m'],['7','7','7'],['M7','maj7','maj7'],['m7','m7','m7'],['sus2','sus2','sus2'],['sus4','sus4','sus4'],['dim','dim','dim'],['aug','aug','aug'],['6','6','6'],['m6','m6','m6'],['add9','add9','add9'],['9','9','9'],['m9','m9','m9'],['m11','m11','m11'],['dim7','dim7','dim7'],['m7b5','m7b5','m7b5']].map(([label,suffix,quality])=>({label,suffix,quality}));
+const filterPc={C:0,D:2,E:4,F:5,G:7,A:9,B:11,'C#':1,'D#':3,'F#':6,'G#':8,'A#':10};
+// bass: 'none' = plain chord without slash, 'all' = plain chord plus every slash bass, or one note name.
+function chordFilterResults(root,kind,bass='none'){
+  const roots=root==='all'?filterRoots:filterRoots.filter(r=>r===root),kinds=kind==='all'?filterKinds:filterKinds.filter(k=>k.label===kind);
+  const basses=bass==='none'?[null]:bass==='all'?[null,...filterRoots]:filterRoots.filter(n=>n===bass);
+  const names=[];
+  for(const r of roots)for(const k of kinds)for(const b of basses){
+    if(b&&filterPc[b]===filterPc[r])continue;
+    try{const c=parse(r+k.suffix+(b?'/'+b:''));if(c.root===r&&c.quality===k.quality&&(b?c.bassNote===b:!c.bassNote))names.push(c.label);}catch(_){}
+  }
+  return names;
+}
+// End chord filter functions.
+let filterRoot='C',filterKind='M',filterBass='none';
+const filterListLimit=96;
+function filterButton(text,pressed,onClick,label){const b=document.createElement('button');b.type='button';b.textContent=text;b.setAttribute('aria-pressed',String(pressed));if(label)b.setAttribute('aria-label',label);b.addEventListener('click',onClick);return b;}
+function fillSelect(id,options,value,onChange){
+  const select=$(id);
+  if(!select.options.length){for(const [v,text] of options){const o=document.createElement('option');o.value=v;o.textContent=text;if(v==='none')o.title='슬래시 없는 일반 코드';if(v==='all'&&id==='bass-filter')o.title='일반 코드와 모든 슬래시 베이스';select.append(o);}select.addEventListener('change',()=>onChange(select.value));}
+  select.value=value;
+}
+function renderFilters(){
+  const word=value=>value==='all'?'전체':value==='none'?'일반(슬래시 없음)':value;
+  fillSelect('root-filter',[['all','전체'],...filterRoots.map(r=>[r,r])],filterRoot,v=>setFilters(v,filterKind,filterBass));
+  fillSelect('kind-filter',[['all','전체'],...filterKinds.map(k=>[k.label,k.label])],filterKind,v=>setFilters(filterRoot,v,filterBass));
+  fillSelect('bass-filter',[['none','일반'],['all','전체'],...filterRoots.map(n=>[n,n])],filterBass,v=>setFilters(filterRoot,filterKind,v));
+  const names=chordFilterResults(filterRoot,filterKind,filterBass),shown=names.slice(0,filterListLimit);
+  $('quick').replaceChildren(...shown.map(name=>filterButton(name,current&&current.label===name,()=>{$('chord-input').value=name;find(name);})));
+  $('filter-empty').hidden=names.length>0;$('quick').hidden=!names.length;
+  const status=$('filter-status');status.textContent='';
+  status.append(`기본음 ${word(filterRoot)} · 종류 ${word(filterKind)} · 베이스 ${word(filterBass)} → ${names.length}개`);
+  if(names.length===1){const strong=document.createElement('strong');strong.textContent=names[0];status.append(' · ',strong);}
+  if(names.length>shown.length)status.append(` (앞의 ${shown.length}개만 표시 · 필터를 좁혀 보세요)`);
+  return names;
+}
+function setFilters(root,kind,bass=filterBass){
+  filterRoot=root;filterKind=kind;filterBass=bass;const names=renderFilters();
+  if(names.length&&!(current&&names.includes(current.label))){$('chord-input').value=names[0];find(names[0]);}
+}
+if(ready(['chords'])){$('filter-reset').addEventListener('click',()=>{setFilters('C','M','none');if($('chord-input').value!=='C'||!current||current.label!=='C'){$('chord-input').value='C';find('C');}});renderFilters();$('prev').addEventListener('click',()=>{if(voicings.length){position=modIndex(position-1);render();}});$('next').addEventListener('click',()=>{if(voicings.length){position=modIndex(position+1);render();}});}
+function modIndex(n){return(n+voicings.length)%voicings.length;}
+let audioContext=null,playing=[],captureActive=()=>false;
+// iOS Web Audio can stay suspended/interrupted after backgrounding and is routed as "ambient" by default; prepare it on every explicit tap and fail visibly instead of reporting playback.
+function setAudioSession(type){try{if(navigator.audioSession&&navigator.audioSession.type!==type)navigator.audioSession.type=type;}catch(_){}}
+async function resumeAudio(context){if(context.state==='running')return true;try{await Promise.race([context.resume(),new Promise(resolve=>setTimeout(resolve,1500))]);}catch(_){}return context.state==='running';}
+async function prepareAudio(){
+const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)throw Error('unsupported');
+// A 'playback' session ends a live microphone track (W3C Audio Session), so keep 'auto' while the tuner listens.
+setAudioSession(captureActive()?'auto':'playback');
+if(audioContext&&audioContext.state==='closed')audioContext=null;
+if(!audioContext)audioContext=new Audio();
+if(await resumeAudio(audioContext))return audioContext;
+const stale=audioContext;audioContext=new Audio();try{stale.close();}catch(_){}
+if(await resumeAudio(audioContext))return audioContext;
+throw Error('audio-not-running');
+}
+// Capture switches the iOS session/route and can leave an older output context silent; rebuild it on the next tap.
+function retirePlaybackContext(){const old=audioContext;audioContext=null;if(old){try{old.close();}catch(_){}}}
+// Report failure if the context stops right after scheduling instead of leaving a false "playing" status.
+function confirmPlayback(ctx,stillCurrent,onFail){setTimeout(()=>{if(stillCurrent()&&(audioContext!==ctx||ctx.state!=='running'))onFail();},400);}
+const audioFailure='소리를 재생할 수 없습니다. 같은 버튼을 한 번 더 눌러 다시 시도하고, 계속되면 페이지를 새로고침해 주세요.';
+// Synthesis shared by chord and reference playback. Everything goes through one limiter bus so louder voices cannot clip.
+const chordLevel=.45,chordDecay=2.8,referenceLevel=.36,referenceDecay=1.7;
+function audioBus(ctx){
+if(!ctx.chordBus){const comp=ctx.createDynamicsCompressor(),master=ctx.createGain();comp.threshold.value=-12;comp.knee.value=10;comp.ratio.value=12;comp.attack.value=.003;comp.release.value=.2;master.connect(comp);comp.connect(ctx.destination);ctx.chordBus=master;}
+return ctx.chordBus;
+}
+// A voice fades out over a few milliseconds when stopped to avoid clicks.
+function voiceStop(ctx,gain,oscs){return {stop(){const t=ctx.currentTime;try{gain.gain.cancelScheduledValues(t);gain.gain.setTargetAtTime(0,t,.012);}catch(_){}for(const o of oscs){try{o.stop(t+.09);}catch(_){}}}};}
+function scheduleTone(ctx,out,frequency,at,peak,decay,weights,attack){
+const gain=ctx.createGain(),oscs=[];
+gain.gain.setValueAtTime(0,at);gain.gain.linearRampToValueAtTime(peak,at+attack);gain.gain.exponentialRampToValueAtTime(.0001,at+decay);gain.connect(out);
+weights.forEach((weight,k)=>{const osc=ctx.createOscillator(),level=ctx.createGain();osc.type='sine';osc.frequency.setValueAtTime(frequency*(k+1),at);level.gain.value=weight;osc.connect(level);level.connect(gain);osc.start(at);osc.stop(at+decay+.1);oscs.push(osc);osc.addEventListener('ended',()=>{osc.disconnect();level.disconnect();if(k===weights.length-1)gain.disconnect();});});
+return {voice:voiceStop(ctx,gain,oscs),oscs};
+}
+function scheduleChord(ctx,fretsList,at){
+const strings=fretsList.map((f,i)=>({f,i})).filter(s=>s.f>=0),peak=chordLevel/Math.sqrt(strings.length||1);
+return strings.map((s,n)=>scheduleTone(ctx,audioBus(ctx),440*Math.pow(2,(tuning[s.i]+s.f-69)/12),at+n*.045,peak,chordDecay,[1,1/4,1/9,1/16],.008));
+}
+// Phone speakers barely reproduce the low-string fundamentals, so upper partials carry the pitch there.
+const referenceWeights=[1,.6,.45,.35,.25,.15];
+function scheduleReference(ctx,frequency,at){return scheduleTone(ctx,audioBus(ctx),frequency,at,referenceLevel,referenceDecay,referenceWeights,.025);}
+if(ready(['chords']))$('play').addEventListener('click',async()=>{const v=voicings[position];if(!v)return;try{await prepareAudio();if($('chords-panel').hidden)return;for(const node of playing){try{node.stop();}catch(_){}}playing=[];
+const ctx=audioContext,voices=scheduleChord(ctx,v.frets,ctx.currentTime+.03).map(t=>t.voice);playing=voices;$('audio-status').textContent='현재 보이싱을 연주합니다.';confirmPlayback(ctx,()=>playing===voices,()=>{$('audio-status').textContent=audioFailure;});}catch(_){$('audio-status').textContent=audioFailure}});
+// YIN: cumulative mean normalized difference, then a parabolic period estimate.
+// Kept independent of the DOM so synthetic signals can exercise the real detector in Node.
+function detectPitch(samples,sampleRate){
+// Average down to at most 24 kHz to keep the longer buffer inexpensive.
+const stride=Math.max(1,Math.ceil(sampleRate/24000));
+if(stride>1){
+const reduced=new Float32Array(Math.floor(samples.length/stride));
+for(let i=0;i<reduced.length;i++){let sum=0;for(let j=0;j<stride;j++)sum+=samples[i*stride+j];reduced[i]=sum/stride;}
+samples=reduced;sampleRate/=stride;
+}
+const size=Math.floor(samples.length/2),maxLag=Math.min(size-1,Math.ceil(sampleRate/70)+1),minLag=Math.max(2,Math.floor(sampleRate/1000)-1);
+let mean=0;for(const value of samples)mean+=value;mean/=samples.length;
+let energy=0;for(const value of samples)energy+=(value-mean)**2;
+if(Math.sqrt(energy/samples.length)<.00015)return null;
+const difference=new Float64Array(maxLag+1);let sum=0;
+for(let lag=1;lag<=maxLag;lag++){
+let squared=0;for(let i=0;i<size;i++){const delta=samples[i]-samples[i+lag];squared+=delta*delta;}
+sum+=squared;difference[lag]=sum?squared*lag/sum:1;
+}
+let periodLag=0;
+for(let lag=minLag;lag<maxLag;lag++){
+if(difference[lag]>.15)continue;
+while(lag+1<maxLag&&difference[lag+1]<difference[lag])lag++;
+periodLag=lag;break;
+}
+if(!periodLag||periodLag>=maxLag)return null;
+// A dominant overtone can pass YIN first. Prefer a multiple only when its
+// periodicity is substantially better; pure high notes must retain their octave.
+const firstLag=periodLag;
+for(let multiple=2;multiple<=4;multiple++){
+const expected=firstLag*multiple,radius=Math.ceil(multiple*1.5);
+let best=0;
+for(let lag=Math.max(minLag,expected-radius);lag<Math.min(maxLag,expected+radius+1);lag++){
+if(!best||difference[lag]<difference[best])best=lag;
+}
+if(best&&difference[best]<difference[periodLag]*.25&&difference[periodLag]-difference[best]>.008)periodLag=best;
+}
+const left=difference[periodLag-1],center=difference[periodLag],right=difference[periodLag+1],curve=left-2*center+right;
+const period=periodLag+(curve?(left-right)/(2*curve):0),frequency=sampleRate/period;
+// Allow the interpolation's three-cent error margin at the range edges.
+const edgeTolerance=2**(3/1200);
+return frequency>=70/edgeTolerance&&frequency<=1000*edgeTolerance?Math.max(70,Math.min(1000,frequency)):null;
+}
+
+const stringNames=['E2','A2','D3','G3','B3','E4'];
+const stringFrequency=(index,a=440)=>a*2**((tuning[index]-69)/12);
+const pitchCents=(frequency,target)=>1200*Math.log2(frequency/target);
+function nearestString(frequency,a){let best=0;for(let i=1;i<tuning.length;i++)if(Math.abs(pitchCents(frequency,stringFrequency(i,a)))<Math.abs(pitchCents(frequency,stringFrequency(best,a))))best=i;return best;}
+let concertA=440,selectedString=null,micContext=null,micStream=null,micSource=null,micGain=null,analyser=null,micTimer=null,micRequest=0;
+let recentPitches=[],lastPitchAt=0,referenceUntil=0,playbackRequest=0;
+function resetTuner(){
+recentPitches=[];lastPitchAt=0;
+$('tuner-display').className='panel tuner-display waiting';
+$('tuner-target').textContent=selectedString===null?'자동 줄 인식 · 소리를 기다립니다':`${6-selectedString}번 줄 · 목표 ${stringNames[selectedString]} · ${stringFrequency(selectedString,concertA).toFixed(2)} Hz`;
+$('tuner-note').textContent=selectedString===null?'—':stringNames[selectedString];
+$('tuner-frequency').textContent=`기준음 A4 = ${concertA} Hz`;
+$('tuner-cents').textContent='— 센트';$('tuner-needle').style.transform='rotate(0deg)';
+$('tuner-advice').textContent=micStream?'한 줄을 튕겨 주세요.':'마이크를 켜고 한 줄을 튕겨 주세요.';
+for(const button of $('string-select').children)button.classList.remove('detected');
+}
+function showPitch(frequency){
+const index=selectedString===null?nearestString(frequency,concertA):selectedString,target=stringFrequency(index,concertA),cents=pitchCents(frequency,target),inTune=Math.abs(cents)<=5;
+$('tuner-display').className='panel tuner-display'+(inTune?' in-tune':'');
+$('tuner-target').textContent=`${selectedString===null?'자동 인식 · ':''}${6-index}번 줄 · 목표 ${stringNames[index]} · ${target.toFixed(2)} Hz`;
+$('tuner-note').textContent=stringNames[index];$('tuner-frequency').textContent=`감지 ${frequency.toFixed(2)} Hz · A4 = ${concertA} Hz`;
+$('tuner-cents').textContent=`${cents>0?'+':''}${cents.toFixed(1)} 센트`;
+$('tuner-needle').style.transform=`rotate(${Math.max(-50,Math.min(50,cents))*1.2}deg)`;
+const advice=inTune?'맞음 · 정확한 음이에요':cents<0?'낮음 · 줄을 조금 더 조여 주세요':'높음 · 줄을 조금 풀어 주세요';
+if($('tuner-advice').textContent!==advice)$('tuner-advice').textContent=advice;
+Array.from($('string-select').children).forEach((button,i)=>button.classList.toggle('detected',i===index));
+}
+function stopPlayback(){playbackRequest++;identifyPlaybackRequest++;referenceUntil=0;for(const node of playing){try{node.stop();}catch(_){}}playing=[];for(const id of ['reference-status','identify-audio-status']){const status=$(id);if(status)status.textContent='';}}
+function stopMicrophone(message='마이크가 꺼졌습니다. 다시 켜서 튜닝을 시작하세요.'){
+const wasCapturing=!!(micStream||micContext);micRequest++;clearInterval(micTimer);micTimer=null;
+if(micStream)micStream.getTracks().forEach(track=>track.stop());micStream=null;
+if(micSource)micSource.disconnect();micSource=null;
+if(micGain)micGain.disconnect();micGain=null;analyser=null;
+if(micContext){micContext.close().catch(()=>{});micContext=null;}
+$('mic-toggle').disabled=false;$('mic-toggle').textContent='마이크 켜기';$('mic-toggle').setAttribute('aria-pressed','false');
+$('mic-status').textContent=message;resetTuner();
+if(wasCapturing)retirePlaybackContext();
+}
+captureActive=()=>!!micStream;
+if(ready(['tuner']))$('mic-toggle').addEventListener('click',async()=>{
+if(micStream){stopMicrophone();return;}
+if(!window.isSecureContext){$('mic-status').textContent='마이크를 사용하려면 HTTPS 주소 또는 localhost에서 열어 주세요. 기준음 듣기는 그대로 사용할 수 있어요.';return;}
+const Audio=window.AudioContext||window.webkitAudioContext;
+if(!navigator.mediaDevices?.getUserMedia||!Audio){$('mic-status').textContent='이 브라우저는 마이크 튜닝을 지원하지 않습니다. 최신 Chrome, Edge, Safari에서 열거나 기준음 듣기를 이용해 주세요.';return;}
+const request=++micRequest;let context=null,stream=null;
+$('mic-toggle').disabled=true;$('mic-status').textContent='브라우저에서 마이크 사용을 허용해 주세요.';
+try{
+stopPlayback();retirePlaybackContext();setAudioSession('auto');context=new Audio();micContext=context;await context.resume();
+if(request!==micRequest)return;
+stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false},video:false});
+if(request!==micRequest||$('tuner-panel').hidden||document.hidden){stream.getTracks().forEach(track=>track.stop());return;}
+micStream=stream;micSource=context.createMediaStreamSource(stream);analyser=context.createAnalyser();analyser.fftSize=context.sampleRate>48000?16384:8192;analyser.smoothingTimeConstant=0;
+micGain=context.createGain();micGain.gain.value=Number($('mic-sensitivity').value);micSource.connect(micGain);micGain.connect(analyser);
+const samples=new Float32Array(analyser.fftSize);
+$('mic-toggle').disabled=false;$('mic-toggle').textContent='마이크 끄기';$('mic-toggle').setAttribute('aria-pressed','true');
+$('mic-status').textContent='마이크 사용 중 · 한 줄씩 튕겨 주세요. 다른 탭으로 이동하면 마이크가 꺼집니다.';resetTuner();
+stream.getTracks().forEach(track=>track.addEventListener('ended',()=>{if(request===micRequest)stopMicrophone('마이크 연결이 끊겼습니다. 연결과 권한을 확인한 뒤 다시 켜 주세요.');}));
+context.onstatechange=()=>{if(request===micRequest&&context.state==='suspended')stopMicrophone('오디오가 일시 중지되었습니다. 마이크를 다시 켜 주세요.');};
+micTimer=setInterval(()=>{
+if(performance.now()<referenceUntil){recentPitches=[];return;}
+analyser.getFloatTimeDomainData(samples);const frequency=detectPitch(samples,context.sampleRate),now=performance.now();
+if(frequency===null){if(lastPitchAt&&now-lastPitchAt>1800)resetTuner();return;}
+lastPitchAt=now;
+if(recentPitches.length&&Math.abs(pitchCents(frequency,recentPitches.at(-1)))>80)recentPitches=[];
+recentPitches.push(frequency);if(recentPitches.length>3)recentPitches.shift();
+if(recentPitches.length>=3)showPitch([...recentPitches].sort((a,b)=>a-b)[Math.floor(recentPitches.length/2)]);
+},80);
+}catch(error){
+if(stream)stream.getTracks().forEach(track=>track.stop());
+if(request!==micRequest)return;
+const messages={NotAllowedError:'마이크 권한이 거부되었습니다. 주소창의 사이트 설정에서 마이크를 허용한 뒤 다시 켜 주세요. 기준음 듣기도 사용할 수 있어요.',SecurityError:'브라우저의 보안 설정에서 마이크 사용을 허용해 주세요. HTTPS 또는 localhost 주소인지도 확인해 주세요.',NotFoundError:'마이크를 찾을 수 없습니다. 기기에 마이크를 연결한 뒤 다시 시도해 주세요.',NotReadableError:'마이크를 열 수 없습니다. 다른 앱의 마이크 사용을 종료하고 다시 시도해 주세요.'};
+stopMicrophone(messages[error.name]||'마이크를 시작하지 못했습니다. 연결과 브라우저 권한을 확인한 뒤 다시 시도해 주세요.');
+}finally{if(request!==micRequest&&context&&context.state!=='closed')context.close().catch(()=>{});}
+});
+function selectString(index){selectedString=index;$('auto-string').setAttribute('aria-pressed',String(index===null));Array.from($('string-select').children).forEach((button,i)=>button.setAttribute('aria-pressed',String(i===index)));resetTuner();}
+if(ready(['tuner'])){$('auto-string').addEventListener('click',()=>selectString(null));
+stringNames.forEach((name,index)=>{
+const select=document.createElement('button');select.type='button';select.innerHTML=`<small>${6-index}번 줄</small><strong>${name}</strong>`;select.setAttribute('aria-pressed','false');select.addEventListener('click',()=>selectString(index));$('string-select').append(select);
+const play=document.createElement('button');play.type='button';play.textContent=`♪ ${name}`;play.setAttribute('aria-label',`${6-index}번 줄 ${name} 기준음 듣기`);$('reference-tones').append(play);
+play.addEventListener('click',async()=>{
+stopPlayback();const request=playbackRequest;
+try{
+await prepareAudio();if(request!==playbackRequest||$('tuner-panel').hidden)return;
+const frequency=stringFrequency(index,concertA),tone=scheduleReference(audioContext,frequency,audioContext.currentTime+.02);
+const osc=tone.oscs[0];playing=[tone.voice];referenceUntil=performance.now()+2150;resetTuner();
+$('tuner-advice').textContent='기준음 재생 중 · 잠시 듣고 비교하세요.';
+$('reference-status').textContent=`${6-index}번 줄 ${name} · ${frequency.toFixed(2)} Hz 재생 중`;
+osc.addEventListener('ended',()=>{if(request===playbackRequest){playing=[];$('reference-status').textContent='재생 완료';resetTuner();}});
+confirmPlayback(audioContext,()=>request===playbackRequest,()=>{$('reference-status').textContent=audioFailure;});
+}catch(_){if(request===playbackRequest)$('reference-status').textContent=audioFailure;}
+});
+});
+$('mic-sensitivity').addEventListener('input',()=>{
+const gain=Number($('mic-sensitivity').value);$('mic-gain-value').textContent=`${gain}×`;
+if(micGain)micGain.gain.setTargetAtTime(gain,micContext.currentTime,.02);
+});
+$('concert-a').addEventListener('change',()=>{const input=$('concert-a');concertA=input.value===''?440:Math.max(430,Math.min(450,Math.round(Number(input.value)||440)));input.value=concertA;stopPlayback();resetTuner();});}
+// Score music functions: no DOM, OCR, or mutable UI state.
+function selectScoreClipboardImage(items){
+for(const item of Array.from(items||[])){
+if(item.kind&&item.kind!=='file')continue;
+const type=Array.from(item.types||[item.type]).find(type=>typeof type==='string'&&type.startsWith('image/'));
+if(type)return {item,type};
+}
+return null;
+}
+function scoreMod(n){return ((n%12)+12)%12;}
+const scoreSharps=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const scoreFlats=['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+function parseScoreChord(value){
+if(typeof value!=='string')return null;
+const text=value.normalize('NFKC').trim().replace(/♯/g,'#').replace(/♭/g,'b');
+if(text.startsWith('(')&&text.endsWith(')')){const inner=parseScoreChord(text.slice(1,-1));return inner?{...inner,text,wrapped:true}:null;}
+const alternative=/^(.+)\(([A-G][^()]*)\)$/.exec(text);
+if(alternative){const primary=parseScoreChord(alternative[1]),other=parseScoreChord(alternative[2]);if(primary&&other)return {...primary,text,alternative:other.text};}
+const match=/^([A-G])([#b]?)([^/]*)(?:\/([A-G])([#b]?))?$/.exec(text);
+if(!match)return null;
+const suffix=match[3],grammarSuffix=suffix.replace(/sus|add|maj|dim|aug/gi,word=>word.toLowerCase());
+if(!/^(?:m(?:maj|M)?|maj|M|dim|aug|\+)?(?:2|5|6|7|9|11|13)?(?:sus[24]?|add(?:2|4|6|9|11|13)|[#b](?:5|9|11|13)|\((?:(?:sus|add)?(?:2|4|5|6|7|9|11|13)|[#b](?:5|9|11|13))(?:,(?:[#b]?(?:5|9|11|13)))*\))*$/.test(grammarSuffix))return null;
+const pc=(letter,acc)=>scoreMod(({C:0,D:2,E:4,F:5,G:7,A:9,B:11})[letter]+(acc==='#'?1:acc==='b'?-1:0));
+return {text,root:pc(match[1],match[2]),suffix,bass:match[4]?pc(match[4],match[5]):null,minor:suffix.startsWith('m')&&!/^maj/i.test(suffix)};
+}
+function scorePreferFlats(key){
+if(typeof key==='string'){const chord=parseScoreChord(key);if(!chord)return false;return key.includes('b')||(!key.includes('#')&&[...(chord.minor?[0,2,3,5,7,10]:[1,3,5,8,10])].includes(chord.root));}
+return !!key&&(key.minor?[0,2,3,5,7,10]:[1,3,5,8,10]).includes(key.pc);
+}
+function transposeScoreChord(value,semitones,key){
+const chord=parseScoreChord(value);if(!chord||!Number.isInteger(semitones))return null;
+const names=scorePreferFlats(key)?scoreFlats:scoreSharps;
+const result=names[scoreMod(chord.root+semitones)]+chord.suffix+(chord.bass===null?'':'/'+names[scoreMod(chord.bass+semitones)])+(chord.alternative?'('+transposeScoreChord(chord.alternative,semitones,key)+')':'');
+return chord.wrapped?'('+result+')':result;
+}
+function transposeScoreKey(key,semitones){
+if(!key)return null;
+const pc=scoreMod(key.pc+semitones),minor=key.minor;
+const names=scorePreferFlats({pc,minor})?scoreFlats:scoreSharps;
+return {pc,minor,name:names[pc]+(minor?'m':'')};
+}
+function capoScoreChord(value,fret,key){
+if(!Number.isInteger(fret)||fret<0||fret>11)return null;
+return transposeScoreChord(value,-fret,transposeScoreKey(key,-fret));
+}
+function detectScoreKey(values){
+const chords=values.map(value=>parseScoreChord(typeof value==='string'?value:value.text)).filter(Boolean);
+if(!chords.length)return null;
+let best=null;
+for(const minor of [false,true])for(let pc=0;pc<12;pc++){
+const degrees=minor?[0,2,3,5,7,8,10]:[0,2,4,5,7,9,11];
+const qualities=minor?['m','dim','','m','','','']:['','m','m','','','m','dim'];
+let weight=0;
+for(const chord of chords){
+const degree=degrees.indexOf(scoreMod(chord.root-pc));
+const quality=chord.suffix.startsWith('dim')?'dim':chord.minor?'m':'';
+weight+=degree<0?-3:qualities[degree]===quality?3:.2;
+if(chord.root===pc&&chord.minor===minor)weight+=1;
+}
+for(const [chord,bonus] of [[chords[0],2],[chords.at(-1),3]])if(chord.root===pc&&chord.minor===minor)weight+=bonus;
+if(!best||weight>best.weight)best={pc,minor,weight};
+}
+return {...transposeScoreKey(best,0),weight:best.weight};
+}
+// OCR helpers are shared verbatim with the Node evaluator; no browser pixel filters.
+function scoreImageSize(width,height,ocr=false){
+const enlarge=ocr?(Math.max(width,height)<1600?3:Math.max(width,height)<2400?2:1):1;
+const scale=Math.min(enlarge,4096/Math.max(width,height),Math.sqrt((ocr?6000000:12000000)/(width*height)));
+return {width:Math.max(1,Math.round(width*scale)),height:Math.max(1,Math.round(height*scale))};
+}
+function scoreOCRParameters(psm='11'){
+return {tessedit_char_whitelist:'ABCDEFGabcdefg#bm0123456789susaddimaugmajMIl+/()♭♯',tessedit_pageseg_mode:psm,preserve_interword_spaces:'1',user_defined_dpi:'300'};
+}
+function scoreOCRConfig(){return {load_system_dawg:'0',load_freq_dawg:'0',load_number_dawg:'0'};}
+function scoreRecognizerInput(image){
+const height=48,content=Math.max(1,Math.min(1024,Math.ceil(height*image.width/image.height))),width=Math.max(32,Math.ceil(content/8)*8);
+const resized=resizeScorePixels(image,content,height),data=new Float32Array(3*width*height);
+for(let channel=0;channel<3;channel++)for(let y=0;y<height;y++)for(let x=0;x<content;x++)data[channel*width*height+y*width+x]=resized.data[(y*content+x)*4+channel]/127.5-1;
+return {data,dims:[1,3,height,width]};
+}
+function scoreRecognizerDictionary(text){return ['',...text.replace(/\r/g,'').trimEnd().split('\n'),' '];}
+function decodeScoreRecognizer(output,dictionary){
+const [batch,steps,classes]=output.dims;
+if(batch!==1||classes!==dictionary.length)throw Error('OCR dictionary does not match model');
+let text='',previous=-1,total=0,count=0;
+for(let step=0;step<steps;step++){
+let best=0;
+for(let index=1;index<classes;index++)if(output.data[step*classes+index]>output.data[step*classes+best])best=index;
+if(best&&best!==previous){text+=dictionary[best];total+=output.data[step*classes+best];count++;}
+previous=best;
+}
+return {text,confidence:count?total/count*100:0};
+}
+function normalizeScoreRecognizer(value){
+const text=value.normalize('NFKC').trim().replace(/\s+/g,'').replace(/♭/g,'b').replace(/♯/g,'#').replace(/[⁄∕\\]/g,'/').replace(/(^|\/)\b([a-g])/g,(_,prefix,note)=>prefix+note.toUpperCase());
+return parseScoreChord(text)?text:null;
+}
+function selectScoreRegionReading(readings,secondary){
+const primary=readings.filter(r=>r.confidence>=70).sort((a,b)=>b.confidence-a.confidence||b.support-a.support)[0]||null;
+const corroborated=secondary.filter(r=>r.support>=3&&r.styles.length>=2).sort((a,b)=>b.support-a.support||b.confidence-a.confidence);
+if(!primary)return corroborated[0]||null;
+const keywordCase=text=>text.replace(/sus|add|maj|dim|aug/gi,word=>word.toLowerCase());
+for(const other of corroborated){
+if(other.text===primary.text)continue;
+// Keyword case is chosen from an actual, independently read string, never folded.
+if(keywordCase(other.text)===keywordCase(primary.text)&&other.confidence>=85)return {...other,primaryConfidence:primary.confidence};
+let index=0;
+for(const char of other.text)if(char===primary.text[index])index++;
+// Several views must actually read the extra accidental/extension before adding it.
+if(other.text.length>primary.text.length&&index===primary.text.length)return {...other,primaryConfidence:primary.confidence};
+}
+return primary;
+}
+function normalizeScoreOCR(value){
+if(typeof value!=='string')return null;
+let text=value.normalize('NFKC').trim().replace(/♭/g,'b').replace(/♯/g,'#').replace(/[⁄∕\\]/g,'/').replace(/\s+/g,'').replace(/^[|:;,]+|[|:;,.]+$/g,'');
+if(parseScoreChord(text))return text;
+// A small printed m can be read as a; retain a digit only when OCR read it.
+text=text.replace(/^([A-G][#b]?)a(?=[0-9])/,'$1m');
+// A lone 0/O is too ambiguous. Only repair a root next to a chord extension.
+text=text.replace(/(^|\/)[0O](?=(?:m|M|maj|dim|sus|[79]))/g,'$1D').replace(/^[a-g](?=[#bmM0-9/])/,(letter)=>letter.toUpperCase());
+text=text.replace(/[3g]us(?=[24]?$)/,'sus').replace(/sus[dD](?=\)|$)/,'sus4').replace(/^[12]\.?\s*(?=[A-G])/,'').replace(/^\(+(?=[A-G].*\()/,'');
+text=text.replace(/^([A-G][#b]?(?:m|M|maj)?(?:2|7|9|11|13))([A-G][#b]?)$/,'$1/$2');
+text=text.replace(/^([A-G])[iIl](sus[24])[iIl)]?$/,'$1($2)').replace(/(\/[A-G][#b]?)3$/,'$1').replace(/\/([A-G])4$/,'/$1#');
+if(text.startsWith('(')&&!text.endsWith(')')&&parseScoreChord(text.slice(1)))text+=')';
+if(!text.includes('(')&&!text.includes('/')&&text.endsWith(')')&&parseScoreChord(text.slice(0,-1)))text='('+text;
+if(parseScoreChord(text))return text;
+text=text.replace(/^([A-G])i(?=m)/,'$1#').replace(/^([A-G])[fe]?(sus[24])\)$/,'$1($2)').replace(/^([A-G])[fe]?sus[s5]\)$/,'$1(sus4)');
+// Italic slash/bass glyphs often become l, i, g) or c (a lost music sharp).
+// These guesses belong only to OCR; manual parsing keeps literal C, G and sixths.
+text=text.replace(/^(.+?)[Il|i]([A-Ga-g](?:[#b]|[is])?)$/,'$1/$2')
+.replace(/\/g\)$/,'/Bb').replace(/\/([A-Ga-g])[)6]$/,(_,note)=>'/'+note.toUpperCase()+'b')
+.replace(/\/c[is]?$/,'/C#').replace(/\/i$/,'/D')
+.replace(/\/([a-g])(?=[#b]?$)/,(_,note)=>'/'+note.toUpperCase())
+.replace(/^([A-G])\)(?=m|M|maj|dim|sus|[579]|\/|$)/,'$1b')
+.replace(/^([A-G])6(?=m|M|maj|dim|sus)/,'$1b');
+if(parseScoreChord(text))return text;
+const digits=text.replace(/[Il]/g,'1');
+if(parseScoreChord(digits))return digits;
+// 1 is not a supported extension; keep genuine 11/13 intact and never repair a bass note.
+const seventh=digits.replace(/^([A-G][#b]?(?:m|M|maj)?)1(?=\/|$)/,'$17');
+return parseScoreChord(seventh)?seventh:null;
+}
+function resizeScorePixels(source,width,height){
+const data=new Uint8ClampedArray(width*height*4),sx=source.width/width,sy=source.height/height;
+const white=(p,channel)=>255+(source.data[p+channel]-255)*source.data[p+3]/255;
+for(let y=0;y<height;y++){
+const fy=Math.max(0,(y+.5)*sy-.5),y0=Math.floor(fy),y1=Math.min(source.height-1,y0+1),dy=fy-y0;
+for(let x=0;x<width;x++){
+const fx=Math.max(0,(x+.5)*sx-.5),x0=Math.floor(fx),x1=Math.min(source.width-1,x0+1),dx=fx-x0;
+const a=(y0*source.width+x0)*4,b=(y0*source.width+x1)*4,c=(y1*source.width+x0)*4,d=(y1*source.width+x1)*4,i=(y*width+x)*4;
+for(let channel=0;channel<3;channel++){
+data[i+channel]=(white(a,channel)*(1-dx)+white(b,channel)*dx)*(1-dy)+(white(c,channel)*(1-dx)+white(d,channel)*dx)*dy;
+}
+data[i+3]=255;
+}
+}
+return {data,width,height};
+}
+function preprocessScorePixels(source,variant){
+const {width,height}=source,n=width*height,data=new Uint8ClampedArray(n*4),gray=new Uint8Array(n),histogram=new Uint32Array(256);
+for(let p=0;p<n;p++){
+const i=p*4,r=source.data[i],g=source.data[i+1],b=source.data[i+2];
+if(variant==='color'){
+const high=Math.max(r,g,b),spread=high-Math.min(r,g,b);
+// Keep saturated ink (including red/orange/blue), discard neutral lyrics/staff lines.
+gray[p]=high>45&&spread>=35&&spread/high>=.22?0:255;
+}else{gray[p]=Math.round(.299*r+.587*g+.114*b);histogram[gray[p]]++;}
+}
+if(variant==='gray'){
+let low=0,high=255,count=0;
+for(;low<254;low++){count+=histogram[low];if(count>0)break;}
+count=0;for(;high>low+1;high--){count+=histogram[high];if(count>n*.01)break;}
+for(let p=0;p<n;p++)gray[p]=Math.max(0,Math.min(255,(gray[p]-low)*255/Math.max(1,high-low)));
+}
+if(variant==='adaptive'){
+// Sliding box mean uses one column array, avoiding a full-size integral image.
+const radius=Math.max(8,Math.round(Math.min(width,height)*.012)),columns=new Uint32Array(width);
+for(let y=0;y<height;y++){
+if(y===0){for(let row=0;row<=Math.min(height-1,radius);row++)for(let x=0;x<width;x++)columns[x]+=gray[row*width+x];}
+else{
+const add=y+radius,remove=y-radius-1;
+for(let x=0;x<width;x++){if(add<height)columns[x]+=gray[add*width+x];if(remove>=0)columns[x]-=gray[remove*width+x];}
+}
+let sum=0;for(let x=0;x<=Math.min(width-1,radius);x++)sum+=columns[x];
+const rows=Math.min(height-1,y+radius)-Math.max(0,y-radius)+1;
+for(let x=0;x<width;x++){
+if(x>0){if(x+radius<width)sum+=columns[x+radius];if(x-radius-1>=0)sum-=columns[x-radius-1];}
+const area=rows*(Math.min(width-1,x+radius)-Math.max(0,x-radius)+1),i=(y*width+x)*4;
+data[i]=data[i+1]=data[i+2]=gray[y*width+x]<sum/area-10?0:255;data[i+3]=255;
+}
+}
+}else for(let p=0;p<n;p++){const i=p*4;data[i]=data[i+1]=data[i+2]=gray[p];data[i+3]=255;}
+return {data,width,height};
+}
+// Connected red glyphs are grouped into chords before enlargement, keeping staff/lyrics out.
+function scoreRedRegions(source){
+const {width,height,data}=source,mask=new Uint8Array(width*height),parts=[];
+for(let p=0;p<mask.length;p++){
+const i=p*4,r=data[i],g=data[i+1],b=data[i+2];
+mask[p]=data[i+3]>128&&r>70&&r-g>40&&r-b>35&&r>g*2?1:0;
+}
+const queue=[];
+for(let p=0;p<mask.length;p++){
+if(!mask[p])continue;
+queue.length=0;queue.push(p);mask[p]=0;
+let x0=width,y0=height,x1=0,y1=0;
+for(let head=0;head<queue.length;head++){
+const q=queue[head],x=q%width,y=Math.floor(q/width);
+x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x+1);y1=Math.max(y1,y+1);
+for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+const nx=x+dx,ny=y+dy,n=ny*width+nx;
+if(nx>=0&&nx<width&&ny>=0&&ny<height&&mask[n]){mask[n]=0;queue.push(n);}
+}
+}
+if(queue.length>=2&&y1-y0<=height*.045&&x1-x0<=width*.12)parts.push({x0,y0,x1,y1});
+}
+const rows=[];
+for(const b of parts.sort((a,b)=>a.y0-b.y0)){
+const cy=(b.y0+b.y1)/2,h=b.y1-b.y0;
+const row=rows.find(row=>Math.abs(row.cy-cy)<Math.max(row.height,h)*.65);
+if(row){row.parts.push(b);row.height=Math.max(row.height,h);}else rows.push({cy,height:h,parts:[b]});
+}
+const regions=[];
+for(const row of rows){
+let box=null,previous=null;
+for(const b of row.parts.sort((a,b)=>a.x0-b.x0)){
+if(box&&b.x0-box.x1<=row.height*.3){box.x1=Math.max(box.x1,b.x1);box.y0=Math.min(box.y0,b.y0);box.y1=Math.max(box.y1,b.y1);}
+else {box={...b};regions.push(box);}
+}
+}
+const valid=regions.filter(b=>b.y1-b.y0>=Math.max(6,height*.003)&&b.x1-b.x0>=3&&b.y0>height*.08&&b.x1-b.x0<width*.3);
+// Repeated chord rows bound the score, excluding red app logos and controls in screenshots.
+const aligned=valid.filter(b=>valid.some(other=>other!==b&&Math.abs(other.y0-b.y0)<Math.max(b.y1-b.y0,other.y1-other.y0)*.65));
+if(aligned.length<4)return valid;
+const top=Math.min(...aligned.map(b=>b.y0)),bottom=Math.max(...aligned.map(b=>b.y1));
+return valid.filter(b=>b.y0>=top&&b.y1<=bottom);
+}
+function scoreRegionPixels(source,box,binary=false){
+const pad=6,x0=Math.max(0,box.x0-pad),y0=Math.max(0,box.y0-pad),width=Math.min(source.width,box.x1+pad)-x0,height=Math.min(source.height,box.y1+pad)-y0;
+const data=new Uint8ClampedArray(width*height*4);
+for(let y=0;y<height;y++)data.set(source.data.subarray(((y+y0)*source.width+x0)*4,((y+y0)*source.width+x0+width)*4),y*width*4);
+// Preserve antialiased red edges; hard thresholding fills the small bass-note counters.
+for(let i=0;i<data.length;i+=4){
+const ink=Math.max(0,data[i]-Math.min(data[i+1],data[i+2]));
+const value=255-Math.min(255,ink*1.5);
+data[i]=data[i+1]=data[i+2]=value;data[i+3]=255;
+}
+const image=resizeScorePixels({data,width,height},width*4,height*4);
+if(binary)for(let i=0;i<image.data.length;i+=4){const value=image.data[i]<180?0:255;image.data[i]=image.data[i+1]=image.data[i+2]=value;}
+return image;
+}
+// Find five equally spaced horizontal staff lines, independently on facing pages.
+function scoreStaffBands(source,window=null,light=false){
+const {width,height,data}=source,pages=[];
+let gutter=null;
+if(!window&&width>height*1.35){
+let start=-1;
+for(let x=Math.floor(width*.4);x<width*.6;x++){
+let count=0;for(let y=0;y<height;y++)if(data[(y*width+x)*4]<100)count++;
+if(count>height*.8){if(start<0)start=x;}else if(start>=0){if(x-start>width*.005)gutter={x0:start,x1:x};start=-1;}
+}
+}
+if(window)pages.push(window);else if(gutter)pages.push([0,gutter.x0],[gutter.x1,width]);else pages.push([0,width]);
+const staffs=[];
+for(const [left,right] of pages){
+// Dense note beams and faint staff lines need different projection thresholds.
+// Reuse the same pixels; retain a five-line band found by any threshold.
+const thresholds=light?[630,690,720,750]:[630,690],projections=thresholds.map(()=>[]);
+for(let y=0;y<height;y++){
+const counts=thresholds.map(()=>0),starts=thresholds.map(()=>right),ends=thresholds.map(()=>left);
+for(let x=left;x<right;x++){
+const i=(y*width+x)*4,r=data[i],g=data[i+1],b=data[i+2];
+if(Math.max(r,g,b)-Math.min(r,g,b)>=70)continue;
+for(let k=0;k<thresholds.length;k++)if(r+g+b<thresholds[k]){counts[k]++;starts[k]=Math.min(starts[k],x);ends[k]=x+1;}
+}
+for(let k=0;k<thresholds.length;k++)projections[k].push({count:counts[k],x0:starts[k],x1:ends[k]});
+}
+for(const projection of projections)for(const coverage of [.55,.75,.85]){
+const lines=[];
+for(let y=0;y<height;y++){
+const {count,x0,x1}=projection[y];
+if(count<(right-left)*coverage)continue;
+const previous=lines.at(-1);
+if(previous&&y-previous.last<=1){previous.sum+=y;previous.count++;previous.last=y;previous.x0=Math.min(previous.x0,x0);previous.x1=Math.max(previous.x1,x1);}
+else lines.push({sum:y,count:1,last:y,x0,x1});
+}
+const ys=lines.filter(l=>l.count<Math.max(4,height*.008)).map(l=>({...l,y:l.sum/l.count}));
+for(let i=0;i+4<ys.length;i++){
+const group=ys.slice(i,i+5),gaps=group.slice(1).map((l,j)=>l.y-group[j].y),gap=(group[4].y-group[0].y)/4;
+if(gap<2||gap>height*.025||gaps.some(g=>Math.abs(g-gap)>Math.max(1.5,gap*.3)))continue;
+if(!staffs.some(s=>s.page===left&&Math.abs(s.top-group[0].y)<Math.max(s.gap,gap)*3))staffs.push({page:left,x0:Math.min(...group.map(c=>c.x0)),x1:Math.max(...group.map(c=>c.x1)),top:group[0].y,gap});i+=4;
+}
+}
+}
+return staffs.sort((a,b)=>a.page-b.page||a.top-b.top);
+}
+function recoverScoreStaffBands(source,known){
+const result=[...known];
+for(const page of new Set(known.map(staff=>staff.page))){
+const existing=known.filter(staff=>staff.page===page),left=Math.min(...existing.map(s=>s.x0)),right=Math.max(...existing.map(s=>s.x1));
+const gaps=existing.map(s=>s.gap).sort((a,b)=>a-b),gap=gaps[Math.floor(gaps.length/2)],local=[];
+for(let probe=0;probe<3;probe++){
+const x0=Math.round(left+(right-left)*probe/3),x1=Math.round(left+(right-left)*(probe+1)/3);
+for(const staff of scoreStaffBands(source,[x0,x1],true))if(Math.abs(staff.gap-gap)<Math.max(1,gap*.25))local.push({...staff,probe});
+}
+for(const staff of local){
+if(result.some(s=>s.page===page&&Math.abs(s.top-staff.top)<Math.max(s.gap,staff.gap)*3))continue;
+const support=local.filter(s=>Math.abs(s.top-staff.top)<Math.max(2,gap)&&Math.abs(s.gap-staff.gap)<Math.max(.8,gap*.2));
+if(new Set(support.map(s=>s.probe)).size<2)continue;
+result.push({page,x0:left,x1:right,top:support.reduce((sum,s)=>sum+s.top,0)/support.length,gap:support.reduce((sum,s)=>sum+s.gap,0)/support.length,recovered:true});
+}
+}
+return result.sort((a,b)=>a.page-b.page||a.top-b.top);
+}
+function scoreNeutralInk(r,g,b,strict=false){return r>(strict?110:140)&&r-g>(strict?10:25)&&r-b>(strict?10:25)&&r>g*(strict?1.06:1.15)?255:Math.round(.299*r+.587*g+.114*b);}
+// Connected ink above each staff excludes lyrics, note stems and clipped fragments.
+function scoreStaffRegions(source,staffs){
+const {width,height,data}=source,regions=[];
+for(const staff of staffs){
+const gap=staff.gap,x0=Math.max(0,staff.x0),x1=Math.min(width,staff.x1),y0=Math.max(0,Math.floor(staff.top-gap*8)),y1=Math.max(y0,Math.floor(staff.top-gap*.15)),w=x1-x0,h=y1-y0;
+if(!w||!h)continue;
+let redAbove=0,redBelow=0;
+for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++){
+const i=(y*width+x)*4,r=data[i],g=data[i+1],b=data[i+2];
+if(r>100&&r-g>35&&r-b>30&&r>g*1.25){if(y<staff.top-gap*3.5)redAbove++;else redBelow++;}
+}
+// Strong red annotations above a black row need a stricter mask than subpixel text edges.
+const strictNeutral=redAbove>Math.max(8,gap*gap*.1)&&redAbove>redBelow*2.5;
+const parts={neutral:[],color:[]};
+for(const kind of ['neutral','color']){
+const mask=new Uint8Array(w*h),queue=[];
+for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+const i=((y+y0)*width+x+x0)*4,r=data[i],g=data[i+1],b=data[i+2],spread=Math.max(r,g,b)-Math.min(r,g,b);
+mask[y*w+x]=kind==='neutral'?(scoreNeutralInk(r,g,b,strictNeutral)<195?1:0):(spread>=35&&spread/Math.max(r,g,b)>=.22&&Math.max(r,g,b)>45?1:0);
+}
+// Remove beams and repeat brackets that touch otherwise separate chord letters.
+for(let y=0;y<h;y++){
+let start=-1,last=-1;
+for(let x=0;x<=w;x++){
+if(x<w&&mask[y*w+x]){if(start<0)start=x;last=x;}
+else if(start>=0&&(x-last>1||x===w)){if(last-start>gap*3)for(let k=start;k<=last;k++)mask[y*w+k]=0;start=-1;}
+}
+}
+for(let p=0;p<mask.length;p++){
+if(!mask[p])continue;
+queue.length=0;queue.push(p);mask[p]=0;let ax=w,ay=h,bx=0,by=0;
+for(let head=0;head<queue.length;head++){
+const q=queue[head],x=q%w,y=Math.floor(q/w);ax=Math.min(ax,x);ay=Math.min(ay,y);bx=Math.max(bx,x+1);by=Math.max(by,y+1);
+for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+const nx=x+dx,ny=y+dy,n=ny*w+nx;
+if(nx>=0&&nx<w&&ny>=0&&ny<h&&mask[n]){mask[n]=0;queue.push(n);}
+}
+}
+if(queue.length>=2&&ay>0&&by<h&&by-ay<=gap*5&&bx-ax<=gap*18){
+let paren=null;
+if((bx-ax)<(by-ay)*.65&&(by-ay)>gap*.8){
+const sums=[0,0,0],counts=[0,0,0];
+for(const q of queue){const y=Math.floor(q/w),section=Math.min(2,Math.floor((y-ay)*3/(by-ay)));sums[section]+=q%w;counts[section]++;}
+if(counts.every(Boolean)){const centers=sums.map((sum,i)=>sum/counts[i]),bend=centers[1]-(centers[0]+centers[2])/2;
+if(Math.abs(centers[0]-centers[2])<(bx-ax)*.55&&Math.abs(bend)>(bx-ax)*.12)paren=bend<0?'(':')';}
+}
+parts[kind].push({x0:ax+x0,y0:ay+y0,x1:bx+x0,y1:by+y0,pixels:queue.length,paren});
+}
+}
+}
+const roots=kind=>parts[kind].filter(b=>b.y1-b.y0>=gap*.9&&b.x1-b.x0>=gap*.45);
+const black=roots('neutral'),colored=roots('color');
+// Ink closer to the staff wins over handwritten transposition notes above it.
+const baseline=list=>list.length?list.map(b=>b.y1).sort((a,b)=>b-a)[Math.floor(list.length*.2)]:0;
+const mass=list=>list.reduce((sum,b)=>sum+b.pixels,0);
+const kind=colored.length>=2&&(mass(colored)>mass(black)*1.1||baseline(colored)>baseline(black)+gap*1.2)&&!(black.length>=3&&baseline(black)>baseline(colored)+gap*.7)?'color':'neutral';
+const rows=[];
+for(const b of parts[kind].sort((a,b)=>(b.y1-b.y0)-(a.y1-a.y0))){
+const cy=(b.y0+b.y1)/2,bh=b.y1-b.y0;
+const row=rows.find(r=>Math.abs(r.cy-cy)<Math.max(r.height,bh)*.6);
+if(row){row.parts.push(b);row.height=Math.max(row.height,bh);}else rows.push({cy,height:bh,parts:[b]});
+}
+for(const row of rows){
+if(row.height<gap*.9||row.height>gap*4.5)continue;
+const ends=row.parts.map(b=>b.y1).sort((a,b)=>a-b),heights=row.parts.map(b=>b.y1-b.y0).sort((a,b)=>a-b),baseline=ends[Math.floor(ends.length/2)],median=heights[Math.floor(heights.length/2)];
+for(const b of row.parts)b.y1=Math.min(b.y1,Math.ceil(baseline+median*.3));
+let box=null,previous=null;
+for(const b of row.parts.sort((a,b)=>a.x0-b.x0)){
+if(box&&(b.x0-box.x1<row.height*.23||(b.x0-box.x1<row.height*.8&&((previous?.paren==='('&&previous.y1-previous.y0>row.height*.6)||(b.paren===')'&&b.y1-b.y0>row.height*.6))))){box.x1=Math.max(box.x1,b.x1);box.y0=Math.min(box.y0,b.y0);box.y1=Math.max(box.y1,b.y1);}
+else {box={...b,ink:kind,strictNeutral,page:staff.page,staff:staff.top,staffLeft:staff.x0,gap,row:Math.round(row.cy)};regions.push(box);}
+previous=b;
+}
+}
+}
+return regions.filter(b=>b.y1-b.y0>=b.gap*.9&&b.x1-b.x0>=b.gap*.45);
+}
+function scoreStaffCrop(source,box,binary=false){
+const pad=Math.max(3,Math.ceil(box.gap*.5)),x0=Math.max(0,box.x0-pad),y0=Math.max(0,box.y0-pad),width=Math.min(source.width,box.x1+pad)-x0,height=Math.min(source.height,box.y1+pad)-y0,data=new Uint8ClampedArray(width*height*4);
+for(let y=0;y<height;y++)for(let x=0;x<width;x++){
+const i=((y+y0)*source.width+x+x0)*4,j=(y*width+x)*4,r=source.data[i],g=source.data[i+1],b=source.data[i+2],spread=Math.max(r,g,b)-Math.min(r,g,b);
+let value=box.ink==='color'?255-Math.min(255,spread*2):scoreNeutralInk(r,g,b,box.strictNeutral);
+if(binary)value=value<180?0:255;
+data[j]=data[j+1]=data[j+2]=value;data[j+3]=255;
+}
+const scale=Math.min(8,Math.max(2,64/(box.y1-box.y0)));
+return resizeScorePixels({data,width,height},Math.round(width*scale),Math.round(height*scale));
+}
+function scoreRecoveryRegions(source,regions){
+const {width,height,data}=source,rows=new Map(),result=[];
+for(const box of regions){
+const key=[box.page,box.staff,box.row].join(':');
+if(!rows.has(key))rows.set(key,[]);rows.get(key).push(box);
+}
+for(const row of rows.values()){
+const base=row[0],heights=row.map(b=>b.y1-b.y0).sort((a,b)=>a-b),h=heights[Math.floor(heights.length/2)],pad=Math.max(1,Math.ceil(h*.3));
+if(base.staff-base.row>base.gap*5.5)continue;
+const left=Math.max(0,Math.floor(Math.min(...row.map(b=>b.x0))-h*2)),right=Math.min(width,Math.ceil(Math.max(...row.map(b=>b.x1))+h*2));
+for(const offset of [-pad*.5,pad*.5]){
+const top=Math.max(0,Math.floor(Math.min(...row.map(b=>b.y0))-pad+offset)),bottom=Math.min(height,Math.ceil(base.staff-base.gap*.15),Math.ceil(Math.max(...row.map(b=>b.y1))+pad+offset));
+const w=right-left,columns=Array.from({length:w},()=>({y0:bottom,y1:top}));
+for(let y=top;y<bottom;y++){
+const ink=new Uint8Array(w);
+for(let x=left;x<right;x++){
+const i=(y*width+x)*4,r=data[i],g=data[i+1],b=data[i+2],spread=Math.max(r,g,b)-Math.min(r,g,b);
+ink[x-left]=base.ink==='color'?(spread>=35&&spread/Math.max(r,g,b)>=.22?1:0):(scoreNeutralInk(r,g,b,base.strictNeutral)<195?1:0);
+}
+let start=-1;
+for(let x=0;x<=w;x++){
+if(x<w&&ink[x]){if(start<0)start=x;}
+else if(start>=0){
+if(x-start>base.gap*3)ink.fill(0,start,x);
+start=-1;
+}
+}
+for(let x=0;x<w;x++)if(ink[x]){columns[x].y0=Math.min(columns[x].y0,y);columns[x].y1=Math.max(columns[x].y1,y+1);}
+}
+let box=null,last=-1;const boxes=[];
+for(let x=0;x<w;x++)if(columns[x].y1>columns[x].y0){
+if(!box||x-last>Math.max(2,h*.65)){box={x0:x+left,x1:x+left+1,y0:columns[x].y0,y1:columns[x].y1,ink:base.ink,strictNeutral:base.strictNeutral,page:base.page,staff:base.staff,staffLeft:base.staffLeft,gap:base.gap,row:base.row,recovery:true};boxes.push(box);}
+else {box.x1=x+left+1;box.y0=Math.min(box.y0,columns[x].y0);box.y1=Math.max(box.y1,columns[x].y1);}
+last=x;
+}
+for(const b of boxes){
+if(b.y1-b.y0<base.gap*.9||b.y1-b.y0>base.gap*5||b.x1-b.x0<base.gap*.45||b.x1-b.x0>h*12)continue;
+if([...row,...result].some(r=>r.page===b.page&&r.staff===b.staff&&r.x0===b.x0&&r.x1===b.x1&&r.y0===b.y0&&r.y1===b.y1))continue;
+result.push(b);
+}
+}
+}
+return result;
+}
+function mergeScoreRecovery(codes,recovered){
+const result=[...codes],area=b=>(b.x1-b.x0)*(b.y1-b.y0);
+for(const code of recovered){
+// A second crop can also turn notes or lyrics into confident chord names.
+if(!code.agreement)continue;
+const overlaps=result.filter(c=>Math.max(0,Math.min(c.bbox.x1,code.bbox.x1)-Math.max(c.bbox.x0,code.bbox.x0))*Math.max(0,Math.min(c.bbox.y1,code.bbox.y1)-Math.max(c.bbox.y0,code.bbox.y0))>.45*Math.min(area(c.bbox),area(code.bbox)));
+if(overlaps.some(c=>{
+let index=0;for(const char of code.text)if(char===c.text[index])index++;
+return c.text.length>=code.text.length||index!==c.text.length;
+}))continue;
+for(const old of overlaps)result.splice(result.indexOf(old),1);
+const anchor=overlaps[0]||result.find(c=>c.bbox.page===code.bbox.page&&c.bbox.staff===code.bbox.staff&&c.bbox.row===code.bbox.row);
+result.push({...code,orderBox:anchor?(anchor.orderBox||anchor.bbox):{y0:code.bbox.row-code.bbox.gap,y1:code.bbox.row+code.bbox.gap}});
+}
+return result;
+}
+
+// Give raised extensions a common baseline before an independent OCR retry.
+function flattenScoreGlyphs(image){
+const {width,height,data}=image,mask=new Uint8Array(width*height),parts=[],queue=[];
+for(let p=0;p<mask.length;p++)mask[p]=data[p*4]<200?1:0;
+for(let p=0;p<mask.length;p++){
+if(!mask[p])continue;queue.length=0;queue.push(p);mask[p]=0;let x0=width,y0=height,x1=0,y1=0;
+for(let head=0;head<queue.length;head++){
+const q=queue[head],x=q%width,y=Math.floor(q/width);x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x+1);y1=Math.max(y1,y+1);
+for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const nx=x+dx,ny=y+dy,n=ny*width+nx;if(nx>=0&&nx<width&&ny>=0&&ny<height&&mask[n]){mask[n]=0;queue.push(n);}}
+}
+if(queue.length>=4&&y1-y0>=height*.15)parts.push({x0,y0,x1,y1});
+}
+if(!parts.length)return image;
+parts.sort((a,b)=>a.x0-b.x0);
+const target=40,pad=12,widths=parts.map(b=>Math.max(2,Math.round((b.x1-b.x0)*target/(b.y1-b.y0)))),w=widths.reduce((a,b)=>a+b,0)+pad*2+(parts.length-1)*3,h=target+pad*2,out=new Uint8ClampedArray(w*h*4).fill(255);
+let dx=pad;
+for(const [index,b] of parts.entries()){
+const sw=b.x1-b.x0,sh=b.y1-b.y0,pixels=new Uint8ClampedArray(sw*sh*4);
+for(let y=0;y<sh;y++)pixels.set(data.subarray(((y+b.y0)*width+b.x0)*4,((y+b.y0)*width+b.x1)*4),y*sw*4);
+const scaled=resizeScorePixels({data:pixels,width:sw,height:sh},widths[index],target);
+for(let y=0;y<target;y++)out.set(scaled.data.subarray(y*widths[index]*4,(y+1)*widths[index]*4),((y+pad)*w+dx)*4);
+dx+=widths[index]+3;
+}
+return {width:w,height:h,data:out};
+}
+
+function scoreRegionSignature(source,box){
+const width=box.x1-box.x0,height=box.y1-box.y0,data=new Uint8ClampedArray(width*height*4);
+for(let y=0;y<height;y++)for(let x=0;x<width;x++){
+const i=((y+box.y0)*source.width+x+box.x0)*4,j=(y*width+x)*4,r=source.data[i],g=source.data[i+1],b=source.data[i+2],spread=Math.max(r,g,b)-Math.min(r,g,b);
+const value=box.ink==='color'?255-Math.min(255,spread*2):scoreNeutralInk(r,g,b,box.strictNeutral);
+data[j]=data[j+1]=data[j+2]=value;data[j+3]=255;
+}
+return {aspect:width/height,pixels:resizeScorePixels({width,height,data},64,32).data};
+}
+function scoreSignatureMatch(a,b){
+if(Math.abs(Math.log(a.aspect/b.aspect))>.15)return 0;
+let intersection=0,union=0;
+for(let i=0;i<a.pixels.length;i+=4){const x=255-a.pixels[i],y=255-b.pixels[i];intersection+=Math.min(x,y);union+=Math.max(x,y);}
+return intersection/Math.max(1,union);
+}
+
+async function runScoreOCRPasses(worker,source,encode,onPass=()=>{},current=()=>true,onStage=null){
+const size=scoreImageSize(source.width,source.height,true),candidates=[],samples=[],fragments=[];
+const staffs=recoverScoreStaffBands(source,scoreStaffBands(source)),staffRegions=scoreStaffRegions(source,staffs);
+const redRegions=(!staffs.length||source.width>1000)?scoreRedRegions(source):[],legacyRed=source.width>1000&&redRegions.length>=20;
+const useStaff=staffs.length&&!legacyRed;
+const passes=useStaff?[]:scoreOCRPasses(),regions=useStaff?[...staffRegions,...(worker.recognizeRegion?scoreRecoveryRegions(source,staffRegions):[])]:redRegions,total=passes.length+regions.length;
+if(onStage)onStage('layout',{staffs,regions,useStaff});
+const pixels=passes.length?resizeScorePixels(source,size.width,size.height):null;
+await worker.setParameters(scoreOCRParameters());
+for(const [index,variant] of passes.entries()){
+await onPass(index,total,variant);if(!current())return [];
+let image=preprocessScorePixels(pixels,variant);
+const input=await encode(image);image=null;
+if(!current())return [];
+const {data}=await worker.recognize(input);if(!current())return [];
+if(!useStaff)candidates.push(...scoreOCRWords(data.words||[],size,source,variant));
+}
+for(const [index,bbox] of regions.entries()){
+await onPass(passes.length+index,total,'region',bbox);if(!current())return [];
+let best=null,input,numericReads=0;const readings=new Map(),secondaryReadings=new Map(),suffixReadings=new Map(),rootHints=new Map();
+const regionReader=!!worker.recognizeRegion;
+const trials=regionReader?[[false,'7'],[true,'7'],['flat','7']]:useStaff?[[false,'7'],[false,'8'],[true,'7'],[true,'8'],['flat','7'],['flat','8'],[false,'13'],[false,'6']]:[[false,'7'],[false,'8'],[true,'7'],[true,'8']];
+for(const [attempt,[binary,psm]] of trials.entries()){
+if(regionReader||attempt%2===0){const crop=useStaff?scoreStaffCrop(source,bbox,binary===true):scoreRegionPixels(source,bbox,binary===true);const image=binary==='flat'?flattenScoreGlyphs(crop):crop;input=regionReader?image:await encode(image);}
+await worker.setParameters(scoreOCRParameters(psm));if(!current())return [];
+const {data}=await (regionReader?worker.recognizeRegion(input):worker.recognize(input));if(!current())return [];
+for(const other of data.secondary||[]){
+const text=normalizeScoreRecognizer(other.text);if(!text)continue;
+const previous=secondaryReadings.get(text),style=binary==='flat'?'flat':binary?'binary':'gray';
+secondaryReadings.set(text,{text,confidence:Math.max(other.confidence,previous?.confidence??0),support:(previous?.support??0)+1,styles:[...new Set([...(previous?.styles||[]),style])],bbox:{...bbox},variant:'region',engine:'tesseract-consensus'});
+}
+const rawText=(data.text||((data.words||[]).map(w=>w.text).join(''))).normalize('NFKC').trim().replace(/\s+/g,'');
+if(/^\d+[.]?$/.test(rawText))numericReads++;
+const hint=/^[([]?([A-G])/.exec(rawText)?.[1];if(hint)rootHints.set(hint,(rootHints.get(hint)||0)+1);
+const text=regionReader?normalizeScoreRecognizer(rawText):normalizeScoreOCR(rawText)||(useStaff&&/^[acdefg]$/.test(rawText)?rawText.toUpperCase():null);
+const suffix=rawText.replace(/^m[1Il]$/,'m7').replace(/sus[dD]$/,'sus4');
+if(useStaff&&/^(?:[#b]|m(?:7|9|11)?|M7|maj7|sus[24]|add[249]|[2579]|\/[A-G][#b]?)$/.test(suffix)){
+const previous=suffixReadings.get(suffix);suffixReadings.set(suffix,{text:suffix,support:(previous?.support||0)+1,confidence:Math.max(previous?.confidence||0,data.confidence||0),bbox});
+}
+const confidence=data.confidence??0;
+if(text){
+const previous=readings.get(text),reading={text,confidence:Math.max(confidence,previous?.confidence??0),support:(previous?.support??0)+1,styles:[...new Set([...(previous?.styles||[]),binary==='flat'?'flat':binary?'binary':'gray'])],bbox:{...bbox},variant:'region',...(regionReader?{engine:'paddle'}:{})};
+readings.set(text,reading);
+best=[...readings.values()].filter(w=>w.confidence>=20||w.support>=2).sort((a,b)=>b.support*10+b.confidence+b.text.length*2-(a.support*10+a.confidence+a.text.length*2))[0]||null;
+}
+// English OCR assigns music accidentals confidence zero; repeated readings still count.
+if(!useStaff&&best&&(best.confidence>=75||best.support>=2))break;
+}
+if(regionReader){best=selectScoreRegionReading([...readings.values()],[...secondaryReadings.values()]);}
+else if(useStaff){
+const options=[...readings.values()].filter(r=>r.styles.some(style=>style!=='flat')||![...readings.values()].some(other=>other!==r&&other.styles.some(style=>style!=='flat')&&r.text.startsWith(other.text)));
+for(const reading of options)if(reading.confidence<20&&reading.support<2&&options.some(other=>other!==reading&&reading.text.startsWith(other.text)&&other.support>=1))reading.corroborated=true;
+best=options.filter(w=>w.confidence>=20||w.support>=2||w.corroborated||bbox.ink==='color').sort((a,b)=>(b.support*2+b.confidence*.05+b.text.length*12)-(a.support*2+a.confidence*.05+a.text.length*12))[0]||null;
+}
+if(regionReader&&best){
+const primary=readings.get(best.text),secondary=secondaryReadings.get(best.text);
+best={...best,agreement:!!(primary?.confidence>=90&&secondary?.support>=3&&secondary.styles.length>=2)};
+}
+if(useStaff&&!bbox.recovery){const suffix=[...suffixReadings.values()].filter(r=>r.support>=2||r.confidence>=40).sort((a,b)=>b.support-a.support||b.text.length-a.text.length)[0];if(suffix)fragments.push(suffix);}
+if(useStaff)samples.push({bbox,numericReads,rootHint:[...rootHints].sort((a,b)=>b[1]-a[1])[0]?.[0],readings:[...readings.values()],best,signature:scoreRegionSignature(source,bbox)});
+else if(best)candidates.push(best);
+}
+if(useStaff&&worker.recognizeRegion){
+const original=samples.filter(s=>s.best&&!s.bbox.recovery).map(s=>s.best),recovered=samples.filter(s=>s.best&&s.bbox.recovery).map(s=>s.best);
+candidates.push(...mergeScoreRecovery(original,recovered));
+}
+else if(useStaff){
+// Repeated printed glyphs corroborate readings across the page, without a chord dictionary.
+const clusters=[];
+for(const sample of [...samples].sort((a,b)=>Math.max(0,...b.readings.map(r=>r.confidence))-Math.max(0,...a.readings.map(r=>r.confidence)))){
+const threshold=(a,b)=>{
+const longest=sample=>sample.readings.map(r=>r.text).sort((x,y)=>y.length-x.length)[0];
+const first=longest(a),second=longest(b),clean=text=>text.replace(/[#b()]/g,'');
+if(!first||!second)return a.rootHint&&a.rootHint===b.rootHint?.6:.96;
+const one=clean(first),two=clean(second);
+if(!one.startsWith(two)&&!two.startsWith(one))return first.length===1&&second.length===1?.88:.96;
+if(first.length!==second.length)return .55;
+return first.length===1&&second.length===1?.64:Math.max(first.length,second.length)<=2?.9:.64;
+};
+const cluster=clusters.map(group=>({group,similarity:group[0].bbox.ink===sample.bbox.ink?scoreSignatureMatch(group[0].signature,sample.signature):0})).filter(({group,similarity})=>similarity>threshold(group[0],sample)).sort((a,b)=>b.similarity-a.similarity)[0]?.group;
+if(cluster)cluster.push(sample);else clusters.push([sample]);
+}
+for(const group of clusters){
+const votes=new Map();
+for(const sample of group)for(const reading of sample.readings){const old=votes.get(reading.text);votes.set(reading.text,{...reading,support:(old?.support||0)+reading.support,confidence:Math.max(old?.confidence||0,reading.confidence),styles:[...new Set([...(old?.styles||[]),...reading.styles])]});}
+const choices=[...votes.values()].filter(r=>(r.support>=3||r.confidence>=75)&&(r.styles.some(style=>style!=='flat')||(r.confidence>=85&&r.support>=2))).sort((a,b)=>b.text.length-a.text.length||b.support-a.support||b.confidence-a.confidence);
+const shared=group.length>=2?choices[0]:null;
+for(const sample of group){if(sample.numericReads>=4&&sample.bbox.x0<sample.bbox.staffLeft+sample.bbox.gap*3)continue;const selected=shared||sample.best;if(selected){const local=sample.readings.find(r=>r.text===selected.text);candidates.push({...selected,confidence:local?.confidence??0,support:local?.support??0,...(shared?{templateSupport:shared.support,templateReadConfidence:shared.confidence}:{}),bbox:{...sample.bbox},variant:'region'});}}
+}
+}
+if(onStage)onStage('readings',{codes:candidates,fragments});
+if(useStaff)for(const fragment of fragments){
+const b=fragment.bbox;
+const left=candidates.filter(c=>c.bbox.page===b.page&&c.bbox.staff===b.staff&&c.bbox.x1<=b.x0&&b.x0-c.bbox.x1<Math.max(c.bbox.y1-c.bbox.y0,b.y1-b.y0)*1.2&&Math.abs((c.bbox.y0+c.bbox.y1-b.y0-b.y1)/2)<Math.max(c.bbox.y1-c.bbox.y0,b.y1-b.y0)*.8).sort((a,c)=>c.bbox.x1-a.bbox.x1)[0];
+if(left&&parseScoreChord(left.text+fragment.text)){
+left.text+=fragment.text;left.agreement=false;left.bbox={...left.bbox,x1:b.x1,y0:Math.min(left.bbox.y0,b.y0),y1:Math.max(left.bbox.y1,b.y1)};
+}
+}
+const geometric=useStaff?mergeScoreOCR(candidates.filter(c=>{
+const aspect=(c.bbox.x1-c.bbox.x0)/(c.bbox.y1-c.bbox.y0);
+return aspect<=c.text.length*1.25;
+})):candidates;
+if(onStage)onStage('geometric',{codes:geometric});
+const filtered=useStaff?filterScoreStaffCandidates(geometric,regions):geometric;
+const merged=mergeScoreOCR(filtered);
+if(onStage)onStage('filtered',{codes:merged});
+return useStaff&&staffs.some(s=>s.page>0)?[...new Set(staffs.map(s=>s.page))].sort((a,b)=>a-b).flatMap(page=>merged.filter(c=>c.bbox.page===page)):merged;
+}
+function filterScoreStaffCandidates(codes,regions){
+return codes.filter(c=>{
+const b=c.bbox,sameRow=r=>r.page===b.page&&r.staff===b.staff&&r.row===b.row;
+const rowRegions=regions.filter(r=>sameRow(r)&&!r.recovery),rowCodes=codes.filter(w=>sameRow(w.bbox)),nearStaff=b.staff-(b.y0+b.y1)/2<b.gap*5.5;
+return (c.agreement&&nearStaff)||(rowCodes.length>=rowRegions.length*(b.ink==='color'?.4:.6)&&(nearStaff||(rowCodes.length>=3&&rowCodes.length>=rowRegions.length*.8)));
+});
+}
+function scoreOCRPasses(){return ['color','gray','adaptive'];}
+function scoreOCRWords(words,processed,source,variant){
+const mapped=words.filter(word=>word.bbox).map(word=>({...word,bbox:{x0:word.bbox.x0*source.width/processed.width,y0:word.bbox.y0*source.height/processed.height,x1:word.bbox.x1*source.width/processed.width,y1:word.bbox.y1*source.height/processed.height}}));
+const joined=[];
+// Tesseract sometimes splits Bb, m7 or /B into separate adjacent words.
+for(let i=0;i<mapped.length;i++){
+let text=mapped[i].text,b={...mapped[i].bbox},confidence=mapped[i].confidence;
+for(let j=i+1;j<Math.min(mapped.length,i+4);j++){
+const next=mapped[j],h=Math.max(b.y1-b.y0,next.bbox.y1-next.bbox.y0),gap=next.bbox.x0-b.x1;
+if(gap<0||gap>h*.65||Math.abs((b.y0+b.y1-next.bbox.y0-next.bbox.y1)/2)>h*.55)break;
+text+=next.text;confidence=Math.min(confidence,next.confidence);b={x0:b.x0,y0:Math.min(b.y0,next.bbox.y0),x1:next.bbox.x1,y1:Math.max(b.y1,next.bbox.y1)};
+if(normalizeScoreOCR(text))joined.push({text,bbox:{...b},confidence});
+}
+}
+const normalized=mapped.map(w=>({...w,text:normalizeScoreOCR(w.text)||w.text}));
+const candidates=filterScoreWords([...normalized,...joined.map(w=>({...w,text:normalizeScoreOCR(w.text)}))],source.width,source.height,variant==='color'?30:48);
+return candidates.map(word=>({...word,variant}));
+}
+function mergeScoreOCR(candidates){
+const area=b=>Math.max(0,b.x1-b.x0)*Math.max(0,b.y1-b.y0);
+const overlap=(a,b)=>Math.max(0,Math.min(a.x1,b.x1)-Math.max(a.x0,b.x0))*Math.max(0,Math.min(a.y1,b.y1)-Math.max(a.y0,b.y0))/Math.max(1,Math.min(area(a),area(b)));
+const rank=w=>w.confidence+(w.variant==='region'?18:w.variant==='color'?8:0)+Math.min(w.text.length,8)*2;
+const result=[];
+for(const word of [...candidates].sort((a,b)=>rank(b)-rank(a))){
+if(!result.some(other=>overlap(word.bbox,other.bbox)>.45))result.push(word);
+}
+const rows=[];
+for(const word of result.sort((a,b)=>(a.orderBox||a.bbox).y0-(b.orderBox||b.bbox).y0)){
+const b=word.orderBox||word.bbox,cy=(b.y0+b.y1)/2;
+const row=rows.find(r=>Math.abs(r.cy-cy)<Math.min(r.height,b.y1-b.y0)*.65);
+if(row)row.words.push(word);else rows.push({cy,height:b.y1-b.y0,words:[word]});
+}
+return rows.flatMap(row=>row.words.sort((a,b)=>a.bbox.x0-b.bbox.x0));
+}
+
+// Geometry and line context are deliberately conservative; manual correction remains available.
+function filterScoreWords(words,width,height,minConfidence=48){
+const valid=words.filter(word=>{
+const b=word.bbox;if(!b||!parseScoreChord(word.text)||!(word.confidence>=minConfidence))return false;
+const h=b.y1-b.y0,w=b.x1-b.x0;
+return h>=Math.max(6,height*.003)&&h<=height*.045&&w>=2&&w<=width*.3&&b.x0>=0&&b.y0>=0&&b.x1<=width&&b.y1<=height;
+});
+if(!valid.length)return [];
+const heights=valid.map(w=>w.bbox.y1-w.bbox.y0).sort((a,b)=>a-b),median=heights[Math.floor(heights.length/2)];
+return valid.filter(word=>{
+const b=word.bbox,h=b.y1-b.y0,cy=(b.y0+b.y1)/2;
+if(h>median*1.8||h<median*.5)return false;
+const line=words.filter(w=>w.bbox&&(w.bbox.y1-w.bbox.y0)<=h*1.8&&(w.bbox.y1-w.bbox.y0)>=h*.5&&Math.abs((w.bbox.y0+w.bbox.y1)/2-cy)<h*.65);
+const matched=line.filter(w=>parseScoreChord(w.text)).length;
+if(line.length>matched*1.5)return false; // prose/lyric line
+if(b.y0<height*.08&&matched<2)return false; // isolated title/author
+return true;
+}).map(word=>({text:parseScoreChord(word.text).text,bbox:{...word.bbox},confidence:word.confidence}));
+}
+// End score music functions.
+
+// Score editor: images and OCR results stay in memory on this device.
+const scoreState={image:null,codes:[],capo:0,keyDown:0,semitones:0,mode:'capo',overlay:'replace',original:false,busy:false,adding:false,editIndex:null,pending:null,run:0};
+let scoreLibraryPromise=null,scoreRuntimePromise=null,scoreTabOpened=false;
+function openScoreTab(){
+if(scoreTabOpened)return;scoreTabOpened=true;
+let skip=false;try{skip=localStorage.getItem('guitarmate-score-guide')==='hide';}catch(_){}
+$('score-guide').hidden=skip;
+}
+function scoreStatus(message){$('score-status').textContent=message;}
+function scoreBusy(value){
+scoreState.busy=value;$('score-file').disabled=value;$('score-paste').disabled=value;$('score-ocr').disabled=value||!scoreState.image;
+$('score-add').disabled=value;$('score-stage').setAttribute('aria-busy',String(value));
+$('score-cancel-ocr').hidden=!value;
+for(const button of [...$('score-hit-layer').children,...$('score-code-list').children])button.disabled=value;
+}
+function loadScoreLibrary(runtime=false){
+const name=runtime?'ort':'Tesseract',cached=runtime?scoreRuntimePromise:scoreLibraryPromise;
+if(window[name])return Promise.resolve(window[name]);
+if(cached)return cached;
+const promise=new Promise((resolve,reject)=>{
+const script=document.createElement('script');let settled=false;
+const finish=(error)=>{if(settled)return;settled=true;clearTimeout(timer);script.onload=script.onerror=null;if(error){script.remove();reject(error);}else resolve(window[name]);};
+const timer=setTimeout(()=>finish(Error('OCR library timeout')),25000);
+script.src=runtime?'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js':'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+script.crossOrigin='anonymous';script.onload=()=>finish(window[name]?null:Error('OCR unavailable'));script.onerror=()=>finish(Error('OCR download failed'));
+document.head.append(script);
+}).catch(error=>{if(runtime)scoreRuntimePromise=null;else scoreLibraryPromise=null;throw error;});
+if(runtime)scoreRuntimePromise=promise;else scoreLibraryPromise=promise;
+return promise;
+}
+async function loadScoreRecognizer(){
+const ort=await loadScoreLibrary(true);
+ort.env.wasm.numThreads=1;
+ort.env.wasm.wasmPaths='https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/';
+const base='https://huggingface.co/monkt/paddleocr-onnx/resolve/7b02d0a30a07ba2b92ad1ff5a8941ae2c633de65/languages/english/';
+const responses=await Promise.all([fetch(base+'rec.onnx'),fetch(base+'dict.txt')]);
+if(responses.some(response=>!response.ok))throw Error('OCR model download failed');
+const [model,text]=await Promise.all([responses[0].arrayBuffer(),responses[1].text()]);
+const dictionary=scoreRecognizerDictionary(text),session=await ort.InferenceSession.create(model,{executionProviders:['wasm']});
+return {recognize:async image=>{
+const input=scoreRecognizerInput(image),output=await session.run({[session.inputNames[0]]:new ort.Tensor('float32',input.data,input.dims)});
+return decodeScoreRecognizer(output[session.outputNames[0]],dictionary);
+},release:()=>session.release()};
+}
+async function scoreRecognitionWorker(current,logger,encode){
+let recognizer=null,legacy=null,parameters=scoreOCRParameters(),closed=false;
+try{recognizer=await loadScoreRecognizer();}catch(_){} // Preserve the existing OCR path if WASM/model loading fails.
+if(!current()){if(recognizer)await recognizer.release();throw Error('OCR cancelled');}
+const getLegacy=async()=>{
+if(!legacy){
+const library=await loadScoreLibrary();
+if(closed||!current())throw Error('OCR cancelled');
+legacy=await library.createWorker('eng',1,{workerPath:'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/worker.min.js',corePath:'https://cdn.jsdelivr.net/npm/tesseract.js-core@5.1.1',langPath:'https://cdn.jsdelivr.net/npm/@tesseract.js-data/eng@1.0.0/4.0.0_best_int',logger},scoreOCRConfig());
+if(closed||!current()){await legacy.terminate();throw Error('OCR cancelled');}
+await legacy.setParameters(parameters);
+}
+return legacy;
+};
+return {setParameters:async params=>{parameters=params;if(legacy)await legacy.setParameters(params);},
+recognize:async input=>(await getLegacy()).recognize(input),
+...(recognizer?{recognizeRegion:async image=>{
+const data=await recognizer.recognize(image);if(closed||!current())throw Error('OCR cancelled');
+const worker=await getLegacy(),input=await encode(image);data.secondary=[];
+for(const psm of ['7','8']){
+if(closed||!current())throw Error('OCR cancelled');
+const params=scoreOCRParameters(psm);params.tessedit_char_whitelist+='SUDJ';await worker.setParameters(params);
+const result=await worker.recognize(input);data.secondary.push({text:result.data.text||'',confidence:result.data.confidence||0,psm});
+}
+return {data};
+}}:{}),
+terminate:async()=>{closed=true;await Promise.allSettled([legacy?.terminate(),recognizer?.release()]);}};
+}
+let scoreAbortOCR=null;
+function cancelScoreOCR(){
+scoreState.run++;if(scoreAbortOCR)scoreAbortOCR();
+scoreBusy(false);scoreStatus('자동 인식을 중지했어요. 코드 직접 추가를 누르고 악보에서 위치를 선택해 주세요.');
+}
+async function recognizeScore(){
+if(!scoreState.image||scoreState.busy)return;
+if(navigator.onLine===false){scoreStatus('오프라인에서는 자동 인식 준비가 어려울 수 있어요. 코드 직접 추가로 위치와 코드를 입력하거나, 연결 후 다시 인식해 주세요.');return;}
+const run=++scoreState.run;scoreBusy(true);scoreStatus('자동 인식을 준비합니다. 처음에는 인식 도구를 내려받아 잠시 걸릴 수 있어요.');
+let worker=null,timer,timedOut=false,abort,canvas=null,passIndex=0,passTotal=3,passVariant='color';
+const labels={color:'컬러 글씨 분리',gray:'확대·대비 보정',adaptive:'적응형 이진화',region:'코드 영역 확대'};
+const current=()=>run===scoreState.run&&!timedOut;
+try{
+await Promise.race([(async()=>{
+canvas=document.createElement('canvas');
+const encode=image=>{
+canvas.width=image.width;canvas.height=image.height;
+const ctx=canvas.getContext('2d'),frame=ctx.createImageData(image.width,image.height);frame.data.set(image.data);ctx.putImageData(frame,0,0);
+return canvas;
+};
+worker=await scoreRecognitionWorker(current,message=>{if(current()&&message.status==='recognizing text')scoreStatus(`기기 안에서 코드를 읽고 있어요… ${passIndex+1}/${passTotal} · ${labels[passVariant]} · ${Math.round((passIndex+message.progress)/passTotal*100)}%`);},encode);
+if(!current()){await worker.terminate();return;}
+const source=scoreState.source,pixels=source.getContext('2d').getImageData(0,0,source.width,source.height);
+const codes=await runScoreOCRPasses(worker,{data:pixels.data,width:source.width,height:source.height},encode,async(index,total,variant)=>{
+passIndex=index;passTotal=total;passVariant=variant;scoreStatus(`코드 인식 ${index+1}/${total} · ${labels[variant]} 준비 중… ${Math.round(index/total*100)}%`);
+await new Promise(resolve=>setTimeout(resolve,0));
+},current);
+if(!current())return;
+scoreState.codes=codes;
+scoreState.adding=false;$('score-editor').close();renderScore();
+scoreStatus(scoreState.codes.length?`${scoreState.codes.length}개 코드를 찾았어요. 가사나 제목이 섞이지 않았는지 확인하고 잘못 읽은 코드를 눌러 수정해 주세요.`:'코드를 찾지 못했어요. 더 선명한 악보로 시도하거나 코드 직접 추가를 이용해 주세요.');
+})(),new Promise((_,reject)=>{timer=setTimeout(()=>{timedOut=true;reject(Error('OCR timeout'));},300000);}),new Promise((_,reject)=>{abort=()=>reject(Error('OCR cancelled'));scoreAbortOCR=abort;})]);
+}catch(_){
+// Timeout also invalidates a worker that is still being created.
+if(run===scoreState.run)scoreStatus('자동 인식을 완료하지 못했어요. 인터넷 연결 또는 브라우저의 인식 도구 지원을 확인해 주세요. 코드 직접 추가로 계속할 수 있어요.');
+}finally{
+clearTimeout(timer);if(scoreAbortOCR===abort)scoreAbortOCR=null;if(canvas){canvas.width=canvas.height=1;}if(worker)worker.terminate().catch(()=>{});
+if(run===scoreState.run)scoreBusy(false);
+}
+}
+function currentScoreKey(){
+const value=$('score-key-select').value;
+return value==='auto'?detectScoreKey(scoreState.codes):transposeScoreKey({pc:Number(value.split(':')[0]),minor:value.endsWith(':m')},0);
+}
+function transformedScoreChord(text,key){if(scoreState.mode==='capo'&&scoreState.keyDown)return transposeScoreChord(text,-scoreState.keyDown,transposeScoreKey(key,-scoreState.keyDown));return scoreState.mode==='capo'?capoScoreChord(text,scoreState.capo,key):transposeScoreChord(text,scoreState.semitones,transposeScoreKey(key,scoreState.semitones));}
+function scorePatchColor(bbox){
+const source=scoreState.source,ctx=source.getContext('2d'),colors=[];
+// Median of pixels just outside the glyph box avoids sampling dark letter strokes.
+for(let i=0;i<12;i++){
+const x=Math.max(0,Math.min(source.width-1,Math.round(bbox.x0+(bbox.x1-bbox.x0)*i/11)));
+for(const y of [bbox.y0-3,bbox.y1+3]){const p=ctx.getImageData(x,Math.max(0,Math.min(source.height-1,Math.round(y))),1,1).data;colors.push([...p].slice(0,3));}
+}
+const rgb=[0,1,2].map(channel=>colors.map(p=>p[channel]).sort((a,b)=>a-b)[Math.floor(colors.length/2)]);
+return {background:`rgb(${rgb.join(',')})`,ink:rgb.reduce((s,v)=>s+v,0)>390?'#15231d':'#fffef9'};
+}
+function drawScore(canvas,original=scoreState.original){
+const source=scoreState.source;if(!source)return;
+canvas.width=source.width;canvas.height=source.height;
+const ctx=canvas.getContext('2d');ctx.drawImage(source,0,0);
+if(original)return;
+const key=currentScoreKey();
+for(const code of scoreState.codes){
+const b=code.bbox,text=transformedScoreChord(code.text,key),height=b.y1-b.y0;
+if(!text)continue;
+const color=scorePatchColor(b),fontSize=Math.max(8,height*1.12);
+ctx.font=`600 ${fontSize}px system-ui, sans-serif`;ctx.textBaseline='top';
+const near=scoreState.codes.filter(c=>c!==code&&Math.abs(c.bbox.y0-b.y0)<height&&c.bbox.x0>b.x0).map(c=>c.bbox.x0);
+const maxWidth=Math.max(1,Math.min(source.width-b.x0,(near.length?Math.min(...near)-b.x0-3:source.width-b.x0)));
+const textWidth=Math.min(ctx.measureText(text).width,maxWidth);
+const y=scoreState.overlay==='above'?Math.max(0,b.y0-height*1.5):b.y0-1;
+ctx.fillStyle=color.background;
+// Replace only the original chord box; never erase an adjacent chord or lyric.
+if(scoreState.overlay==='replace')ctx.fillRect(Math.max(0,b.x0-2),Math.max(0,b.y0-2),Math.min(b.x1-b.x0+4,maxWidth+2),height+4);
+else ctx.fillRect(Math.max(0,b.x0-1),y,textWidth+2,fontSize*1.15);
+ctx.fillStyle=color.ink;ctx.fillText(text,b.x0,y,maxWidth);
+}
+}
+function renderScore(){
+if(!scoreState.image)return;
+const key=currentScoreKey(),destination=transposeScoreKey(key,scoreState.mode==='capo'?-(scoreState.keyDown||scoreState.capo):scoreState.semitones);
+$('score-key').textContent=`${$('score-key-select').value==='auto'?'감지':'선택'} 키: ${key?key.name:'—'}${$('score-key-select').value==='auto'?' (추정)':''}`;
+$('score-result-key').textContent=scoreState.mode==='capo'&&scoreState.keyDown?`카포 없음 · 카포는 0보다 낮출 수 없어 키를 ${scoreState.keyDown}반음 내려 표시 · 소리의 키 ${key?key.name:'미정'} → ${destination?destination.name:'미정'} (예: G → ${transposeScoreChord('G',-scoreState.keyDown,transposeScoreKey(key,-scoreState.keyDown))})`:scoreState.mode==='capo'?`카포 ${scoreState.capo} · 원래 소리 ${key?key.name:'미정'} 유지 · 코드 모양의 키 ${destination?destination.name:'미정'} (예: G → ${capoScoreChord('G',scoreState.capo,key)})`:`${scoreState.semitones>0?'+':''}${scoreState.semitones} 반음 · 소리의 키 ${key?key.name:'미정'} → ${destination?destination.name:'미정'}`;
+$('score-capo-value').textContent=scoreState.keyDown?`카포 없음 · 키 −${scoreState.keyDown}반음`:scoreState.capo===0?'카포 없음 (0)':'카포 '+scoreState.capo;
+$('score-semi-value').textContent=`${scoreState.semitones>0?'+':''}${scoreState.semitones} 반음`;
+$('score-capo-minus').disabled=scoreState.capo===0&&scoreState.keyDown===11;$('score-capo-plus').disabled=scoreState.capo===11;
+$('score-semi-minus').disabled=scoreState.semitones===-11;$('score-semi-plus').disabled=scoreState.semitones===11;
+$('score-capo-controls').hidden=scoreState.mode!=='capo';$('score-transpose-controls').hidden=scoreState.mode!=='transpose';
+for(const [i,button] of [...$('score-frets').children].entries())button.setAttribute('aria-pressed',String(i===scoreState.capo&&!scoreState.keyDown));
+$('score-stage').classList.toggle('adding',scoreState.adding);
+$('score-add').textContent=scoreState.adding?'위치 선택 취소':'코드 직접 추가';
+drawScore($('score-canvas'));
+$('score-hit-layer').replaceChildren();$('score-code-list').replaceChildren();
+scoreState.codes.forEach((code,index)=>{
+const b=code.bbox,button=document.createElement('button'),list=document.createElement('button'),label=`${code.text} → ${transformedScoreChord(code.text,key)} · 수정`;
+button.type=list.type='button';button.className='score-code-hit';button.setAttribute('aria-label',label);
+button.style.left=`${b.x0/scoreState.source.width*100}%`;button.style.top=`${b.y0/scoreState.source.height*100}%`;
+button.style.width=`${(b.x1-b.x0)/scoreState.source.width*100}%`;button.style.height=`${(b.y1-b.y0)/scoreState.source.height*100}%`;
+button.disabled=list.disabled=scoreState.busy;button.hidden=scoreState.original;list.textContent=label;
+button.addEventListener('click',()=>editScoreCode(index));list.addEventListener('click',()=>editScoreCode(index));
+$('score-hit-layer').append(button);$('score-code-list').append(list);
+});
+$('score-count').textContent=`인식된 코드 ${scoreState.codes.length}개 · 확인 및 수정`;
+}
+function editScoreCode(index,bbox=null){
+if(scoreState.busy)return;
+scoreState.editIndex=index;scoreState.pending=bbox;
+$('score-edit-text').value=index===null?'':scoreState.codes[index].text;
+$('score-editor-title').textContent=index===null?'원래 코드 추가':'원래 코드 수정';
+$('score-delete').hidden=index===null;$('score-edit-error').textContent='';
+$('score-editor').showModal();$('score-edit-text').focus();
+}
+async function loadScoreImage(file){
+if(!file||scoreState.busy)return;
+if(!file.type.startsWith('image/')||file.size>20*1024*1024){scoreStatus('20MB 이하의 이미지 파일을 선택해 주세요.');$('score-file').value='';return;}
+const url=URL.createObjectURL(file),image=new Image(),run=++scoreState.run;
+scoreBusy(true);scoreStatus('악보 이미지를 여는 중이에요…');
+try{
+await new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=reject;image.src=url;});
+if(run!==scoreState.run)return;
+// Bound decoded canvas memory on phones; every bbox and export uses these same pixels.
+const size=scoreImageSize(image.naturalWidth,image.naturalHeight),scale=size.width/image.naturalWidth;
+const source=document.createElement('canvas');source.width=size.width;source.height=size.height;
+const ctx=source.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,source.width,source.height);ctx.drawImage(image,0,0,source.width,source.height);
+scoreState.image=image;scoreState.source=source;scoreState.codes=[];scoreState.adding=false;scoreState.original=false;$('score-original').checked=false;$('score-key-select').value='auto';
+$('score-work').hidden=false;$('score-manual-position').hidden=true;scoreBusy(false);renderScore();
+$('score-size').textContent=`처리·저장 크기: ${source.width} × ${source.height}px`+(scale<1?' · 기기 메모리를 위해 이미지를 축소했어요.':'');
+scoreStatus(scale<1?'큰 이미지는 기기 메모리를 위해 긴 변 4096px·최대 1200만 화소로 줄여 처리·저장합니다.':'이미지를 열었어요.');
+await recognizeScore();
+}catch(_){if(run===scoreState.run){scoreBusy(false);scoreStatus('이미지를 열 수 없어요. 브라우저에서 열 수 있는 이미지인지 확인하고 다시 선택하거나 붙여넣어 주세요.');}}
+finally{URL.revokeObjectURL(url);$('score-file').value='';}
+}
+if(ready(['score']))$('score-file').addEventListener('change',()=>loadScoreImage($('score-file').files[0]));
+function scorePasteFallback(){
+$('score-paste-fallback').hidden=false;$('score-paste-area').focus();
+scoreStatus('클립보드를 직접 읽을 수 없어요. 아래 영역을 길게 눌러 붙여넣거나 이미지 파일을 선택해 주세요.');
+}
+if(ready(['score']))document.addEventListener('paste',async event=>{
+if($('score-panel').hidden)return;
+const selected=selectScoreClipboardImage(event.clipboardData?.items);
+if(selected){
+event.preventDefault();
+if(scoreState.busy){scoreStatus('이미지를 처리 중이에요. 완료하거나 인식을 중지한 뒤 다시 붙여넣어 주세요.');return;}
+const file=selected.item.getAsFile();
+if(file)await loadScoreImage(file);else scorePasteFallback();
+}else{
+if(event.target===$('score-paste-area'))event.preventDefault();
+scoreStatus('클립보드에 이미지가 없어요. 텍스트는 악보로 불러오지 않아요. 이미지를 복사한 뒤 붙여넣어 주세요.');
+}
+});
+if(ready(['score']))$('score-paste').addEventListener('click',async()=>{
+if(scoreState.busy)return;
+if(typeof navigator.clipboard?.read!=='function'){scorePasteFallback();return;}
+$('score-paste').disabled=true;
+try{
+const selected=selectScoreClipboardImage(await navigator.clipboard.read());
+if($('score-panel').hidden)return;
+if(!selected){scoreStatus('클립보드에 이미지가 없어요. 텍스트는 악보로 불러오지 않아요. 이미지를 복사한 뒤 붙여넣어 주세요.');return;}
+const file=await selected.item.getType(selected.type);
+if(!$('score-panel').hidden)await loadScoreImage(file);
+}catch(_){if(!$('score-panel').hidden)scorePasteFallback();}
+finally{$('score-paste').disabled=scoreState.busy;}
+});
+if(ready(['score'])){$('score-ocr').addEventListener('click',recognizeScore);
+$('score-cancel-ocr').addEventListener('click',cancelScoreOCR);
+$('score-guide-close').addEventListener('click',()=>{try{localStorage.setItem('guitarmate-score-guide',$('score-guide-skip').checked?'hide':'show');}catch(_){}$('score-guide').hidden=true;});
+$('score-help').addEventListener('click',()=>{$('score-guide').hidden=false;$('score-guide-close').focus();});
+for(let fret=0;fret<=11;fret++){
+const button=document.createElement('button'),span=document.createElement('span');button.type='button';span.textContent=fret;button.append(span);button.setAttribute('aria-label',fret===0?'카포 없음':`카포 ${fret}프렛`);button.setAttribute('aria-pressed',String(fret===0));button.addEventListener('click',()=>{scoreState.capo=fret;scoreState.keyDown=0;renderScore();});$('score-frets').append(button);
+}
+for(const minor of [false,true])for(let pc=0;pc<12;pc++){
+const option=document.createElement('option');option.value=pc+':'+(minor?'m':'M');option.textContent=transposeScoreKey({pc,minor},0).name;$('score-key-select').append(option);
+}
+$('score-key-select').addEventListener('change',renderScore);
+$('score-capo-minus').addEventListener('click',()=>{if(scoreState.capo>0&&!scoreState.keyDown)scoreState.capo--;else scoreState.keyDown=Math.min(11,scoreState.keyDown+1);renderScore();});
+$('score-capo-plus').addEventListener('click',()=>{if(scoreState.keyDown>0)scoreState.keyDown--;else scoreState.capo=Math.min(11,scoreState.capo+1);renderScore();});
+for(const [id,field,delta,min,max] of [['score-semi-minus','semitones',-1,-11,11],['score-semi-plus','semitones',1,-11,11]])$(id).addEventListener('click',()=>{scoreState[field]=Math.max(min,Math.min(max,scoreState[field]+delta));renderScore();});
+for(const input of document.querySelectorAll('input[name="score-mode"],input[name="score-overlay"]'))input.addEventListener('change',()=>{scoreState[input.name==='score-mode'?'mode':'overlay']=input.value;renderScore();});
+$('score-original').addEventListener('change',()=>{scoreState.original=$('score-original').checked;renderScore();});
+$('score-add').addEventListener('click',()=>{scoreState.adding=!scoreState.adding;if(scoreState.adding){scoreState.original=false;$('score-original').checked=false;}renderScore();scoreStatus(scoreState.adding?'코드를 넣을 위치를 악보에서 눌러 주세요. 키보드에서는 아래 위치 입력으로 추가할 수 있어요.':'위치 선택을 취소했어요.');$('score-manual-position').hidden=!scoreState.adding;});
+function addScoreAt(x,y){
+const source=scoreState.source,height=Math.max(12,source.height*.013),width=Math.min(source.width,Math.max(30,height*2.4));
+x=Math.max(0,Math.min(source.width-width,x));y=Math.max(0,Math.min(source.height-height,y));
+editScoreCode(null,{x0:x,y0:y,x1:x+width,y1:y+height});
+}
+$('score-stage').addEventListener('click',event=>{
+if(!scoreState.adding||scoreState.busy)return;
+const rect=$('score-canvas').getBoundingClientRect();
+addScoreAt((event.clientX-rect.left)/rect.width*scoreState.source.width,(event.clientY-rect.top)/rect.height*scoreState.source.height);
+});
+$('score-position-add').addEventListener('click',()=>{
+const x=Number($('score-pos-x').value),y=Number($('score-pos-y').value);
+if(!Number.isFinite(x)||!Number.isFinite(y)||x<0||x>100||y<0||y>100){scoreStatus('위치는 0~100% 사이로 입력해 주세요.');return;}
+addScoreAt(scoreState.source.width*x/100,scoreState.source.height*y/100);
+});
+$('score-edit-form').addEventListener('submit',event=>{
+event.preventDefault();const chord=parseScoreChord($('score-edit-text').value);
+if(!chord){$('score-edit-error').textContent='코드 형식을 확인해 주세요. 예: G, F#m, C/E, Gm/Bb, D7sus4, Am7';return;}
+if(scoreState.editIndex===null)scoreState.codes.push({text:chord.text,bbox:scoreState.pending,confidence:100});else scoreState.codes[scoreState.editIndex].text=chord.text;
+scoreState.codes.sort((a,b)=>a.bbox.y0-b.bbox.y0||a.bbox.x0-b.bbox.x0);
+scoreState.adding=false;$('score-manual-position').hidden=true;$('score-editor').close();renderScore();scoreStatus('코드를 저장했어요. 변환 결과를 확인해 주세요.');
+});
+$('score-delete').addEventListener('click',()=>{if(scoreState.editIndex!==null)scoreState.codes.splice(scoreState.editIndex,1);$('score-editor').close();renderScore();scoreStatus('코드를 삭제했어요.');});
+$('score-edit-cancel').addEventListener('click',()=>{$('score-editor').close();});
+$('score-download').addEventListener('click',()=>{
+if(!scoreState.source)return;
+try{
+const canvas=document.createElement('canvas');drawScore(canvas);
+canvas.toBlob(blob=>{
+if(!blob){scoreStatus('PNG를 만들지 못했어요. 이미지 크기를 줄여 다시 시도해 주세요.');return;}
+const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='guitarmate-score'+(scoreState.original?'-original':'-converted')+'.png';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+scoreStatus('PNG를 저장합니다. 다운로드 목록을 확인해 주세요.');
+},'image/png');
+}catch(_){scoreStatus('PNG 저장을 완료하지 못했어요. 이미지 크기를 줄여 다시 시도해 주세요.');}
+});
+}
+
+if(ready(['chords']))find('C');
+if(ready(['tuner'])){document.addEventListener('visibilitychange',()=>{if(document.hidden){stopMicrophone();stopPlayback();}});window.addEventListener('pagehide',()=>{stopMicrophone();stopPlayback();});}
+else if(ready(['chords']))window.addEventListener('pagehide',stopPlayback);
+// Home-screen installation: native prompt on Chromium, instructions on iOS Safari and Chrome.
+const installButton=$('install-button'),installGuide=$('install-guide');
+const standalone=window.matchMedia('(display-mode: standalone)');
+const iosDevice=/iPhone|iPad|iPod/.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&navigator.maxTouchPoints>1);
+const iosChrome=iosDevice&&/CriOS/.test(navigator.userAgent);
+const iosSafari=iosDevice&&!/CriOS|FxiOS|EdgiOS|OPiOS/.test(navigator.userAgent);
+const iosGuide=iosSafari||iosChrome;
+let installPrompt=null,appInstalled=false;
+const isInstalled=()=>appInstalled||standalone.matches||navigator.standalone===true;
+function updateInstallButton(){
+installButton.hidden=isInstalled()||(!installPrompt&&!iosGuide);
+if(isInstalled()&&installGuide.open)installGuide.close();
+}
+window.addEventListener('beforeinstallprompt',event=>{
+event.preventDefault();
+installPrompt=event;updateInstallButton();
+});
+window.addEventListener('appinstalled',()=>{appInstalled=true;installPrompt=null;updateInstallButton();});
+standalone.addEventListener('change',updateInstallButton);
+installButton.addEventListener('click',async()=>{
+if(isInstalled()){updateInstallButton();return;}
+if(installPrompt){
+const prompt=installPrompt;installPrompt=null;installButton.hidden=true;
+try{await prompt.prompt();await prompt.userChoice;}catch(_){/* A dismissed or unavailable prompt can be offered again by the browser. */}
+}else if(iosGuide&&!installGuide.open){installGuide.showModal();}
+});
+if(!iosChrome&&installGuide.querySelector){const d=installGuide.querySelector('#install-guide-description');if(d)d.textContent='Safari에서 공유 메뉴로 홈 화면에 추가하세요.';const s=installGuide.querySelector('#install-step-1');if(s)s.textContent='공유 아이콘(⬆️)을 누르세요.';}
+installGuide.addEventListener('click',event=>{if(event.target===installGuide)installGuide.close();});
+updateInstallButton();
+if('serviceWorker' in navigator&&window.isSecureContext)window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{});});
+
+</script>
+</body>
+</html>

@@ -3,8 +3,8 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
 const html=fs.readFileSync('index.html','utf8');
-const script=html.match(/<script>([\s\S]*?)<\/script>/)[1];
-const code=script.slice(script.indexOf('let audioContext=null,playing=[]'),script.indexOf("$('play').addEventListener"));
+const script=html.match(/<script data-main-app[^>]*>([\s\S]*?)<\/script>/)[1];
+const code=script.slice(script.indexOf('let audioContext=null,playing=[]'),script.indexOf("if(ready(['chords']))$('play').addEventListener"));
 function make(contexts,audioSession){
   const made=[];
   class Ctx{constructor(){const spec=contexts.shift()||{};this.state=spec.initial||'suspended';this.spec=spec;made.push(this);}

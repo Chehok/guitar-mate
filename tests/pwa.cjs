@@ -43,7 +43,7 @@ async function checkScope(scope){
             entries.set(request.url,new Response(path));requests.push(request.url);
           }
         },
-        async match(key){return entries.get(key)?.clone();}
+        async match(key){return entries.get(String(key))?.clone();}
       };
     },
     async keys(){return [...stored.keys()];},
@@ -58,7 +58,7 @@ async function checkScope(scope){
   });
   async function lifecycle(name){let pending;handlers[name]({waitUntil:promise=>{pending=promise;}});await pending;}
   await lifecycle('install');
-  assert(skipped);assert.equal(requests.length,10);
+  assert(skipped);assert.equal(requests.length,13);
   await lifecycle('activate');
   assert(claimed);assert.deepEqual(deleted,[prefix+'old']);
   assert(stored.has('unrelated-app-v1'));
@@ -69,7 +69,10 @@ async function checkScope(scope){
   }
   assert.equal(await request(scope,'navigate'),'./');
   assert.equal(await request(scope+'index.html?from=home','navigate'),'./');
-  assert.equal(await request(scope+'practice','navigate'),'./');
+  assert.equal(await request(scope+'practice','navigate'),undefined);
+  assert.equal(await request(scope+'identify.html','navigate'),'./identify.html');
+  assert.equal(await request(scope+'tuner.html','navigate'),'./tuner.html');
+  assert.equal(await request(scope+'score.html','navigate'),'./score.html');
   for(const url of requests)assert(await request(url),`Offline miss for ${url}`);
   if(new URL(scope).pathname!=='/')assert.equal(await request(new URL('/other-app/',scope).href,'navigate'),undefined);
   assert.equal(await request('https://elsewhere.example/app/','navigate'),undefined);
