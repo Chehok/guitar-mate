@@ -36,18 +36,40 @@ function make(contexts,audioSession){
   t=make([{resumeTo:'running'}],undefined);await t.sandbox.prepareAudio();
   const bad={set type(v){throw Error('x');},get type(){return 'auto';}};t=make([{resumeTo:'running'}],bad);await t.sandbox.prepareAudio();
   {
-    const calls=[];const param=()=>({value:0,setValueAtTime(){},linearRampToValueAtTime(v){calls.push(['ramp',v]);},exponentialRampToValueAtTime(){},cancelScheduledValues(){calls.push(['cancel']);},setTargetAtTime(v){calls.push(['target',v]);}});
-    const node=name=>({name,gain:param(),frequency:param(),threshold:param(),knee:param(),ratio:param(),attack:param(),release:param(),connected:[],connect(n){this.connected.push(n);},disconnect(){},start(){},stop(){calls.push(['osc-stop']);},addEventListener(){}});
+    const param=()=>({value:1,events:[],setValueAtTime(v,t){this.events.push(['set',v,t]);},
+      linearRampToValueAtTime(v,t){this.events.push(['linear',v,t]);},exponentialRampToValueAtTime(v,t){this.events.push(['exp',v,t]);}});
+    const node=name=>({name,gain:param(),frequency:param(),threshold:param(),knee:param(),ratio:param(),attack:param(),release:param(),
+      connected:[],stopTimes:[],connect(n){this.connected.push(n);},disconnect(){},start(){},stop(t){this.stopTimes.push(t);},addEventListener(){}});
     const ctx={currentTime:1,destination:{name:'dest'},createGain:()=>node('gain'),createOscillator:()=>node('osc'),createDynamicsCompressor:()=>node('comp')};
     const box={window:{},navigator:{},setTimeout,tuning:[40,45,50,55,59,64]};
     vm.runInNewContext(code+';this.sc=scheduleChord;this.sr=scheduleReference;',box);
-    const tones=box.sc(ctx,[-1,3,2,0,1,0],1);
-    assert.equal(tones.length,5,'muted strings are skipped');
-    assert.equal(ctx.chordBus.connected[0].name,'comp');assert(ctx.chordBus.connected[0].connected.includes(ctx.destination),'bus reaches the speakers through the compressor');
-    const peaks=calls.filter(c=>c[0]==='ramp').map(c=>c[1]);assert(peaks.every(v=>Math.abs(v-.45/Math.sqrt(5))<1e-9),'per-string peak is normalised by string count');
-    assert(.45/Math.sqrt(5)*5*(1+1/4+1/9+1/16)>1,'unlimited sum could exceed full scale, so the limiter matters');
-    calls.length=0;tones[0].voice.stop();assert(calls.some(c=>c[0]==='target'&&c[1]===0)&&calls.some(c=>c[0]==='osc-stop'),'stop fades before stopping');
-    const bus=ctx.chordBus;box.sr(ctx,110,1);assert.equal(ctx.chordBus,bus,'one bus is reused');
+    const tones=box.sc(ctx,[1,3,2,0,1,0],1);
+    const outputFor=tone=>{
+      const partials=tone.oscs.map(osc=>osc.connected[0]);
+      const envelope=partials[0].connected[0],fader=envelope.connected[0];
+      return {partials,envelope,fader};
+    };
+    const mixBound=tones.reduce((sum,tone)=>{
+      const {partials,envelope,fader}=outputFor(tone);
+      assert(fader.connected.includes(ctx.destination));
+      const peak=Math.max(...envelope.gain.events.map(event=>event[1]));
+      return sum+peak*partials.reduce((weight,partial)=>weight+partial.gain.value,0);
+    },0);
+    assert(mixBound>0&&mixBound<.9,'even six strings peaking together have headroom');
+    const {envelope,fader,partials}=outputFor(tones[0]);
+    assert(partials[1].gain.value/partials[0].gain.value>.5,'the bass octave carries the pitch on small speakers');
+    const naturalEnvelope=envelope.gain.events.slice();
+    ctx.currentTime=1.01;
+    tones[0].voice.stop();
+    assert.deepEqual(envelope.gain.events,naturalEnvelope,'stopping preserves the running decay');
+    assert.deepEqual(fader.gain.events,[['set',1,1.01],['linear',0,1.03]]);
+    assert(tones[0].oscs.every(osc=>osc.stopTimes.at(-1)===1.03),'active partials stop after the fade');
+    tones[1].voice.stop();
+    assert(tones[1].oscs.every(osc=>osc.stopTimes.at(-1)===ctx.currentTime),'queued partials never start');
+    box.sr(ctx,110,1);
+    const bus=ctx.chordBus;
+    assert.equal(bus.connected[0].name,'comp');assert(bus.connected[0].connected.includes(ctx.destination),'reference tones retain their compressor');
+    box.sr(ctx,110,1);assert.equal(ctx.chordBus,bus,'one reference bus is reused');
   }
   // Live microphone: never switch the session to 'playback' (that ends the capture track per W3C Audio Session).
   {

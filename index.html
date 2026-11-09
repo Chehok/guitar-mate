@@ -619,21 +619,24 @@ let identifyFrets=Array(6).fill(-1),identifyStart=1;
 const displayChord=name=>name.replace(/#/g,'♯').replace(/b/g,'♭');
 let identifyPlaybackRequest=0;
 async function playIdentifyFrets(){
-const sounding=identifyFrets.filter(f=>f>=0).length,pcs=[...new Set(identifyFrets.flatMap((f,i)=>f<0?[]:[mod(tuning[i]+f)]))].length;
-if(sounding<2||pcs<2){$('identify-audio-status').textContent='소리를 들으려면 치는 줄이 두 개 이상이고 서로 다른 음이 두 개 이상 있어야 합니다.';return;}
-try{
+const frets=identifyFrets.slice(),pcs=new Set(frets.flatMap((f,i)=>f<0?[]:[mod(tuning[i]+f)]));
+if(pcs.size<2){$('identify-audio-status').textContent='소리를 들으려면 치는 줄이 두 개 이상이고 서로 다른 음이 두 개 이상 있어야 합니다.';return;}
 stopPlayback();
 const request=identifyPlaybackRequest;
-await prepareAudio();
+try{
+const ctx=await prepareAudio();
 if(request!==identifyPlaybackRequest||document.hidden)return;
-const ctx=audioContext,voices=scheduleChord(ctx,identifyFrets,ctx.currentTime+.03).map(t=>t.voice);
-if(!voices.length){$('identify-audio-status').textContent='치는 줄이 없어 재생할 수 없습니다.';return;}
+const tones=scheduleChord(ctx,frets,ctx.currentTime+.03);
+const voices=tones.map(t=>t.voice);
 playing=voices;$('identify-audio-status').textContent='입력 운지 재생 중';
+tones[tones.length-1].oscs[0].addEventListener('ended',()=>{
+if(request!==identifyPlaybackRequest)return;
+playing=[];$('identify-audio-status').textContent='재생 완료';
+});
 confirmPlayback(ctx,()=>request===identifyPlaybackRequest,()=>{$('identify-audio-status').textContent=audioFailure;});
 }catch(_){if(request===identifyPlaybackRequest)$('identify-audio-status').textContent=audioFailure;}
 }
 function renderIdentify(){
-identifyPlaybackRequest++;$('identify-audio-status').textContent='';
 // Display barres independently of whether a grip fits within four fingers.
 const barres=[];
 for(const fret of new Set(identifyFrets.filter(f=>f>0))){
@@ -666,10 +669,11 @@ function toggleIdentify(event){
 const target=event.target.closest('[data-string]');if(!target)return;
 if(event.type==='keydown'){if(!['Enter',' '].includes(event.key))return;event.preventDefault();}
 const i=Number(target.dataset.string),fret=Number(target.dataset.fret);
+stopPlayback();
 identifyFrets[i]=fret===0?(identifyFrets[i]===0?-1:0):(identifyFrets[i]===fret?-1:fret);
 renderIdentify();$('identify-diagram').querySelector(`[data-string="${i}"][data-fret="${fret}"]`).focus();
 }
-if(ready(['identify'])){$('identify-diagram').addEventListener('click',toggleIdentify);$('identify-diagram').addEventListener('keydown',toggleIdentify);$('identify-start').addEventListener('change',()=>{identifyStart=Math.max(1,Math.min(20,Math.round(Number($('identify-start').value)||1)));$('identify-start').value=identifyStart;renderIdentify();});$('identify-reset').addEventListener('click',()=>{identifyFrets=Array(6).fill(-1);identifyStart=1;$('identify-start').value=1;renderIdentify();});$('identify-play').addEventListener('click',playIdentifyFrets);renderIdentify();}
+if(ready(['identify'])){$('identify-diagram').addEventListener('click',toggleIdentify);$('identify-diagram').addEventListener('keydown',toggleIdentify);$('identify-start').addEventListener('change',()=>{identifyStart=Math.max(1,Math.min(20,Math.round(Number($('identify-start').value)||1)));$('identify-start').value=identifyStart;renderIdentify();});$('identify-reset').addEventListener('click',()=>{stopPlayback();identifyFrets=Array(6).fill(-1);identifyStart=1;$('identify-start').value=1;renderIdentify();});$('identify-play').addEventListener('click',playIdentifyFrets);renderIdentify();}
 if(ready(['chords']))$('search').addEventListener('submit',e=>{e.preventDefault();find($('chord-input').value);});
 // Chord filter functions:
 const filterRoots=['C','D','E','F','G','A','B','C#','D#','F#','G#','A#'];
@@ -735,23 +739,36 @@ function retirePlaybackContext(){const old=audioContext;audioContext=null;if(old
 // Report failure if the context stops right after scheduling instead of leaving a false "playing" status.
 function confirmPlayback(ctx,stillCurrent,onFail){setTimeout(()=>{if(stillCurrent()&&(audioContext!==ctx||ctx.state!=='running'))onFail();},400);}
 const audioFailure='소리를 재생할 수 없습니다. 같은 버튼을 한 번 더 눌러 다시 시도하고, 계속되면 페이지를 새로고침해 주세요.';
-// Synthesis shared by chord and reference playback. Everything goes through one limiter bus so louder voices cannot clip.
-const chordLevel=.45,chordDecay=2.8,referenceLevel=.36,referenceDecay=1.7;
+const chordLevel=.82,chordDecay=2.8,referenceLevel=.36,referenceDecay=1.7;
 function audioBus(ctx){
 if(!ctx.chordBus){const comp=ctx.createDynamicsCompressor(),master=ctx.createGain();comp.threshold.value=-12;comp.knee.value=10;comp.ratio.value=12;comp.attack.value=.003;comp.release.value=.2;master.connect(comp);comp.connect(ctx.destination);ctx.chordBus=master;}
 return ctx.chordBus;
 }
-// A voice fades out over a few milliseconds when stopped to avoid clicks.
-function voiceStop(ctx,gain,oscs){return {stop(){const t=ctx.currentTime;try{gain.gain.cancelScheduledValues(t);gain.gain.setTargetAtTime(0,t,.012);}catch(_){}for(const o of oscs){try{o.stop(t+.09);}catch(_){}}}};}
 function scheduleTone(ctx,out,frequency,at,peak,decay,weights,attack){
-const gain=ctx.createGain(),oscs=[];
-gain.gain.setValueAtTime(0,at);gain.gain.linearRampToValueAtTime(peak,at+attack);gain.gain.exponentialRampToValueAtTime(.0001,at+decay);gain.connect(out);
-weights.forEach((weight,k)=>{const osc=ctx.createOscillator(),level=ctx.createGain();osc.type='sine';osc.frequency.setValueAtTime(frequency*(k+1),at);level.gain.value=weight;osc.connect(level);level.connect(gain);osc.start(at);osc.stop(at+decay+.1);oscs.push(osc);osc.addEventListener('ended',()=>{osc.disconnect();level.disconnect();if(k===weights.length-1)gain.disconnect();});});
-return {voice:voiceStop(ctx,gain,oscs),oscs};
+const gain=ctx.createGain(),release=ctx.createGain(),oscs=[],end=at+decay+.1;
+gain.gain.setValueAtTime(0,at);gain.gain.linearRampToValueAtTime(peak,at+attack);gain.gain.exponentialRampToValueAtTime(.0001,at+decay);gain.gain.linearRampToValueAtTime(0,end);
+gain.connect(release);release.connect(out);
+weights.forEach((weight,k)=>{const osc=ctx.createOscillator(),level=ctx.createGain();osc.type='sine';osc.frequency.setValueAtTime(frequency*(k+1),at);level.gain.value=weight;osc.connect(level);level.connect(gain);osc.start(at);osc.stop(end);oscs.push(osc);osc.addEventListener('ended',()=>{osc.disconnect();level.disconnect();if(k===weights.length-1){gain.disconnect();release.disconnect();}});});
+let stopped=false;
+return {oscs,voice:{stop(){
+const now=ctx.currentTime;
+if(stopped||now>=end)return;
+stopped=true;
+// Fade separately so the natural decay never jumps back to its attack level.
+const stopAt=now<at?now:Math.min(end,now+.02);
+if(now>=at){release.gain.setValueAtTime(1,now);release.gain.linearRampToValueAtTime(0,stopAt);}
+for(const osc of oscs)osc.stop(stopAt);
+}}};
 }
+// Give low strings enough upper harmonics for their pitch to come through on phone speakers.
+const chordBassWeights=[1,.75,.52,.35,.24,.16],chordWeights=[1,.25,1/9,1/16];
 function scheduleChord(ctx,fretsList,at){
-const strings=fretsList.map((f,i)=>({f,i})).filter(s=>s.f>=0),peak=chordLevel/Math.sqrt(strings.length||1);
-return strings.map((s,n)=>scheduleTone(ctx,audioBus(ctx),440*Math.pow(2,(tuning[s.i]+s.f-69)/12),at+n*.045,peak,chordDecay,[1,1/4,1/9,1/16],.008));
+const strings=fretsList.map((f,i)=>({f,i})).filter(s=>s.f>=0);
+return strings.map(({f,i},n)=>{
+const weights=i<2?chordBassWeights:chordWeights;
+const peak=chordLevel/(strings.length*weights.reduce((sum,weight)=>sum+weight,0));
+return scheduleTone(ctx,ctx.destination,440*Math.pow(2,(tuning[i]+f-69)/12),at+n*.032,peak,chordDecay,weights,.012);
+});
 }
 // Phone speakers barely reproduce the low-string fundamentals, so upper partials carry the pitch there.
 const referenceWeights=[1,.6,.45,.35,.25,.15];
