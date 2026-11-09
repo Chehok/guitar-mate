@@ -1,6 +1,6 @@
 # 기타메이트
 
-코드 추천·튜닝·코드 판별·악보 변환을 페이지별로 제공하는 한국어 기타 연습 도우미입니다. 메뉴 이동은 각 페이지를 새로 열어 방문 통계를 따로 집계할 수 있으며, 각 페이지에 광고 자리를 포함합니다. 시스템 글꼴을 사용하며, 자동 악보 인식 때만 외부 OCR 도구를 불러옵니다.
+코드 추천·튜닝·코드 판별·악보 변환을 페이지별로 제공하는 한국어 기타 연습 도우미입니다. 메뉴 이동은 각 페이지를 새로 열어 방문 통계를 따로 집계할 수 있으며, 각 페이지에 광고 자리를 포함합니다. [Pretendard Variable 동적 서브셋](https://github.com/orioncactus/pretendard/blob/main/packages/pretendard/docs/en/README.md#variable-dynamic-subset)을 사용하며, 글꼴을 불러오는 동안 시스템 글꼴로 표시합니다. 외부 OCR 도구는 자동 악보 인식 때만 불러옵니다.
 
 첫 화면은 튜닝(`index.html`)입니다. 코드 검색은 `chord-search.html`, 코드 판별은 `chord-identifier.html`, 악보 키 변환은 `score-key-transposer.html`에서 엽니다. Cloudflare Workers 기본 설정에서는 개별 HTML 주소가 확장자 없는 주소로 리디렉션됩니다.
 
@@ -73,7 +73,7 @@ OCR 보정은 수동 코드 입력과 분리되어 있습니다. 원시 신뢰�
 
 앱 심볼은 기타 피크 안에 넥·사운드홀·브리지를 담은 기타메이트 마크입니다. 표준 라이브러리만 사용하는 `python3 scripts/generate-icons.py`로 앱 아이콘(192/512px), maskable 아이콘(512px), Apple 터치 아이콘(180px), SVG 파비콘과 PNG 파비콘(32/16px)을 함께 재생성할 수 있습니다. 마크는 maskable 중앙 안전 원 안에 배치됩니다.
 
-디자인은 진녹색·크림을 유지하고 시스템 글꼴, 모바일 한 줄 탭, 키보드 포커스, 44px 이상 컨트롤, `prefers-color-scheme` 다크 모드와 `prefers-reduced-motion` 설정을 지원합니다. 튜너의 큰 음 표시는 연주 중 멀리서도 읽을 수 있도록 유지합니다.
+디자인은 진녹색·크림을 유지하고 Pretendard Variable 글꼴, 모바일 한 줄 탭, 키보드 포커스, 44px 이상 컨트롤, `prefers-color-scheme` 다크 모드와 `prefers-reduced-motion` 설정을 지원합니다. 튜너의 큰 음 표시는 연주 중 멀리서도 읽을 수 있도록 유지합니다.
 
 taste-skill의 Editorial greeting 방향(seed `332781039`)을 바탕으로 크림 바탕과 단정한 패널을 사용했습니다. 4탭 구조와 기타 연습 흐름에 맞춰 사이드바 없이 구성했습니다. Node 회귀 테스트와 Chromium 모바일 viewport 검사를 실행했습니다. 실제 모바일 기기의 검증은 포함하지 않습니다.
 
