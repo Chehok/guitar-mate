@@ -180,12 +180,15 @@ footer { padding: 24px 0 8px; color: var(--muted); font-size: 12px; line-height:
 #reference-status { min-height: 20px; margin-top: 10px; color: var(--muted); font-size: 12px; }
 .mic-sensitivity { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; font-size: 14px; }
 .mic-sensitivity input { grid-column: 1 / -1; width: 100%; margin: 0; }
-.identify-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.identify-controls label { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.identify-controls { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.identify-controls label { display: flex; align-items: center; gap: 8px; font-size: 14px; flex: 1 1 auto; min-width: 0; }
 .identify-controls input { width: 65px; padding: 8px; }
+#identify-play { flex: none; padding-inline: 12px; font-size: 13px; white-space: nowrap; }
+#identify-reset { flex: none; }
+#identify-audio-status { min-height: 22px; margin: 6px 0 0; font-size: 13px; color: var(--muted); }
 .identify-candidates { display: grid; gap: 8px; padding-left: 24px; }
 .identify-candidates li::marker { color: var(--muted); font-size: 13px; }
-.identify-candidates button { width: 100%; padding: 12px 14px; text-align: left; border-color: var(--line); }
+.identify-candidates > li > button { width: 100%; padding: 12px 14px; text-align: left; border-color: var(--line); }
 .identify-candidates strong { display: block; font-size: 22px; font-weight: 550; }
 .identify-candidates small { display: block; color: var(--muted); font-size: 12px; margin-top: 4px; }
 #identify-status { font-size: 14px; }
@@ -331,11 +334,11 @@ footer { padding: 24px 0 8px; color: var(--muted); font-size: 12px; line-height:
 <p class="intro">지판에 음을 찍으면 가능한 코드 이름을 순서대로 보여줍니다.</p>
 <div class="layout">
 <section class="panel" aria-label="판별할 운지 입력">
-<div class="identify-controls"><label for="identify-start">시작 프렛 <input id="identify-start" type="number" min="1" max="20" step="1" value="1" inputmode="numeric"></label><button id="identify-reset" type="button">초기화</button></div>
+<div class="identify-controls"><label for="identify-start">시작 프렛 <input id="identify-start" type="number" min="1" max="20" step="1" value="1" inputmode="numeric"></label><button id="identify-play" type="button">소리 듣기</button><button id="identify-reset" type="button">초기화</button></div><p id="identify-audio-status" role="status" aria-live="polite"></p>
 <div id="identify-diagram"></div><p id="identify-frets" class="counter"></p>
 <p class="hint">왼쪽부터 6번 → 1번 줄 · 5프렛씩 표시<br>칸을 클릭하면 점을 찍고, 같은 칸을 다시 클릭하면 해제합니다. 너트 위 표시를 클릭하면 O(개방현) / X(뮤트)로 전환합니다. 프렛을 옮겨도 입력한 음은 유지됩니다.</p>
 </section>
-<section class="panel info-panel" aria-label="코드 판별 결과"><h2 class="overline">코드 후보</h2><p id="identify-status" role="status" aria-live="polite"></p><ol id="identify-candidates" class="identify-candidates"></ol><p class="hint">최저음이 근음인 해석을 우선하며, 생략음이 적은 후보를 앞에 표시합니다. 후보를 클릭하면 코드 추천에서 검색합니다.</p></section>
+<section class="panel info-panel" aria-label="코드 판별 결과"><h2 class="overline">코드 후보</h2><p id="identify-status" role="status" aria-live="polite"></p><ol id="identify-candidates" class="identify-candidates"></ol><p class="hint">최저음이 근음인 해석을 우선하며, 생략음이 적은 후보를 앞에 표시합니다. 후보를 클릭하면 코드 검색에서 검색합니다.</p></section>
 </div>
 </section>
 <section id="score-panel" role="tabpanel" aria-labelledby="score-tab" hidden>
@@ -670,7 +673,21 @@ function syncFilters(chord){const kind=filterKinds.find(k=>k.quality===chord.qua
 function find(value){try{const parsed=parse(value);const shapes=makeVoicings(parsed);current=parsed;voicings=shapes;position=0;syncFilters(parsed);$('error').textContent='';$('chord-input').removeAttribute('aria-invalid');render();}catch(error){$('error').textContent=error.message;$('chord-input').setAttribute('aria-invalid','true');}}
 let identifyFrets=Array(6).fill(-1),identifyStart=1;
 const displayChord=name=>name.replace(/#/g,'♯').replace(/b/g,'♭');
+let identifyPlaybackRequest=0;
+async function playIdentifyFrets(){
+const sounding=identifyFrets.filter(f=>f>=0).length,pcs=[...new Set(identifyFrets.flatMap((f,i)=>f<0?[]:[mod(tuning[i]+f)]))].length;
+if(sounding<2||pcs<2){$('identify-audio-status').textContent='소리를 들으려면 치는 줄이 두 개 이상이고 서로 다른 음이 두 개 이상 있어야 합니다.';return;}
+try{
+await prepareAudio();if($('identify-panel').hidden)return;
+const request=++identifyPlaybackRequest;stopPlayback();
+const ctx=audioContext,voices=scheduleChord(ctx,identifyFrets,ctx.currentTime+.03).map(t=>t.voice);
+if(!voices.length){$('identify-audio-status').textContent='치는 줄이 없어 재생할 수 없습니다.';return;}
+playing=voices;$('identify-audio-status').textContent='입력 운지 재생 중';
+confirmPlayback(ctx,()=>request===identifyPlaybackRequest&&!$('identify-panel').hidden,()=>{$('identify-audio-status').textContent=audioFailure;});
+}catch(_){$('identify-audio-status').textContent=audioFailure;}
+}
 function renderIdentify(){
+identifyPlaybackRequest++;$('identify-audio-status').textContent='';
 // Display barres independently of whether a grip fits within four fingers.
 const barres=[];
 for(const fret of new Set(identifyFrets.filter(f=>f>0))){
@@ -682,6 +699,9 @@ const candidates=identifyChord(identifyFrets);
 const pcs=[...new Set(identifyFrets.flatMap((f,i)=>f<0?[]:[mod(tuning[i]+f)]))];
 const offscreen=identifyFrets.some(f=>f>0&&(f<identifyStart||f>=identifyStart+5));
 $('identify-status').textContent=(pcs.length<2?'서로 다른 음을 두 개 이상 선택해 주세요.':candidates.length?`${candidates.length}개 후보 · 최저음 ${displayChord(identifyRoots[candidates[0].bass])}`:`일치하는 후보가 없습니다. 구성음: ${pcs.map(pc=>displayChord(identifyRoots[pc])).join(' · ')}`)+(offscreen?' · 표시 범위 밖에도 누른 음이 있습니다.':'');
+const sounding=identifyFrets.filter(f=>f>=0).length,canPlay=sounding>=2&&pcs.length>=2;
+$('identify-play').disabled=!canPlay;
+$('identify-play').setAttribute('aria-label',canPlay?'입력 운지 소리 듣기':'입력 운지가 부족해 소리를 들을 수 없습니다');
 $('identify-candidates').replaceChildren(...candidates.map(candidate=>{
 const li=document.createElement('li'),button=document.createElement('button'),title=document.createElement('strong'),details=document.createElement('small'),tones=document.createElement('small');
 button.type='button';title.textContent=displayChord(candidate.label)+(candidate.alias?' / '+displayChord(candidate.alias):'');
@@ -701,6 +721,7 @@ $('identify-diagram').addEventListener('click',toggleIdentify);
 $('identify-diagram').addEventListener('keydown',toggleIdentify);
 $('identify-start').addEventListener('change',()=>{identifyStart=Math.max(1,Math.min(20,Math.round(Number($('identify-start').value)||1)));$('identify-start').value=identifyStart;renderIdentify();});
 $('identify-reset').addEventListener('click',()=>{identifyFrets=Array(6).fill(-1);identifyStart=1;$('identify-start').value=1;renderIdentify();});
+$('identify-play').addEventListener('click',()=>playIdentifyFrets());
 renderIdentify();
 $('search').addEventListener('submit',e=>{e.preventDefault();find($('chord-input').value);});
 // Chord filter functions:
@@ -862,7 +883,7 @@ const advice=inTune?'맞음 · 정확한 음이에요':cents<0?'낮음 · 줄을
 if($('tuner-advice').textContent!==advice)$('tuner-advice').textContent=advice;
 Array.from($('string-select').children).forEach((button,i)=>button.classList.toggle('detected',i===index));
 }
-function stopPlayback(){playbackRequest++;referenceUntil=0;for(const node of playing){try{node.stop();}catch(_){}}playing=[];$('reference-status').textContent='';}
+function stopPlayback(){playbackRequest++;identifyPlaybackRequest++;referenceUntil=0;for(const node of playing){try{node.stop();}catch(_){}}playing=[];$('reference-status').textContent='';$('identify-audio-status').textContent='';}
 function stopMicrophone(message='마이크가 꺼졌습니다. 다시 켜서 튜닝을 시작하세요.'){
 const wasCapturing=!!(micStream||micContext);micRequest++;clearInterval(micTimer);micTimer=null;
 if(micStream)micStream.getTracks().forEach(track=>track.stop());micStream=null;
