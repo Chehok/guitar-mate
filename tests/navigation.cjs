@@ -3,6 +3,11 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
 const html=fs.readFileSync('index.html','utf8');
+assert.match(html,/>코드 검색</);
+assert.match(html,/>코드 검색</);
+assert.match(html,/id="identify-tab"[^>]*>코드 판별<\/a><a id="tuner-tab"/);
+assert.match(html,/>악보 키 변환</);
+assert.match(html,/>악보 키 변환</);
 const modes=['chords','tuner','identify','score'];
 const ids=new Set([...html.matchAll(/\bid="([^"]+)"/g)].map(match=>match[1]));
 // Native initial fragment navigation must never target a mode's panel.
@@ -49,7 +54,7 @@ const keyScript=html.slice(html.indexOf("window.addEventListener('hashchange',ac
 const tabs=new Map();let focused,selected;
 for(const mode of modes)tabs.set(mode+'-tab',{handlers:{},addEventListener(name,handler){this.handlers[name]=handler;},focus(){focused=mode;},click(){selected=mode;}});
 vm.runInNewContext(keyScript,{window:{addEventListener(){}},activateMode(){},$:id=>tabs.get(id)});
-for(const [from,key,to] of [['chords','ArrowLeft','score'],['score','ArrowRight','chords'],['identify','ArrowRight','score'],['tuner','End','score'],['score','Home','chords']]){
+for(const [from,key,to] of [['chords','ArrowLeft','score'],['score','ArrowRight','chords'],['identify','ArrowRight','tuner'],['tuner','End','score'],['score','Home','chords']]){
   tabs.get(from+'-tab').handlers.keydown({key,preventDefault(){}});
   assert.equal(focused,to);assert.equal(selected,to);
 }

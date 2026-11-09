@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const html=fs.readFileSync('index.html','utf8');
 const script=html.match(/<script>([\s\S]*?)<\/script>/)[1];
-const code=script.slice(script.indexOf('let audioContext=null,playing=[];'),script.indexOf("$('play').addEventListener"));
+const code=script.slice(script.indexOf('let audioContext=null,playing=[]'),script.indexOf("$('play').addEventListener"));
 function make(contexts,audioSession){
   const made=[];
   class Ctx{constructor(){const spec=contexts.shift()||{};this.state=spec.initial||'suspended';this.spec=spec;made.push(this);}
@@ -49,10 +49,34 @@ function make(contexts,audioSession){
     calls.length=0;tones[0].voice.stop();assert(calls.some(c=>c[0]==='target'&&c[1]===0)&&calls.some(c=>c[0]==='osc-stop'),'stop fades before stopping');
     const bus=ctx.chordBus;box.sr(ctx,110,1);assert.equal(ctx.chordBus,bus,'one bus is reused');
   }
+  // Live microphone: never switch the session to 'playback' (that ends the capture track per W3C Audio Session).
+  {
+    session={type:'auto'};const live=make([{resumeTo:'running'},{resumeTo:'running'}],session);
+    vm.runInContext('captureActive=()=>true;',live.sandbox);
+    await live.sandbox.prepareAudio();assert.equal(session.type,'auto','mic on keeps auto');
+    vm.runInContext('captureActive=()=>false;',live.sandbox);
+    await live.sandbox.prepareAudio();assert.equal(session.type,'playback','mic off uses playback');
+    // Capture start/stop retires the output context so the next tap builds a fresh one.
+    const before=live.sandbox.getCtx();vm.runInContext('retirePlaybackContext()',live.sandbox);
+    assert.equal(before.state,'closed');assert.equal(live.sandbox.getCtx(),null);
+    await live.sandbox.prepareAudio();assert.notEqual(live.sandbox.getCtx(),before);assert.equal(live.made.length,2);
+    // A context that stops right after scheduling reports failure; a current running one does not.
+    let failed=0;const ctx=live.sandbox.getCtx();
+    vm.runInContext('confirmPlayback',live.sandbox)(ctx,()=>true,()=>failed++);
+    await new Promise(r=>setTimeout(r,450));assert.equal(failed,0);
+    vm.runInContext('confirmPlayback',live.sandbox)(ctx,()=>true,()=>failed++);ctx.state='interrupted';
+    await new Promise(r=>setTimeout(r,450));assert.equal(failed,1);
+    vm.runInContext('confirmPlayback',live.sandbox)(ctx,()=>false,()=>failed++);
+    await new Promise(r=>setTimeout(r,450));assert.equal(failed,1,'superseded playback is not reported');
+  }
   // source wiring
   assert.equal((html.match(/await prepareAudio\(\)/g)||[]).length,2,'chord and tuner buttons share the helper');
   assert.match(html,/setAudioSession\('auto'\);context=new Audio\(\)/,'mic start restores the automatic session');
   assert(!/\.play\(\)\s*;?\s*\}\s*\)\s*;?\s*\/\/ autoplay/.test(html));
-  assert.match(html,/\[1,\.5,\.35,\.2\],\.025/,'reference overtones kept');
+  assert.match(html,/referenceWeights=\[1,\.6,\.45,\.35,\.25,\.15\]/,'reference overtones');
+  assert.match(html,/captureActive=\(\)=>!!micStream;/);
+  assert.match(html,/stopPlayback\(\);retirePlaybackContext\(\);setAudioSession\('auto'\)/,'mic start rebuilds output');
+  assert.match(html,/if\(wasCapturing\)retirePlaybackContext\(\);/,'mic stop rebuilds output');
+  assert.equal((html.match(/confirmPlayback\(/g)||[]).length,3,'chord and reference verify playback');
   console.log('Audio preparation: resume, interrupted recovery, failure reporting and session type passed (mocked, no browser).');
 })().catch(error=>{console.error(error);process.exitCode=1;});
