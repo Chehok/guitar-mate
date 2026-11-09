@@ -279,8 +279,7 @@ footer { padding: 24px 0 8px; color: var(--muted); font-size: 12px; line-height:
 <header><div class="brand"><img src="./favicon.svg" width="40" height="40" alt=""><div class="brand-name">기타메이트<span class="brand-subtitle">기타 연습 도우미</span></div></div><div class="install-action"><button id="install-button" type="button" hidden>홈 화면에 추가</button><span class="badge">오프라인 지원</span></div></header>
 <nav class="mode-tabs" aria-label="연습 모드"><a id="tuner-tab" href="./">튜닝</a><a id="chords-tab" href="./chord-search.html">코드 검색</a><a id="identify-tab" href="./chord-identifier.html" aria-current="page">코드 판별</a><a id="score-tab" href="./score-key-transposer.html">악보 키 변환</a></nav>
 <section id="identify-panel">
-<h1>이 운지, 무슨 코드일까요?</h1>
-<p class="intro">지판에 음을 찍으면 가능한 코드 이름을 순서대로 보여줍니다.</p>
+<h1 class="sr-only">코드 판별</h1>
 <div class="layout">
 <section class="panel" aria-label="판별할 운지 입력">
 <div class="identify-controls"><label for="identify-start">시작 프렛 <input id="identify-start" type="number" min="1" max="20" step="1" value="1" inputmode="numeric"></label><button id="identify-play" type="button">소리 듣기</button><button id="identify-reset" type="button">초기화</button></div><p id="identify-audio-status" role="status" aria-live="polite"></p>
@@ -1558,12 +1557,7 @@ return true;
 
 // Score editor: images and OCR results stay in memory on this device.
 const scoreState={image:null,codes:[],capo:0,keyDown:0,semitones:0,mode:'capo',overlay:'replace',original:false,busy:false,adding:false,editIndex:null,pending:null,run:0};
-let scoreLibraryPromise=null,scoreRuntimePromise=null,scoreTabOpened=false;
-function openScoreTab(){
-if(scoreTabOpened)return;scoreTabOpened=true;
-let skip=false;try{skip=localStorage.getItem('guitarmate-score-guide')==='hide';}catch(_){}
-$('score-guide').hidden=skip;
-}
+let scoreLibraryPromise=null,scoreRuntimePromise=null;
 function scoreStatus(message){$('score-status').textContent=message;}
 function scoreBusy(value){
 scoreState.busy=value;$('score-file').disabled=value;$('score-paste').disabled=value;$('score-ocr').disabled=value||!scoreState.image;
@@ -1792,7 +1786,7 @@ finally{$('score-paste').disabled=scoreState.busy;}
 });
 if(ready(['score'])){$('score-ocr').addEventListener('click',recognizeScore);
 $('score-cancel-ocr').addEventListener('click',cancelScoreOCR);
-$('score-guide-close').addEventListener('click',()=>{try{localStorage.setItem('guitarmate-score-guide',$('score-guide-skip').checked?'hide':'show');}catch(_){}$('score-guide').hidden=true;});
+$('score-guide-close').addEventListener('click',()=>{$('score-guide').hidden=true;$('score-help').focus();});
 $('score-help').addEventListener('click',()=>{$('score-guide').hidden=false;$('score-guide-close').focus();});
 for(let fret=0;fret<=11;fret++){
 const button=document.createElement('button'),span=document.createElement('span');button.type='button';span.textContent=fret;button.append(span);button.setAttribute('aria-label',fret===0?'카포 없음':`카포 ${fret}프렛`);button.setAttribute('aria-pressed',String(fret===0));button.addEventListener('click',()=>{scoreState.capo=fret;scoreState.keyDown=0;renderScore();});$('score-frets').append(button);
@@ -1849,7 +1843,6 @@ if(ready(['chords'])){
   input.value=new URLSearchParams(location.search).get('chord')?.slice(0,input.maxLength)||input.value;
   find(input.value);
 }
-if(ready(['score']))openScoreTab();
 if(ready(['tuner'])){document.addEventListener('visibilitychange',()=>{if(document.hidden){stopMicrophone();stopPlayback();}});window.addEventListener('pagehide',()=>{stopMicrophone();stopPlayback();});}
 else if(ready(['chords','identify']))window.addEventListener('pagehide',stopPlayback);
 // Home-screen installation: native prompt on Chromium, instructions on iOS Safari and Chrome.

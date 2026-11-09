@@ -137,7 +137,11 @@ Object.assign(context,{painter,$,ready:modes=>modes.includes('score'),document:{
 vm.runInContext(ui,context);
 context.loadScoreRecognizer=async()=>{throw Error('Exercise legacy fallback in DOM doubles');};
 assert.equal(head.children.length,0,'OCR must not download at app startup');
-context.openScoreTab();assert.equal(head.children.length,0,'Guide alone must not download OCR');
+assert.match(html,/<div id="score-guide"[^>]* hidden>/);
+$('score-guide').hidden=true;
+$('score-help').handlers.click();assert.equal($('score-guide').hidden,false);
+$('score-guide-close').handlers.click();assert.equal($('score-guide').hidden,true);
+assert.equal(head.children.length,0,'Guide alone must not download OCR');
 assert.equal($('score-frets').children.length,12);
 vm.runInContext("scoreState.source={width:1000,height:1000,getContext:()=>({getImageData:()=>({data:[255,255,255,255]})})};scoreState.image={};scoreState.codes=[{text:'G',bbox:{x0:50,y0:200,x1:85,y1:218}}];scoreState.capo=1;",context);
 context.drawScore(new Element(),false);

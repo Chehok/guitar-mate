@@ -279,12 +279,11 @@ footer { padding: 24px 0 8px; color: var(--muted); font-size: 12px; line-height:
 <header><div class="brand"><img src="./favicon.svg" width="40" height="40" alt=""><div class="brand-name">기타메이트<span class="brand-subtitle">기타 연습 도우미</span></div></div><div class="install-action"><button id="install-button" type="button" hidden>홈 화면에 추가</button><span class="badge">오프라인 지원</span></div></header>
 <nav class="mode-tabs" aria-label="연습 모드"><a id="tuner-tab" href="./">튜닝</a><a id="chords-tab" href="./chord-search.html">코드 검색</a><a id="identify-tab" href="./chord-identifier.html">코드 판별</a><a id="score-tab" href="./score-key-transposer.html" aria-current="page">악보 키 변환</a></nav>
 <section id="score-panel">
-<h1>내 악보를 편한 코드로.</h1>
-<p class="intro">악보의 코드를 기기 안에서 읽고, 카포나 원하는 키에 맞춰 바꿔 보세요. 이미지는 서버로 전송하지 않습니다.</p>
+<h1 class="sr-only">악보 키 변환</h1>
 <div id="score-guide" class="panel score-guide" hidden>
 <h2>악보 변환 사용법</h2>
 <ol><li>악보 이미지를 선택하거나 붙여넣고 인식된 코드를 확인하세요. PC는 Ctrl/Cmd+V, 모바일은 클립보드에서 붙여넣기를 누르세요.</li><li>카포 프렛 또는 반음 이동을 선택하세요. 코드를 누르면 직접 고칠 수 있어요.</li><li>교체·위에 표시를 고른 뒤 PNG로 저장하세요.</li></ol>
-<div class="score-row"><label><input id="score-guide-skip" type="checkbox"> 다시 보지 않기</label><button id="score-guide-close" type="button">확인</button></div>
+<div class="score-row"><button id="score-guide-close" type="button">확인</button></div>
 </div>
 <div class="panel score-upload"><label for="score-file">악보 이미지 선택</label><input id="score-file" type="file" accept="image/*" aria-describedby="score-file-hint"><p id="score-file-hint" class="hint">이미지 파일 · 최대 20MB · Ctrl/Cmd+V 또는 클립보드에서 붙여넣기로도 올릴 수 있어요. 모바일 대체 영역에서는 길게 눌러 붙여넣으세요. 첫 자동 인식에는 인터넷 연결이 필요합니다. 선명하고 수평인 악보가 잘 읽혀요.</p><div class="score-row"><button id="score-paste" type="button">클립보드에서 붙여넣기</button><button id="score-ocr" type="button" disabled>코드 다시 인식 (수정 초기화)</button><button id="score-cancel-ocr" type="button" hidden>인식 중지 · 직접 입력</button><button id="score-help" type="button">사용법</button></div><div id="score-paste-fallback" hidden><p id="score-paste-hint" class="hint">아래 영역을 길게 눌러 붙여넣기를 선택하세요. 이미지 붙여넣기가 지원되지 않으면 이미지 파일을 선택해 주세요.</p><div id="score-paste-area" contenteditable="true" role="textbox" aria-label="악보 이미지 붙여넣기 영역" aria-describedby="score-paste-hint" spellcheck="false"></div></div><p id="score-status" class="hint" role="status" aria-live="polite">이미지를 선택하거나 붙여넣어 주세요. 자동 인식이 어려울 때는 코드 직접 추가를 이용할 수 있어요.</p></div>
 <div id="score-work" hidden>
@@ -1573,12 +1572,7 @@ return true;
 
 // Score editor: images and OCR results stay in memory on this device.
 const scoreState={image:null,codes:[],capo:0,keyDown:0,semitones:0,mode:'capo',overlay:'replace',original:false,busy:false,adding:false,editIndex:null,pending:null,run:0};
-let scoreLibraryPromise=null,scoreRuntimePromise=null,scoreTabOpened=false;
-function openScoreTab(){
-if(scoreTabOpened)return;scoreTabOpened=true;
-let skip=false;try{skip=localStorage.getItem('guitarmate-score-guide')==='hide';}catch(_){}
-$('score-guide').hidden=skip;
-}
+let scoreLibraryPromise=null,scoreRuntimePromise=null;
 function scoreStatus(message){$('score-status').textContent=message;}
 function scoreBusy(value){
 scoreState.busy=value;$('score-file').disabled=value;$('score-paste').disabled=value;$('score-ocr').disabled=value||!scoreState.image;
@@ -1807,7 +1801,7 @@ finally{$('score-paste').disabled=scoreState.busy;}
 });
 if(ready(['score'])){$('score-ocr').addEventListener('click',recognizeScore);
 $('score-cancel-ocr').addEventListener('click',cancelScoreOCR);
-$('score-guide-close').addEventListener('click',()=>{try{localStorage.setItem('guitarmate-score-guide',$('score-guide-skip').checked?'hide':'show');}catch(_){}$('score-guide').hidden=true;});
+$('score-guide-close').addEventListener('click',()=>{$('score-guide').hidden=true;$('score-help').focus();});
 $('score-help').addEventListener('click',()=>{$('score-guide').hidden=false;$('score-guide-close').focus();});
 for(let fret=0;fret<=11;fret++){
 const button=document.createElement('button'),span=document.createElement('span');button.type='button';span.textContent=fret;button.append(span);button.setAttribute('aria-label',fret===0?'카포 없음':`카포 ${fret}프렛`);button.setAttribute('aria-pressed',String(fret===0));button.addEventListener('click',()=>{scoreState.capo=fret;scoreState.keyDown=0;renderScore();});$('score-frets').append(button);
@@ -1864,7 +1858,6 @@ if(ready(['chords'])){
   input.value=new URLSearchParams(location.search).get('chord')?.slice(0,input.maxLength)||input.value;
   find(input.value);
 }
-if(ready(['score']))openScoreTab();
 if(ready(['tuner'])){document.addEventListener('visibilitychange',()=>{if(document.hidden){stopMicrophone();stopPlayback();}});window.addEventListener('pagehide',()=>{stopMicrophone();stopPlayback();});}
 else if(ready(['chords','identify']))window.addEventListener('pagehide',stopPlayback);
 // Home-screen installation: native prompt on Chromium, instructions on iOS Safari and Chrome.
