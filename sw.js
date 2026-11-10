@@ -1,6 +1,6 @@
 'use strict';
 // Increment when changing any app-shell file so installed copies refresh together.
-const VERSION='v68-chord-search-card';
+const VERSION='v69-shared-app-shell';
 // Keep the storage namespace so activation also removes pre-rebrand caches.
 const CACHE_PREFIX=`six-strings:${self.registration.scope}:`;
 const CACHE_NAME=CACHE_PREFIX+VERSION;
@@ -15,7 +15,7 @@ const pageRoutes=new Map([
   ...[['tuner','./'], ['identify','./chord-identifier.html'], ['score','./score-key-transposer.html']]
     .flatMap(([name,path])=>[[name,path],[`${name}.html`,path]])
 ]);
-const assets=['./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png','./icons/maskable-512.png','./icons/apple-touch-icon.png','./favicon.svg','./favicon-32.png','./favicon-16.png','./guide-dialog.css','./guide-dialog.js'];
+const assets=['./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png','./icons/maskable-512.png','./icons/apple-touch-icon.png','./favicon.svg','./favicon-32.png','./favicon-16.png','./app-shell.css','./app-shell.js','./guide-dialog.css','./guide-dialog.js'];
 const assetURLs=new Set(assets.map(path=>new URL(path,scope).href));
 const appURLs=new Set([...assetURLs,...[...pageRoutes.values()].map(path=>new URL(path,scope).href)]);
 self.addEventListener('install',event=>{

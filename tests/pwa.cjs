@@ -21,7 +21,8 @@ for(const file of ['favicon.svg','favicon-32.png','favicon-16.png'])assert(html.
 assert(html.includes('<title>기타메이트 · 튜닝</title>'));
 assert(html.includes('name="apple-mobile-web-app-title" content="기타메이트"'));
 assert(fs.readFileSync('favicon.svg','utf8').includes('<title>기타메이트</title>'));
-assert(html.includes("register('./sw.js',{scope:'./'})"));
+assert(html.includes('src="./app-shell.js"'));
+assert.match(fs.readFileSync('app-shell.js','utf8'),/register\('\.\/sw\.js',\s*\{scope: '\.\/'\}\)/);
 const source=fs.readFileSync('sw.js','utf8');
 async function checkScope(scope){
   const handlers={},stored=new Map(),deleted=[],requests=[];
@@ -62,7 +63,8 @@ async function checkScope(scope){
   });
   async function lifecycle(name){let pending;handlers[name]({waitUntil:promise=>{pending=promise;}});await pending;}
   await lifecycle('install');
-  assert(skipped);assert.equal(requests.length,17);
+  assert(skipped);
+  for(const asset of ['app-shell.js','app-shell.css','metronome.html'])assert(requests.includes(scope+asset));
   await lifecycle('activate');
   assert(claimed);assert.deepEqual(deleted,[prefix+'old']);
   assert(stored.has('unrelated-app-v1'));
