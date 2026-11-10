@@ -24,7 +24,6 @@ header { display:flex; align-items:center; justify-content:space-between; gap:12
 .brand img { display:block; width:40px; height:40px; border-radius:12px; }
 .brand-name { white-space:nowrap; font-size:21px; font-weight:800; letter-spacing:-.8px; line-height:1.25; }
 .brand-subtitle { display:block; margin-top:3px; color:var(--muted); font-size:12px; font-weight:450; letter-spacing:0; }
-.badge { color:var(--muted); font-size:12px; white-space:nowrap; }
 .mode-tabs { display:flex; gap:4px; margin-bottom:28px; overflow-x:auto; overscroll-behavior-x:contain; scrollbar-width:thin; border-bottom:1px solid var(--line); }
 .mode-tabs a { display:flex; flex:1 0 max-content; align-items:center; justify-content:center; min-height:48px; padding:10px 14px 12px; border-bottom:3px solid transparent; color:var(--muted); text-decoration:none; font-size:14px; font-weight:550; white-space:nowrap; }
 .mode-tabs a[aria-current=page] { color:var(--ink); border-bottom-color:var(--green); font-weight:750; }
@@ -53,12 +52,14 @@ footer { padding:18px 0 8px; color:var(--muted); font-size:12px; line-height:1.8
 @media (prefers-color-scheme:dark) { :root { color-scheme:dark; --paper:#131713; --panel:#1c221d; --soft:#29332b; --ink:#f0f1e6; --muted:#b2beb1; --line:#374438; --control:#7c907d; --green:#a2d2b5; --on-green:#172c21; --focus:#e8c879; } }
 @media (prefers-reduced-motion:reduce) { *,*::before,*::after { transition:none !important; animation:none !important; scroll-behavior:auto !important; } .beats li.active { transform:none; } }
 </style>
+<link rel="stylesheet" href="./guide-dialog.css">
+<script defer src="./guide-dialog.js"></script>
 <script data-goatcounter="https://guitar-mate.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9717375299017347" crossorigin="anonymous"></script>
 </head>
 <body>
 <div class="wrap">
-<header><a class="brand" href="./"><img src="./favicon.svg" width="40" height="40" alt=""><span class="brand-name">기타메이트<span class="brand-subtitle">기타 연습 도우미</span></span></a><span class="badge">오프라인 지원</span></header>
+<header><a class="brand" href="./"><img src="./favicon.svg" width="40" height="40" alt=""><span class="brand-name">기타메이트<span class="brand-subtitle">기타 연습 도우미</span></span></a><a class="guide-launch" href="./guide.html#example-metronome">사용 가이드</a></header>
 <nav class="mode-tabs" aria-label="연습 모드"><a href="./">튜닝</a><a href="./chord-search.html">코드 검색</a><a href="./chord-identifier.html">코드 판별</a><a href="./metronome.html" aria-current="page">메트로놈</a><a href="./score-key-transposer.html">악보 키 변환</a></nav>
 <main>
 <h1>메트로놈</h1>
@@ -94,7 +95,7 @@ footer { padding:18px 0 8px; color:var(--muted); font-size:12px; line-height:1.8
 </div>
 </div>
 </section>
-<footer>첫 박은 조금 더 강하게 들립니다. 기기 음량과 무음 설정을 확인해 주세요.</footer>
+<footer>첫 박은 조금 더 강하게 들립니다. 기기 음량과 무음 설정을 확인해 주세요.<br><a href="./about.html">소개 · 문의</a> · <a href="./privacy.html">개인정보처리방침</a></footer>
 </main>
 </div>
 <script>
