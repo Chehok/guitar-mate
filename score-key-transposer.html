@@ -253,6 +253,11 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .score-stage.adding #score-hit-layer { display:none; }
 .score-list summary { cursor:pointer; min-height:44px; padding:8px 0; }
 #score-code-list { margin-bottom:0; }
+.score-intro h2,.score-intro h3 { margin:0; font-size:16px; }
+.score-intro h3 { margin-top:14px; font-size:14px; }
+.score-intro-bars { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; list-style:none; margin:6px 0 0; padding:0; }
+.score-intro-bars li { padding:8px 4px; border:1px solid var(--line); border-radius:8px; background:var(--soft); text-align:center; overflow-wrap:anywhere; }
+.score-intro-bars span { display:block; color:var(--muted); font-size:12px; }
 #score-edit-text { display:block; width:100%; padding:10px; margin:10px 0; }
 #score-editor .score-row { justify-content:center; }
 @media (min-width:760px) { .score-controls { max-width:none; } }
@@ -315,6 +320,15 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <div class="score-preview-scroll"><div id="score-stage" class="score-stage"><canvas id="score-canvas" aria-label="변환한 악보. 아래 코드 목록에서 인식 결과를 수정할 수 있습니다."></canvas><div id="score-hit-layer"></div></div></div>
 </div>
 <details class="panel score-list"><summary id="score-count">인식된 코드 0개 · 확인 및 수정</summary><div id="score-code-list" class="quick"></div></details>
+<section id="score-intro" class="panel score-intro" aria-labelledby="score-intro-title" hidden>
+<h2 id="score-intro-title">추천 전주</h2>
+<p class="hint">한 마디에 코드 하나씩 연주한 뒤 곡의 첫 코드로 넘어가세요.</p>
+<h3 id="score-intro-easy-title">쉬운 전주</h3>
+<ol id="score-intro-easy" class="score-intro-bars" aria-labelledby="score-intro-easy-title" role="list"></ol>
+<h3 id="score-intro-opening-title">첫 코드 진행을 활용한 전주</h3>
+<ol id="score-intro-opening" class="score-intro-bars" aria-labelledby="score-intro-opening-title" role="list"></ol>
+<p id="score-intro-more" class="hint" hidden>코드를 2개 이상 인식하면 이 전주를 추천해요.</p>
+</section>
 </div>
 </section>
 <dialog id="score-editor" class="install-guide" aria-labelledby="score-editor-title"><h2 id="score-editor-title">원래 코드 수정</h2><form id="score-edit-form"><label for="score-edit-text">악보에 적힌 원래 코드</label><input id="score-edit-text" placeholder="예: Gm/Bb, D7sus4" maxlength="40" autocomplete="off" spellcheck="false" required><p class="hint">원래 코드를 입력하면 현재 설정에 맞춰 변환합니다.</p><p id="score-edit-error" class="error" role="alert"></p><div class="score-row"><button type="submit" class="primary">저장</button><button id="score-delete" type="button">삭제</button><button id="score-edit-cancel" type="button">취소</button></div></form></dialog>
@@ -1027,6 +1041,16 @@ for(const [chord,bonus] of [[chords[0],2],[chords.at(-1),3]])if(chord.root===pc&
 if(!best||weight>best.weight)best={pc,minor,weight};
 }
 return {...transposeScoreKey(best,0),weight:best.weight};
+}
+function recommendScoreIntros(key,opening){
+const names=scorePreferFlats(key)?scoreFlats:scoreSharps;
+const tonic=(offset,suffix='')=>names[scoreMod(key.pc+offset)]+suffix;
+const first=parseScoreChord(opening[0]);
+const lead=names[scoreMod(first.root+7)]+'7';
+const easy=key.minor?[tonic(0,'m'),tonic(3),tonic(5,'m'),lead]:[tonic(0),tonic(9,'m'),tonic(2,'m'),lead];
+// shortcut: use chord order without reading measure boundaries, until OCR can identify barlines.
+const basedOnOpening=opening.length>=2?[opening[0],opening[1],opening[2]??easy[2],lead]:[];
+return {easy,basedOnOpening};
 }
 // OCR helpers are shared verbatim with the Node evaluator; no browser pixel filters.
 function scoreImageSize(width,height,ocr=false){
@@ -1748,6 +1772,24 @@ if(run===scoreState.run)scoreBusy(false);
 }
 }
 function transformedScoreChord(text,key){if(scoreState.keyDown)return transposeScoreChord(text,-scoreState.keyDown,transposeScoreKey(key,-scoreState.keyDown));return capoScoreChord(text,scoreState.capo,key);}
+function renderScoreIntros(key){
+$('score-intro').hidden=!key;
+if(!key)return;
+const opening=scoreState.codes.slice(0,3).map(code=>code.text);
+const {easy,basedOnOpening}=recommendScoreIntros(key,opening);
+$('score-intro-more').hidden=basedOnOpening.length>0;
+for(const [id,chords] of [['score-intro-easy',easy],['score-intro-opening',basedOnOpening]]){
+const list=$(id);
+list.hidden=!chords.length;
+list.replaceChildren(...chords.map((chord,index)=>{
+const item=document.createElement('li'),bar=document.createElement('span'),label=document.createElement('strong');
+bar.textContent=`${index+1}마디`;
+label.textContent=transformedScoreChord(chord,key);
+item.append(bar,label);
+return item;
+}));
+}
+}
 function scorePatchColor(bbox){
 const source=scoreState.source,ctx=source.getContext('2d'),colors=[];
 // Median of pixels just outside the glyph box avoids sampling dark letter strokes.
@@ -1782,6 +1824,7 @@ ctx.fillStyle=color.ink;ctx.fillText(text,b.x0,y,maxWidth);
 }
 function renderScore(){
 const key=detectScoreKey(scoreState.codes),destination=transposeScoreKey(key,-(scoreState.keyDown||scoreState.capo));
+renderScoreIntros(key);
 $('score-key').textContent=key?`감지 키: ${key.name} (추정)`:'감지 키: —';
 $('score-result-key').textContent=scoreState.keyDown?`카포 없음 · 소리의 키 ${key?key.name:'미정'} → ${destination?destination.name:'미정'}`:scoreState.capo?`카포 ${scoreState.capo} · 원래 키 ${key?key.name:'미정'} 유지 · 코드 모양의 키 ${destination?destination.name:'미정'}`:'카포 없이 키를 낮추려면 −를 누르세요.';
 $('score-capo-value').textContent=scoreState.keyDown?`카포 없음 · 키 −${scoreState.keyDown}반음`:scoreState.capo===0?'카포 없음':'카포 '+scoreState.capo;
@@ -1916,8 +1959,10 @@ addScoreAt(scoreState.source.width*x/100,scoreState.source.height*y/100);
 $('score-edit-form').addEventListener('submit',event=>{
 event.preventDefault();const chord=parseScoreChord($('score-edit-text').value);
 if(!chord){$('score-edit-error').textContent='코드 형식을 확인해 주세요. 예: G, F#m, C/E, Gm/Bb, D7sus4, Am7';return;}
-if(scoreState.editIndex===null)scoreState.codes.push({text:chord.text,bbox:scoreState.pending,confidence:100});else scoreState.codes[scoreState.editIndex].text=chord.text;
+if(scoreState.editIndex===null){
+scoreState.codes.push({text:chord.text,bbox:scoreState.pending,confidence:100});
 scoreState.codes.sort((a,b)=>a.bbox.y0-b.bbox.y0||a.bbox.x0-b.bbox.x0);
+}else scoreState.codes[scoreState.editIndex].text=chord.text;
 scoreState.adding=false;$('score-manual-position').hidden=true;$('score-editor').close();renderScore();scoreStatus('코드를 저장했어요. 변환 결과를 확인해 주세요.');
 });
 $('score-delete').addEventListener('click',()=>{if(scoreState.editIndex!==null)scoreState.codes.splice(scoreState.editIndex,1);$('score-editor').close();renderScore();scoreStatus('코드를 삭제했어요.');});

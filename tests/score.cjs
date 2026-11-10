@@ -168,6 +168,28 @@ assert(paint.find(p=>p[0]==='text')[3]<200,'Above mode draws above original chor
   click('score-capo-minus');click('score-capo-minus');click('score-capo-minus');click('score-capo-minus');assert.deepEqual(state(),[0,1]);
   vm.runInContext("scoreState.capo=1;scoreState.keyDown=0;",context);
 }
+// Recommendations follow the actual score controls and keep four bars per progression.
+{
+  const bars=id=>$(id).children.map(item=>item.children[1].textContent);
+  const easy='score-intro-easy',opening='score-intro-opening';
+  vm.runInContext("scoreState.codes=[];scoreState.capo=0;",context);
+  context.renderScore();assert($('score-intro').hidden);
+  vm.runInContext("scoreState.codes=['C','G','Am','F','C'].map((text,i)=>({text,bbox:{x0:50+i*90,y0:200,x1:85+i*90,y1:218}}));",context);
+  context.renderScore();
+  assert(!$('score-intro').hidden);
+  assert.deepEqual(bars(easy),['C','Am','Dm','G7']);
+  assert.deepEqual(bars(opening),['C','G','Am','G7']);
+  $('score-frets').children[1].handlers.click();
+  assert.deepEqual(bars(easy),['Bb','Gm','Cm','F7']);
+  assert.deepEqual(bars(opening),['Bb','F','Gm','F7']);
+  for(let i=0;i<3;i++)$('score-capo-minus').handlers.click();
+  assert.deepEqual(bars(easy),['B','G#m','C#m','F#7']);
+  assert.deepEqual(bars(opening),['B','F#','G#m','F#7']);
+  vm.runInContext("scoreState.codes.length=2;scoreState.keyDown=0;",context);
+  context.renderScore();assert.deepEqual(bars(opening),['C','G','Am','G7']);
+  vm.runInContext("scoreState.codes.length=1;scoreState.capo=1;",context);
+  context.renderScore();assert($(opening).hidden);assert(!$('score-intro-more').hidden);
+}
 async function checkOCR(){
 let regionPSM,regionCalls=0;
 const regionResult=await context.runScoreOCRPasses({setParameters:async p=>{regionPSM=p.tessedit_pageseg_mode;},recognize:async()=>{
