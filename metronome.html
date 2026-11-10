@@ -107,45 +107,64 @@ const beats=[...document.querySelectorAll('.beats li')];
 const pendulum=document.getElementById('pendulum');
 const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
 let audioContext=null,timer=null,running=false,nextBeat=0,nextBeatTime=0;
-let swing=null,animationFrame=null;
-const sources=new Set(),visualTimers=new Set();
+let displayedBeat=null,animationFrame=null;
+const sources=new Set(),scheduledBeats=[];
 function setTempo(raw){const bpm=Math.max(40,Math.min(240,Math.round(Number(raw)||100)));tempoRange.value=tempoValue.value=bpm;}
 tempoRange.addEventListener('input',()=>setTempo(tempoRange.value));
 tempoValue.addEventListener('change',()=>setTempo(tempoValue.value));
+function audibleTime(){
+  const timestamp=audioContext.getOutputTimestamp?.();
+  if(timestamp?.performanceTime>0){
+    return Math.min(audioContext.currentTime,timestamp.contextTime+(performance.now()-timestamp.performanceTime)/1000);
+  }
+  return audioContext.currentTime-(audioContext.baseLatency||0)-(audioContext.outputLatency||0);
+}
+function discardOlderBeats(time){
+  // Keep the latest audible beat as the start of the current swing.
+  while(scheduledBeats.length>1&&scheduledBeats[1].time<=time)scheduledBeats.shift();
+}
 function paintPendulum(){
   if(!running)return;
-  if(swing&&!reducedMotion.matches){
-    const phase=Math.max(0,Math.min(1,(audioContext.currentTime-swing.time)/swing.interval));
-    const direction=swing.beat%2===0?-1:1;
-    pendulum.setAttribute('transform',`rotate(${27*direction*Math.cos(Math.PI*phase)} 126 178)`);
-  }else{
-    pendulum.removeAttribute('transform');
-  }
   animationFrame=requestAnimationFrame(paintPendulum);
+  if(audioContext.state!=='running')return;
+
+  const time=audibleTime();
+  discardOlderBeats(time);
+  const current=scheduledBeats[0];
+  if(!current||current.time>time)return;
+
+  if(current!==displayedBeat){
+    beats.forEach((item,index)=>{
+      item.classList.toggle('active',index===current.beat);
+      if(index===current.beat)item.setAttribute('aria-current','step');
+      else item.removeAttribute('aria-current');
+    });
+    displayedBeat=current;
+  }
+  if(reducedMotion.matches){
+    pendulum.removeAttribute('transform');
+    return;
+  }
+  const phase=Math.min(1,(time-current.time)/current.interval);
+  const direction=current.beat%2===0?-1:1;
+  const angle=27*direction*Math.cos(Math.PI*phase);
+  pendulum.setAttribute('transform',`rotate(${angle} 126 178)`);
 }
-function playClick(time,beat,interval){
+function playClick(time,beat){
   const oscillator=audioContext.createOscillator(),gain=audioContext.createGain();
   oscillator.type='square';oscillator.frequency.setValueAtTime(beat===0?1320:880,time);
   gain.gain.setValueAtTime(.0001,time);gain.gain.exponentialRampToValueAtTime(beat===0?.2:.13,time+.002);gain.gain.exponentialRampToValueAtTime(.0001,time+.045);
   oscillator.connect(gain);gain.connect(audioContext.destination);sources.add(oscillator);oscillator.onended=()=>sources.delete(oscillator);oscillator.start(time);oscillator.stop(time+.05);
-  const visualTimer=setTimeout(()=>{
-    swing={time,beat,interval};
-    beats.forEach((item,index)=>{
-      item.classList.toggle('active',index===beat);
-      if(index===beat)item.setAttribute('aria-current','step');
-      else item.removeAttribute('aria-current');
-    });
-    visualTimers.delete(visualTimer);
-  },Math.max(0,(time-audioContext.currentTime)*1000));
-  visualTimers.add(visualTimer);
 }
 function schedule(){
-  if(!running)return;
+  if(!running||audioContext.state!=='running')return;
+  if(document.hidden)discardOlderBeats(audibleTime());
   const now=audioContext.currentTime;
   nextBeatTime=Math.max(now,nextBeatTime);
   while(nextBeatTime<now+.12){
     const interval=60/tempoRange.valueAsNumber;
-    playClick(nextBeatTime,nextBeat,interval);
+    playClick(nextBeatTime,nextBeat);
+    scheduledBeats.push({time:nextBeatTime,beat:nextBeat,interval});
     nextBeatTime+=interval;
     nextBeat=(nextBeat+1)%beats.length;
   }
@@ -154,11 +173,10 @@ function stop(){
   running=false;
   clearInterval(timer);
   cancelAnimationFrame(animationFrame);
-  timer=animationFrame=swing=null;
+  timer=animationFrame=displayedBeat=null;
   sources.forEach(source=>{try{source.stop();}catch(_){}});
   sources.clear();
-  visualTimers.forEach(clearTimeout);
-  visualTimers.clear();
+  scheduledBeats.length=0;
   pendulum.removeAttribute('transform');
   beats.forEach(item=>{item.classList.remove('active');item.removeAttribute('aria-current');});
   startStop.textContent='시작';
