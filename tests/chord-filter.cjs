@@ -58,6 +58,6 @@ for(const board of fretboards){
   assert.deepEqual([...board.matchAll(/>(\d+)<\/text>/g)].map(match=>Number(match[1])),Array.from({length:16},(_,i)=>i));
   assert.equal([...board.matchAll(/<circle[^>]*fill="var\(--(?:orange|green)\)"/g)].length,5,'Same open C fingering highlighted');
 }
-assert.match(fretboards[0],/<circle cx="59" cy="35" r="12" fill="var\(--green\)"/,'High E open note at the top on desktop');
+assert.match(fretboards[0],/<circle cx="40" cy="35" r="12" fill="var\(--green\)"/,'High E open note at the top on desktop');
 assert.match(fretboards[1],/<circle cx="256" cy="48" r="12" fill="var\(--green\)"/,'High E open note at the right on mobile');
 console.log('Chord filters, voicings, and both fretboard orientations passed.');

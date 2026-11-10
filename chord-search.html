@@ -99,9 +99,8 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .filter-reset { flex: none; min-height: 44px; padding: 4px 12px; font-size: 13px; }
 .chord-filter .quick.results { margin: 8px 0 0; max-height: 220px; overflow-y: auto; overscroll-behavior: contain; }
 .chord-filter .quick.results button { min-height: 44px; }
-.tuner-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start; }
+.chord-results, .tuner-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start; }
 .panel { min-width: 0; padding: 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
-.voicing-main, .voicing-panel .nav { max-width: 700px; margin-inline: auto; }
 .voicing-panel #audio-status:empty { margin: 0; min-height: 0; }
 .diagram-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
 .diagram-head > div { min-width: 0; flex: 1; }
@@ -119,7 +118,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .tone.root { background: var(--green); color: var(--on-green); }
 .tone strong { display: block; font-size: 18px; font-weight: 600; }
 .tone small { font-size: 12px; }
-.fret-panel { margin-top: 16px; padding: 20px 0 12px; overflow: hidden; }
+.fret-panel { padding: 20px 0 12px; overflow: hidden; }
 .fret-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 0 20px; }
 .fret-header h2, .tuner-controls h2 { font-size: 16px; font-weight: 650; margin: 0; }
 .legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--muted); }
@@ -130,7 +129,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .fret-panel .key.current { background: var(--green); }
 .scroll { overflow-x: auto; overscroll-behavior-x: contain; margin-top: 12px; padding: 8px 16px; scrollbar-color: var(--control) var(--soft); }
 .scroll:focus-visible { outline-offset: -4px; }
-.neck { display: block; width: 100%; min-width: 1010px; height: auto; }
+.neck { display: block; width: 100%; min-width: 640px; height: auto; }
 .neck-vertical { min-width: 0; max-width: 360px; margin-inline: auto; }
 .scroll-note { padding: 8px 20px 0; font-size: 12px; color: var(--muted); }
 .empty { padding: 48px 8px; text-align: center; color: var(--muted); }
@@ -187,7 +186,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
   .identify-hit:hover rect { fill: var(--hit); stroke: var(--green); stroke-width: 2; }
 }
 @media (min-width: 760px) {
-  .voicing-main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 290px); align-items: center; gap: 28px; }
+  .chord-results { grid-template-columns: minmax(290px, 1fr) minmax(0, 2fr); }
   .tuner-layout { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
   .panel { padding: 24px; }
   .fret-panel { padding: 24px 0 16px; }
@@ -195,7 +194,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
   .intro { font-size: 15px; }
 }
 @media (min-width: 760px) and (max-width: 1023px) {
-  .panel { padding: 20px; }
+  .panel:not(.fret-panel) { padding: 20px; }
   .tuner-layout { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (prefers-color-scheme: dark) {
@@ -285,18 +284,16 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <nav id="quick" class="quick results" aria-label="필터에 맞는 코드"></nav>
 <p id="filter-empty" class="hint" hidden>조건에 맞는 코드가 없습니다. (기본음과 같은 음은 베이스음으로 고를 수 없어요.) 필터를 바꾸거나 초기화해 주세요. 위 코드 카드는 이전에 선택한 코드입니다.</p>
 </section>
+<div class="chord-results">
 <section class="panel voicing-panel" aria-label="코드 운지법">
-<div class="voicing-main">
-<div>
 <div class="diagram-head"><div><h2 id="chord-title" class="chord-title"></h2><p id="quality" class="quality"></p></div><button id="play" class="play" type="button">소리 듣기</button></div>
 <div id="tones" class="tones" role="group" aria-label="코드 구성음"></div>
-</div>
 <div id="diagram"></div>
-</div>
 <div class="nav"><button id="prev" type="button" aria-label="이전 보이싱">← 이전</button><span id="counter" class="counter" aria-live="polite"></span><button id="next" type="button" aria-label="다음 보이싱">다음 →</button></div>
 <p id="audio-status" role="status"></p>
 </section>
 <section class="panel fret-panel" aria-label="전체 기타 지판"><div class="fret-header"><h2>지판에서 찾기</h2><div class="legend"><span><i class="key root"></i>근음</span><span><i class="key"></i>구성음</span><span><i class="key current"></i>현재 운지 (진한 색)</span></div></div><div id="neck-scroll" class="scroll" tabindex="0" role="region" aria-label="0부터 15프렛 지판"><div id="neck"></div></div><p id="neck-note" class="scroll-note"></p></section>
+</div>
 </section>
 </main>
 <gm-footer></gm-footer>
@@ -629,9 +626,9 @@ return svg(s,'0 0 290 310','diagram',`${current.label} 운지, 6번 줄부터 ${
 }
 const neckLayout=window.matchMedia('(max-width: 759px)');
 function neck(v,vertical){
-const start=vertical?70:81,step=vertical?38:62,end=start+15*step;
+const start=vertical?70:62,step=38,end=start+15*step;
 const side=vertical?50:30,edge=vertical?262:215;
-const fret=f=>f===0?(vertical?48:59):start+(f-.5)*step;
+const fret=f=>f===0?start-22:start+(f-.5)*step;
 const string=i=>vertical?56+i*40:35+(5-i)*35;
 const point=(along,across)=>vertical?[across,along]:[along,across];
 const text=(along,across,label,size=12,fill='var(--muted)',weight=400)=>{
@@ -656,22 +653,22 @@ for(const f of [3,5,7,9,12,15]){
 for(const across of f===12?[between(4,3),between(2,1)]:[between(3,2)])s+=dot(fret(f),across,4,'var(--inlay)');
 }
 for(let i=0;i<6;i++){
-s+=text(vertical?15:17,string(i),['E','A','D','G','B','e'][i]);
-s+=line(vertical?32:43,string(i),end,string(i),'var(--string)',1+i*.15);
+s+=text(vertical?15:12,string(i),['E','A','D','G','B','e'][i]);
+s+=line(vertical?32:24,string(i),end,string(i),'var(--string)',1+i*.15);
 for(let f=0;f<=15;f++){const pc=mod(tuning[i]+f),selected=v&&v.frets[i]===f;if(!selected&&!current.tones.some(t=>mod(current.pc+t[0])===pc))continue;const root=pc===current.pc;
 const fill=selected?(root?'var(--orange)':'var(--green)'):(root?'var(--root-soft)':'var(--neck-tone-soft)');
 const ink=selected?'var(--on-green)':(root?'var(--root-ink)':'var(--note-ink)');
 const label=noteName(current,pc);
 s+=dot(fret(f),string(i),12,fill)+text(fret(f),string(i),label,label.length>2?9:11,ink,600);
 }}
-return svg(s,vertical?'0 0 280 652':'0 0 1040 237',vertical?'neck neck-vertical':'neck',`${current.label} 코드 구성음의 전체 지판 위치. 근음은 주황 계열, 현재 운지는 진한 색으로 표시.`);
+return svg(s,vertical?'0 0 280 652':'0 0 650 237',vertical?'neck neck-vertical':'neck',`${current.label} 코드 구성음의 전체 지판 위치. 근음은 주황 계열, 현재 운지는 진한 색으로 표시.`);
 }
 function renderNeck(){
 if(!current)return;
 const vertical=neckLayout.matches,scroll=$('neck-scroll');
 scroll.tabIndex=vertical?-1:0;
 scroll.setAttribute('aria-label',vertical?'0부터 15프렛 세로 지판':'0부터 15프렛 지판, 좌우로 스크롤');
-$('neck-note').textContent=vertical?'0–15프렛 · 왼쪽이 6번 줄(낮은 E)':'0–15프렛 · 위쪽이 1번 줄(높은 E) · 좁은 화면에서는 좌우로 밀어 보세요.';
+$('neck-note').textContent=vertical?'0–15프렛 · 왼쪽이 6번 줄(낮은 E)':'0–15프렛 · 위쪽이 1번 줄(높은 E) · 지판이 잘리면 좌우로 밀어 보세요.';
 $('neck').innerHTML=neck(voicings[position],vertical);
 }
 neckLayout.addEventListener('change',renderNeck);
