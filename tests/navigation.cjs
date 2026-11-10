@@ -4,6 +4,7 @@ const fs=require('node:fs');
 const pages=[['index.html','tuner','./'],['chord-search.html','chords','./chord-search.html'],['chord-identifier.html','identify','./chord-identifier.html'],['score-key-transposer.html','score','./score-key-transposer.html']];
 for(const [file,mode,href] of pages){
   const html=fs.readFileSync(file,'utf8');
+  assert.match(html,/<header>[^\n]*class="brand"[^\n]*class="guide-launch" href="\.\/guide\.html"[^\n]*id="install-button"[^\n]*<\/header>/);
   const nav=html.slice(html.indexOf('<nav class="mode-tabs"'),html.indexOf('</nav>'));
   const links=[...nav.matchAll(/<a id="([^"]+)-tab" href="([^"]+)"( aria-current="page")?>/g)];
   assert.deepEqual(links.map(link=>link.slice(1,3)),pages.map(([,name,url])=>[name,url]));

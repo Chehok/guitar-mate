@@ -238,28 +238,49 @@ footer { padding: 24px 0 8px; color: var(--muted); font-size: 12px; line-height:
   *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
 }
 /* Score editor uses the existing paper, panel and guitar palette in both themes. */
-.score-guide,.score-upload,.score-controls,.score-list { margin-bottom:16px; }
-.score-guide h2 { font-size:16px; margin:0; }
-.score-guide ol { padding-left:24px; }
+.score-upload,.score-controls,.score-list { margin-bottom:16px; }
 .score-row { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-top:12px; }
+.score-preview-tools { display:flex; flex-wrap:wrap; align-items:center; gap:8px 16px; }
+.score-preview-tools .score-row { margin-top:0; }
+.score-preview-actions { margin-left:auto; justify-content:flex-end; }
 #score-panel label { display:inline-flex; align-items:center; gap:6px; }
-#score-paste-area { min-height:80px; padding:12px; border:1px dashed var(--control); border-radius:10px; }
-#score-paste-area:focus-visible { outline:3px solid var(--focus); outline-offset:3px; }
-#score-file { display:block; max-width:100%; width:100%; padding:10px; margin-top:8px; }
+.score-drop { display:grid; justify-items:center; gap:8px; padding:28px 12px; border:2px dashed var(--control); border-radius:12px; background:var(--soft); text-align:center; }
+.score-upload-actions { display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:8px; }
+.score-drop.is-dragging { border-color:var(--green); background:var(--hit); }
+.score-file-button { display:inline-flex; align-items:center; justify-content:center; min-height:44px; padding:8px 18px; border-radius:10px; background:var(--green); color:var(--on-green); font-weight:700; cursor:pointer; }
+#score-file:focus-visible + .score-file-button { outline:3px solid var(--focus); outline-offset:3px; }
+#score-file:disabled + .score-file-button { opacity:.6; cursor:default; }
+.score-drop-message { color:var(--muted); font-size:14px; }
 #score-panel input[type=radio],#score-panel input[type=checkbox] { width:18px; min-height:18px; height:18px; accent-color:var(--green); }
 #score-panel fieldset { border:0; margin:16px 0; padding:0; min-width:0; }
 #score-panel legend { font-weight:650; font-size:14px; }
-#score-panel select { font:inherit; color:var(--ink); background:var(--panel); border:1px solid var(--control); border-radius:10px; min-height:44px; padding:8px; margin-top:8px; max-width:100%; }
 #score-panel select:focus-visible { outline:3px solid var(--focus); outline-offset:3px; }
 #score-panel output { min-width:100px; text-align:center; font-variant-numeric:tabular-nums; }
 .score-fret-scroll { overflow-x:auto; margin-top:12px; padding:4px; }
-.score-frets { display:flex; min-width:576px; background:var(--neck); }
-.score-frets button { flex:1; border:0; border-right:2px solid var(--fret); border-radius:0; min-width:48px; min-height:100px; position:relative; background:transparent; padding:0; isolation:isolate; }
-.score-frets button::before { content:''; position:absolute; inset:22px 0; background:repeating-linear-gradient(to bottom,var(--string) 0,var(--string) 1px,transparent 1px,transparent 10px); z-index:-1; }
-.score-frets button:first-child { border-right:5px solid var(--fret); }
-.score-frets button span { background:var(--neck); padding:3px; }
-.score-frets button[aria-pressed=true] { background:var(--green); color:var(--on-green); }
-.score-frets button[aria-pressed=true] span { background:var(--green); }
+.score-neck { display:flex; align-items:center; min-width:672px; }
+.score-headstock { display:block; flex:0 0 96px; width:96px; height:126px; }
+.score-frets {
+  display:grid; flex:1; min-width:576px; border:1px solid var(--fret); border-left:5px solid var(--fret); border-radius:0 4px 4px 0;
+  grid-template-columns:minmax(44px,1.55fr) minmax(44px,1.45fr) minmax(44px,1.35fr) minmax(44px,1.25fr) minmax(44px,1.15fr) repeat(6,minmax(44px,1fr));
+  background:var(--neck);
+}
+.score-frets button {
+  display:flex; justify-content:center; align-items:flex-start; min-width:44px; min-height:100px; position:relative; isolation:isolate;
+  padding:4px 0 0; border:0; border-right:2px solid var(--fret); border-radius:0; background:transparent; color:var(--ink);
+  box-shadow:inset -1px 0 var(--panel);
+}
+.score-frets button:nth-child(3),
+.score-frets button:nth-child(5), .score-frets button:nth-child(7), .score-frets button:nth-child(9) {
+  background-image:radial-gradient(circle at center,var(--inlay) 0 4px,transparent 5px);
+}
+.score-frets button::before {
+  content:''; position:absolute; inset:24px -2px auto 0; height:52px; z-index:-1;
+  background:linear-gradient(to bottom,var(--string) 0 1px,transparent 1px 10px,var(--string) 10px 11px,transparent 11px 20px,var(--string) 20px 21px,transparent 21px 30px,var(--string) 30px 31.4px,transparent 31.4px 40px,var(--string) 40px 41.7px,transparent 41.7px 50px,var(--string) 50px 52px);
+}
+.score-frets button span { font-size:12px; font-weight:750; }
+.score-frets button:hover:not(:disabled), .score-frets button:active:not(:disabled) { background-color:var(--hit); border-color:var(--fret); transform:none; }
+.score-frets button[aria-pressed=true] span { color:var(--green); text-decoration:underline; text-underline-offset:3px; }
+.score-frets button[aria-pressed=true]::after { content:''; position:absolute; inset:17px 4px 17px auto; width:9px; border:1px solid var(--panel); border-radius:6px; background:var(--green); pointer-events:none; }
 .score-preview-scroll { overflow-x:auto; margin:16px 0; border:1px solid var(--line); border-radius:10px; background:var(--soft); }
 .score-stage { position:relative; width:100%; }
 #score-canvas { display:block; width:100%; height:auto; touch-action:pan-y; }
@@ -275,35 +296,60 @@ footer { padding: 24px 0 8px; color: var(--muted); font-size: 12px; line-height:
 @media (min-width:760px) { .score-controls { max-width:none; } }
 
 </style>
+<link rel="stylesheet" href="./guide-dialog.css">
+<script defer src="./guide-dialog.js"></script>
 <script data-goatcounter="https://guitar-mate.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9717375299017347" crossorigin="anonymous"></script>
 </head>
 <body>
 <main class="wrap">
-<header><div class="brand"><img src="./favicon.svg" width="40" height="40" alt=""><div class="brand-name">기타메이트<span class="brand-subtitle">기타 연습 도우미</span></div></div><div class="install-action"><button id="install-button" type="button" hidden>홈 화면에 추가</button><span class="badge">오프라인 지원</span></div></header>
+<header><div class="brand"><img src="./favicon.svg" width="40" height="40" alt=""><div class="brand-name">기타메이트<span class="brand-subtitle">기타 연습 도우미</span></div></div><div class="install-action"><a class="guide-launch" href="./guide.html">사용 가이드</a><button id="install-button" type="button" hidden>홈 화면에 추가</button><span class="badge">오프라인 지원</span></div></header>
 <nav class="mode-tabs" aria-label="연습 모드"><a id="tuner-tab" href="./">튜닝</a><a id="chords-tab" href="./chord-search.html">코드 검색</a><a id="identify-tab" href="./chord-identifier.html">코드 판별</a><a id="score-tab" href="./score-key-transposer.html" aria-current="page">악보 키 변환</a></nav>
 <section id="score-panel">
 <h1 class="sr-only">악보 키 변환</h1>
-<div id="score-guide" class="panel score-guide" hidden>
-<h2>악보 변환 사용법</h2>
-<ol><li>악보 이미지를 선택하거나 붙여넣고 인식된 코드를 확인하세요. PC는 Ctrl/Cmd+V, 모바일은 클립보드에서 붙여넣기를 누르세요.</li><li>카포 프렛 또는 반음 이동을 선택하세요. 코드를 누르면 직접 고칠 수 있어요.</li><li>교체·위에 표시를 고른 뒤 PNG로 저장하세요.</li></ol>
-<div class="score-row"><button id="score-guide-close" type="button">확인</button></div>
+<div class="panel score-upload">
+<div id="score-drop" class="score-drop">
+<div class="score-upload-actions">
+<input class="sr-only" id="score-file" type="file" accept="image/*" aria-label="악보 이미지 파일 선택" aria-describedby="score-file-hint">
+<label class="score-file-button" for="score-file">파일 선택</label>
+<button id="score-paste" type="button">클립보드에서 붙여넣기</button>
 </div>
-<div class="panel score-upload"><label for="score-file">악보 이미지 선택</label><input id="score-file" type="file" accept="image/*" aria-describedby="score-file-hint"><p id="score-file-hint" class="hint">이미지 파일 · 최대 20MB · Ctrl/Cmd+V 또는 클립보드에서 붙여넣기로도 올릴 수 있어요. 모바일 대체 영역에서는 길게 눌러 붙여넣으세요. 첫 자동 인식에는 인터넷 연결이 필요합니다. 선명하고 수평인 악보가 잘 읽혀요.</p><div class="score-row"><button id="score-paste" type="button">클립보드에서 붙여넣기</button><button id="score-ocr" type="button" disabled>코드 다시 인식 (수정 초기화)</button><button id="score-cancel-ocr" type="button" hidden>인식 중지 · 직접 입력</button><button id="score-help" type="button">사용법</button></div><div id="score-paste-fallback" hidden><p id="score-paste-hint" class="hint">아래 영역을 길게 눌러 붙여넣기를 선택하세요. 이미지 붙여넣기가 지원되지 않으면 이미지 파일을 선택해 주세요.</p><div id="score-paste-area" contenteditable="true" role="textbox" aria-label="악보 이미지 붙여넣기 영역" aria-describedby="score-paste-hint" spellcheck="false"></div></div><p id="score-status" class="hint" role="status" aria-live="polite">이미지를 선택하거나 붙여넣어 주세요. 자동 인식이 어려울 때는 코드 직접 추가를 이용할 수 있어요.</p></div>
-<div id="score-work" hidden>
+<p class="score-drop-message">또는 이미지를 여기에 끌어 놓으세요</p>
+<p id="score-file-hint" class="score-drop-message">이미지 한 장 · 최대 20MB</p>
+</div>
+<p id="score-status" class="hint" role="status" aria-live="polite">첫 자동 인식에는 인터넷 연결이 필요해요.</p>
+</div>
 <div class="panel score-controls">
 <p id="score-key" role="status">감지 키: —</p>
-<p class="hint">키는 코드 빈도와 첫·마지막 코드로 추정합니다. 다른 키라면 직접 선택하세요.</p>
-<label for="score-key-select">원래 키</label> <select id="score-key-select"><option value="auto">자동 감지</option></select>
-<fieldset><legend>변환 방식</legend><div class="score-row"><label><input type="radio" name="score-mode" value="capo" checked> 카포 · 원래 키 유지</label><label><input type="radio" name="score-mode" value="transpose"> 카포 없이 키 바꾸기 (반음 ±)</label></div></fieldset>
-<div id="score-capo-controls"><div class="score-row"><button id="score-capo-minus" type="button" aria-label="카포 한 프렛 내리기 (카포 없음에서는 키를 반음 내림)">−</button><output id="score-capo-value" aria-live="polite">카포 0</output><button id="score-capo-plus" type="button" aria-label="카포 한 프렛 올리기">+</button></div><div class="score-fret-scroll" tabindex="0" role="region" aria-label="카포 0부터 11프렛 선택, 좌우로 스크롤"><div id="score-frets" class="score-frets" role="group" aria-label="카포 위치"></div></div></div>
-<div id="score-transpose-controls" class="score-row" hidden><button id="score-semi-minus" type="button" aria-label="키 반음 내리기">−1</button><output id="score-semi-value" aria-live="polite">0 반음</output><button id="score-semi-plus" type="button" aria-label="키 반음 올리기">+1</button></div>
-<p id="score-result-key" class="hint" aria-live="polite"></p>
-<fieldset><legend>코드 표시</legend><div class="score-row"><label><input type="radio" name="score-overlay" value="replace" checked> 교체</label><label><input type="radio" name="score-overlay" value="above"> 위에</label><label><input id="score-original" type="checkbox"> 원본 보기</label></div></fieldset>
-<div class="score-row"><button id="score-add" type="button">코드 직접 추가</button><button id="score-download" type="button" class="primary">PNG 다운로드</button></div>
-<div id="score-manual-position" hidden><p class="hint">키보드로 추가할 위치를 입력하세요. 왼쪽 위가 0%, 오른쪽 아래가 100%입니다.</p><div class="score-row"><label>가로 % <input id="score-pos-x" type="number" min="0" max="100" value="10" style="width:80px"></label><label>세로 % <input id="score-pos-y" type="number" min="0" max="100" value="10" style="width:80px"></label><button id="score-position-add" type="button">이 위치에 추가</button></div></div><p id="score-edit-hint" class="hint">악보의 코드를 눌러 수정·삭제하세요. 직접 추가를 누른 뒤 악보에서 위치를 선택하세요. 코드 목록으로도 편집할 수 있어요.</p>
+<div id="score-capo-controls"><div class="score-row"><button id="score-capo-minus" type="button" aria-label="카포 한 프렛 내리기 (카포 없음에서는 키를 반음 내림)">−</button><output id="score-capo-value" aria-live="polite">카포 없음</output><button id="score-capo-plus" type="button" aria-label="카포 한 프렛 올리기">+</button></div>
+<div class="score-fret-scroll" tabindex="0" role="region" aria-label="카포 1부터 11프렛 선택, 좌우로 스크롤"><div class="score-neck">
+<svg class="score-headstock" viewBox="0 0 96 126" aria-hidden="true" focusable="false">
+<path d="M16 22 37 18q4-1 8 1l18 9 20-11 13-4v100l-13-4-20-11-18 9q-4 2-8 1l-21-4q-6-4-6-12V34q0-8 6-12Z" fill="var(--green)" stroke="var(--fret)"/>
+<path d="M16 35q0-6 4-8l19-4 24 11 27-13M16 91q0 6 4 8l19 4 24-11 27 13" fill="none" stroke="var(--neck)" stroke-opacity=".38"/>
+<path d="M26 29V12m17 15V9m17 25V16M26 97v17m17-15v18m17-25v18" stroke="var(--fret)" stroke-width="3"/>
+<path d="M21 12h10M38 9h10m7 7h10M21 114h10m7 3h10m7-7h10" stroke="var(--fret)" stroke-width="7" stroke-linecap="round"/>
+<path d="M22 11h8m9-3h8m9 7h8M22 113h8m9 3h8m9-7h8" stroke="var(--neck)" stroke-width="1.5" stroke-linecap="round" opacity=".8"/>
+<g fill="none" stroke="var(--neck)" stroke-opacity=".85">
+<path d="M26 34 96 37M43 32l53 15M60 39l36 18" stroke-width=".9"/>
+<path d="M60 87l36-20" stroke-width="1.2"/><path d="M43 94l53-17" stroke-width="1.4"/><path d="M26 92l70-5" stroke-width="1.65"/>
+</g>
+<g fill="var(--neck)" stroke="var(--fret)"><circle cx="26" cy="34" r="4"/><circle cx="43" cy="32" r="4"/><circle cx="60" cy="39" r="4"/><circle cx="60" cy="87" r="4"/><circle cx="43" cy="94" r="4"/><circle cx="26" cy="92" r="4"/></g>
+<path d="M24 34h4M41 32h4M58 39h4M58 87h4M41 94h4M24 92h4" stroke="var(--fret)" stroke-linecap="round"/>
+</svg>
+<div id="score-frets" class="score-frets" role="group" aria-label="카포 위치"></div>
+</div></div></div>
+<p id="score-result-key" class="hint" aria-live="polite">카포 없이 키를 낮추려면 −를 누르세요.</p>
 </div>
-<p id="score-size" class="hint"></p><div class="score-preview-scroll"><div id="score-stage" class="score-stage"><canvas id="score-canvas" aria-label="변환한 악보. 아래 코드 목록에서 인식 결과를 수정할 수 있습니다."></canvas><div id="score-hit-layer"></div></div></div>
+<div id="score-work" hidden>
+<div class="panel score-controls">
+<div class="score-preview-tools">
+<div class="score-row" role="group" aria-labelledby="score-overlay-label"><strong id="score-overlay-label">코드 표시</strong><label><input type="radio" name="score-overlay" value="replace" checked> 교체</label><label><input type="radio" name="score-overlay" value="above"> 위에</label><label><input id="score-original" type="checkbox"> 원본 보기</label></div>
+<div class="score-row score-preview-actions"><button id="score-add" type="button">코드 직접 추가</button><button id="score-download" type="button" class="primary">PNG 다운로드</button></div>
+</div>
+<div id="score-manual-position" hidden><p class="hint">키보드로 추가할 위치를 입력하세요. 왼쪽 위가 0%, 오른쪽 아래가 100%입니다.</p><div class="score-row"><label>가로 % <input id="score-pos-x" type="number" min="0" max="100" value="10" style="width:80px"></label><label>세로 % <input id="score-pos-y" type="number" min="0" max="100" value="10" style="width:80px"></label><button id="score-position-add" type="button">이 위치에 추가</button></div></div>
+<p id="score-edit-hint" class="hint">악보의 코드를 눌러 수정·삭제하세요. 직접 추가를 누른 뒤 악보에서 위치를 선택하세요. 코드 목록으로도 편집할 수 있어요.<br><span id="score-size"></span></p>
+<div class="score-preview-scroll"><div id="score-stage" class="score-stage"><canvas id="score-canvas" aria-label="변환한 악보. 아래 코드 목록에서 인식 결과를 수정할 수 있습니다."></canvas><div id="score-hit-layer"></div></div></div>
+</div>
 <details class="panel score-list"><summary id="score-count">인식된 코드 0개 · 확인 및 수정</summary><div id="score-code-list" class="quick"></div></details>
 </div>
 </section>
@@ -1643,13 +1689,12 @@ return true;
 // End score music functions.
 
 // Score editor: images and OCR results stay in memory on this device.
-const scoreState={image:null,codes:[],capo:0,keyDown:0,semitones:0,mode:'capo',overlay:'replace',original:false,busy:false,adding:false,editIndex:null,pending:null,run:0};
+const scoreState={image:null,codes:[],capo:0,keyDown:0,overlay:'replace',original:false,busy:false,adding:false,editIndex:null,pending:null,run:0};
 let scoreLibraryPromise=null,scoreRuntimePromise=null;
 function scoreStatus(message){$('score-status').textContent=message;}
-function scoreBusy(value){
-scoreState.busy=value;$('score-file').disabled=value;$('score-paste').disabled=value;$('score-ocr').disabled=value||!scoreState.image;
-$('score-add').disabled=value;$('score-stage').setAttribute('aria-busy',String(value));
-$('score-cancel-ocr').hidden=!value;
+function scoreBusy(value,allowManual=false){
+scoreState.busy=value;$('score-file').disabled=value;$('score-paste').disabled=value;
+$('score-add').disabled=value&&!allowManual;$('score-stage').setAttribute('aria-busy',String(value));
 for(const button of [...$('score-hit-layer').children,...$('score-code-list').children])button.disabled=value;
 }
 function loadScoreLibrary(runtime=false){
@@ -1712,12 +1757,12 @@ terminate:async()=>{closed=true;await Promise.allSettled([legacy?.terminate(),re
 let scoreAbortOCR=null;
 function cancelScoreOCR(){
 scoreState.run++;if(scoreAbortOCR)scoreAbortOCR();
-scoreBusy(false);scoreStatus('자동 인식을 중지했어요. 코드 직접 추가를 누르고 악보에서 위치를 선택해 주세요.');
+scoreBusy(false);
 }
 async function recognizeScore(){
 if(!scoreState.image||scoreState.busy)return;
-if(navigator.onLine===false){scoreStatus('오프라인에서는 자동 인식 준비가 어려울 수 있어요. 코드 직접 추가로 위치와 코드를 입력하거나, 연결 후 다시 인식해 주세요.');return;}
-const run=++scoreState.run;scoreBusy(true);scoreStatus('자동 인식을 준비합니다. 처음에는 인식 도구를 내려받아 잠시 걸릴 수 있어요.');
+if(navigator.onLine===false){scoreStatus('오프라인에서는 자동 인식 준비가 어려울 수 있어요. 코드 직접 추가로 위치와 코드를 입력하거나, 연결 후 이미지를 다시 열어 주세요.');return;}
+const run=++scoreState.run;scoreBusy(true,true);scoreStatus('자동 인식을 준비합니다. 처음에는 인식 도구를 내려받아 잠시 걸릴 수 있어요.');
 let worker=null,timer,timedOut=false,abort,canvas=null,passIndex=0,passTotal=3,passVariant='color';
 const labels={color:'컬러 글씨 분리',gray:'확대·대비 보정',adaptive:'적응형 이진화',region:'코드 영역 확대'};
 const current=()=>run===scoreState.run&&!timedOut;
@@ -1749,11 +1794,7 @@ clearTimeout(timer);if(scoreAbortOCR===abort)scoreAbortOCR=null;if(canvas){canva
 if(run===scoreState.run)scoreBusy(false);
 }
 }
-function currentScoreKey(){
-const value=$('score-key-select').value;
-return value==='auto'?detectScoreKey(scoreState.codes):transposeScoreKey({pc:Number(value.split(':')[0]),minor:value.endsWith(':m')},0);
-}
-function transformedScoreChord(text,key){if(scoreState.mode==='capo'&&scoreState.keyDown)return transposeScoreChord(text,-scoreState.keyDown,transposeScoreKey(key,-scoreState.keyDown));return scoreState.mode==='capo'?capoScoreChord(text,scoreState.capo,key):transposeScoreChord(text,scoreState.semitones,transposeScoreKey(key,scoreState.semitones));}
+function transformedScoreChord(text,key){if(scoreState.keyDown)return transposeScoreChord(text,-scoreState.keyDown,transposeScoreKey(key,-scoreState.keyDown));return capoScoreChord(text,scoreState.capo,key);}
 function scorePatchColor(bbox){
 const source=scoreState.source,ctx=source.getContext('2d'),colors=[];
 // Median of pixels just outside the glyph box avoids sampling dark letter strokes.
@@ -1769,7 +1810,7 @@ const source=scoreState.source;if(!source)return;
 canvas.width=source.width;canvas.height=source.height;
 const ctx=canvas.getContext('2d');ctx.drawImage(source,0,0);
 if(original)return;
-const key=currentScoreKey();
+const key=detectScoreKey(scoreState.codes);
 for(const code of scoreState.codes){
 const b=code.bbox,text=transformedScoreChord(code.text,key),height=b.y1-b.y0;
 if(!text)continue;
@@ -1787,16 +1828,13 @@ ctx.fillStyle=color.ink;ctx.fillText(text,b.x0,y,maxWidth);
 }
 }
 function renderScore(){
-if(!scoreState.image)return;
-const key=currentScoreKey(),destination=transposeScoreKey(key,scoreState.mode==='capo'?-(scoreState.keyDown||scoreState.capo):scoreState.semitones);
-$('score-key').textContent=`${$('score-key-select').value==='auto'?'감지':'선택'} 키: ${key?key.name:'—'}${$('score-key-select').value==='auto'?' (추정)':''}`;
-$('score-result-key').textContent=scoreState.mode==='capo'&&scoreState.keyDown?`카포 없음 · 카포는 0보다 낮출 수 없어 키를 ${scoreState.keyDown}반음 내려 표시 · 소리의 키 ${key?key.name:'미정'} → ${destination?destination.name:'미정'} (예: G → ${transposeScoreChord('G',-scoreState.keyDown,transposeScoreKey(key,-scoreState.keyDown))})`:scoreState.mode==='capo'?`카포 ${scoreState.capo} · 원래 소리 ${key?key.name:'미정'} 유지 · 코드 모양의 키 ${destination?destination.name:'미정'} (예: G → ${capoScoreChord('G',scoreState.capo,key)})`:`${scoreState.semitones>0?'+':''}${scoreState.semitones} 반음 · 소리의 키 ${key?key.name:'미정'} → ${destination?destination.name:'미정'}`;
-$('score-capo-value').textContent=scoreState.keyDown?`카포 없음 · 키 −${scoreState.keyDown}반음`:scoreState.capo===0?'카포 없음 (0)':'카포 '+scoreState.capo;
-$('score-semi-value').textContent=`${scoreState.semitones>0?'+':''}${scoreState.semitones} 반음`;
+const key=detectScoreKey(scoreState.codes),destination=transposeScoreKey(key,-(scoreState.keyDown||scoreState.capo));
+$('score-key').textContent=key?`감지 키: ${key.name} (추정)`:'감지 키: —';
+$('score-result-key').textContent=scoreState.keyDown?`카포 없음 · 소리의 키 ${key?key.name:'미정'} → ${destination?destination.name:'미정'}`:scoreState.capo?`카포 ${scoreState.capo} · 원래 키 ${key?key.name:'미정'} 유지 · 코드 모양의 키 ${destination?destination.name:'미정'}`:'카포 없이 키를 낮추려면 −를 누르세요.';
+$('score-capo-value').textContent=scoreState.keyDown?`카포 없음 · 키 −${scoreState.keyDown}반음`:scoreState.capo===0?'카포 없음':'카포 '+scoreState.capo;
 $('score-capo-minus').disabled=scoreState.capo===0&&scoreState.keyDown===11;$('score-capo-plus').disabled=scoreState.capo===11;
-$('score-semi-minus').disabled=scoreState.semitones===-11;$('score-semi-plus').disabled=scoreState.semitones===11;
-$('score-capo-controls').hidden=scoreState.mode!=='capo';$('score-transpose-controls').hidden=scoreState.mode!=='transpose';
-for(const [i,button] of [...$('score-frets').children].entries())button.setAttribute('aria-pressed',String(i===scoreState.capo&&!scoreState.keyDown));
+for(const [i,button] of [...$('score-frets').children].entries())button.setAttribute('aria-pressed',String(i+1===scoreState.capo&&!scoreState.keyDown));
+if(!scoreState.image)return;
 $('score-stage').classList.toggle('adding',scoreState.adding);
 $('score-add').textContent=scoreState.adding?'위치 선택 취소':'코드 직접 추가';
 drawScore($('score-canvas'));
@@ -1832,7 +1870,7 @@ if(run!==scoreState.run)return;
 const size=scoreImageSize(image.naturalWidth,image.naturalHeight),scale=size.width/image.naturalWidth;
 const source=document.createElement('canvas');source.width=size.width;source.height=size.height;
 const ctx=source.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,source.width,source.height);ctx.drawImage(image,0,0,source.width,source.height);
-scoreState.image=image;scoreState.source=source;scoreState.codes=[];scoreState.adding=false;scoreState.original=false;$('score-original').checked=false;$('score-key-select').value='auto';
+scoreState.image=image;scoreState.source=source;scoreState.codes=[];scoreState.adding=false;scoreState.original=false;$('score-original').checked=false;
 $('score-work').hidden=false;$('score-manual-position').hidden=true;scoreBusy(false);renderScore();
 $('score-size').textContent=`처리·저장 크기: ${source.width} × ${source.height}px`+(scale<1?' · 기기 메모리를 위해 이미지를 축소했어요.':'');
 scoreStatus(scale<1?'큰 이미지는 기기 메모리를 위해 긴 변 4096px·최대 1200만 화소로 줄여 처리·저장합니다.':'이미지를 열었어요.');
@@ -1840,10 +1878,29 @@ await recognizeScore();
 }catch(_){if(run===scoreState.run){scoreBusy(false);scoreStatus('이미지를 열 수 없어요. 브라우저에서 열 수 있는 이미지인지 확인하고 다시 선택하거나 붙여넣어 주세요.');}}
 finally{URL.revokeObjectURL(url);$('score-file').value='';}
 }
-if(ready(['score']))$('score-file').addEventListener('change',()=>loadScoreImage($('score-file').files[0]));
+if(ready(['score'])){
+$('score-file').addEventListener('change',()=>loadScoreImage($('score-file').files[0]));
+const drop=$('score-drop');
+drop.addEventListener('dragover',event=>{
+if(!event.dataTransfer?.types.includes('Files'))return;
+event.preventDefault();
+event.dataTransfer.dropEffect=scoreState.busy?'none':'copy';
+drop.classList.toggle('is-dragging',!scoreState.busy);
+});
+drop.addEventListener('dragleave',event=>{
+if(!drop.contains(event.relatedTarget))drop.classList.remove('is-dragging');
+});
+drop.addEventListener('drop',event=>{
+event.preventDefault();
+drop.classList.remove('is-dragging');
+if(scoreState.busy)return;
+const files=event.dataTransfer?.files;
+if(files?.length>1){scoreStatus('악보 이미지는 한 장씩 올려 주세요.');return;}
+return loadScoreImage(files?.[0]);
+});
+}
 function scorePasteFallback(){
-$('score-paste-fallback').hidden=false;$('score-paste-area').focus();
-scoreStatus('클립보드를 직접 읽을 수 없어요. 아래 영역을 길게 눌러 붙여넣거나 이미지 파일을 선택해 주세요.');
+scoreStatus('클립보드를 읽을 수 없어요. 파일 선택으로 악보 이미지를 올려 주세요.');
 }
 if(ready(['score']))document.addEventListener('paste',async event=>{
 if($('score-panel').hidden)return;
@@ -1854,7 +1911,6 @@ if(scoreState.busy){scoreStatus('이미지를 처리 중이에요. 완료하거�
 const file=selected.item.getAsFile();
 if(file)await loadScoreImage(file);else scorePasteFallback();
 }else{
-if(event.target===$('score-paste-area'))event.preventDefault();
 scoreStatus('클립보드에 이미지가 없어요. 텍스트는 악보로 불러오지 않아요. 이미지를 복사한 뒤 붙여넣어 주세요.');
 }
 });
@@ -1871,23 +1927,24 @@ if(!$('score-panel').hidden)await loadScoreImage(file);
 }catch(_){if(!$('score-panel').hidden)scorePasteFallback();}
 finally{$('score-paste').disabled=scoreState.busy;}
 });
-if(ready(['score'])){$('score-ocr').addEventListener('click',recognizeScore);
-$('score-cancel-ocr').addEventListener('click',cancelScoreOCR);
-$('score-guide-close').addEventListener('click',()=>{$('score-guide').hidden=true;$('score-help').focus();});
-$('score-help').addEventListener('click',()=>{$('score-guide').hidden=false;$('score-guide-close').focus();});
-for(let fret=0;fret<=11;fret++){
-const button=document.createElement('button'),span=document.createElement('span');button.type='button';span.textContent=fret;button.append(span);button.setAttribute('aria-label',fret===0?'카포 없음':`카포 ${fret}프렛`);button.setAttribute('aria-pressed',String(fret===0));button.addEventListener('click',()=>{scoreState.capo=fret;scoreState.keyDown=0;renderScore();});$('score-frets').append(button);
+if(ready(['score'])){
+for(let fret=1;fret<=11;fret++){
+const button=document.createElement('button'),span=document.createElement('span');button.type='button';span.textContent=fret;button.append(span);button.setAttribute('aria-label',`카포 ${fret}프렛`);button.setAttribute('aria-pressed','false');button.addEventListener('click',()=>{scoreState.capo=fret;scoreState.keyDown=0;renderScore();});$('score-frets').append(button);
 }
-for(const minor of [false,true])for(let pc=0;pc<12;pc++){
-const option=document.createElement('option');option.value=pc+':'+(minor?'m':'M');option.textContent=transposeScoreKey({pc,minor},0).name;$('score-key-select').append(option);
-}
-$('score-key-select').addEventListener('change',renderScore);
 $('score-capo-minus').addEventListener('click',()=>{if(scoreState.capo>0&&!scoreState.keyDown)scoreState.capo--;else scoreState.keyDown=Math.min(11,scoreState.keyDown+1);renderScore();});
 $('score-capo-plus').addEventListener('click',()=>{if(scoreState.keyDown>0)scoreState.keyDown--;else scoreState.capo=Math.min(11,scoreState.capo+1);renderScore();});
-for(const [id,field,delta,min,max] of [['score-semi-minus','semitones',-1,-11,11],['score-semi-plus','semitones',1,-11,11]])$(id).addEventListener('click',()=>{scoreState[field]=Math.max(min,Math.min(max,scoreState[field]+delta));renderScore();});
-for(const input of document.querySelectorAll('input[name="score-mode"],input[name="score-overlay"]'))input.addEventListener('change',()=>{scoreState[input.name==='score-mode'?'mode':'overlay']=input.value;renderScore();});
+for(const input of document.querySelectorAll('input[name="score-overlay"]'))input.addEventListener('change',()=>{scoreState.overlay=input.value;renderScore();});
 $('score-original').addEventListener('change',()=>{scoreState.original=$('score-original').checked;renderScore();});
-$('score-add').addEventListener('click',()=>{scoreState.adding=!scoreState.adding;if(scoreState.adding){scoreState.original=false;$('score-original').checked=false;}renderScore();scoreStatus(scoreState.adding?'코드를 넣을 위치를 악보에서 눌러 주세요. 키보드에서는 아래 위치 입력으로 추가할 수 있어요.':'위치 선택을 취소했어요.');$('score-manual-position').hidden=!scoreState.adding;});
+$('score-add').addEventListener('click',()=>{
+const stopped=scoreState.busy;
+if(stopped)cancelScoreOCR();
+scoreState.adding=stopped||!scoreState.adding;
+if(scoreState.adding){scoreState.original=false;$('score-original').checked=false;}
+renderScore();
+const prompt='코드를 넣을 위치를 악보에서 눌러 주세요. 키보드에서는 아래 위치 입력으로 추가할 수 있어요.';
+scoreStatus(scoreState.adding?(stopped?'자동 인식을 중지했어요. ':'')+prompt:'위치 선택을 취소했어요.');
+$('score-manual-position').hidden=!scoreState.adding;
+});
 function addScoreAt(x,y){
 const source=scoreState.source,height=Math.max(12,source.height*.013),width=Math.min(source.width,Math.max(30,height*2.4));
 x=Math.max(0,Math.min(source.width-width,x));y=Math.max(0,Math.min(source.height-height,y));

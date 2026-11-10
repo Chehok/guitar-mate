@@ -1,0 +1,47 @@
+.install-action { gap: 8px; }
+.guide-launch {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid var(--control);
+  border-radius: 24px;
+  background: var(--panel);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 650;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.guide-launch:hover, .guide-launch:active { background: var(--soft); }
+.usage-dialog {
+  width: min(740px, calc(100% - 24px));
+  height: min(690px, calc(100% - 24px));
+  max-height: calc(100% - 24px);
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--panel);
+  color: var(--ink);
+  overflow: hidden;
+}
+.usage-dialog[open] { display: grid; grid-template-rows: auto minmax(0, 1fr); }
+.usage-dialog::backdrop { background: #0008; }
+.usage-dialog-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.usage-dialog-bar h2 { margin: 0; font-size: 18px; }
+.usage-dialog iframe { display: block; width: 100%; height: 100%; border: 0; }
+@media (max-width: 380px) {
+  .wrap > header { flex-wrap: wrap; gap: 8px; }
+  .wrap > header .brand { gap: 6px; }
+  .wrap > header .brand img { width: 30px; height: 30px; }
+  .wrap > header .brand-name { font-size: 17px; }
+  .install-action { gap: 4px; }
+  .install-action button, .guide-launch { padding-inline: 7px; }
+}

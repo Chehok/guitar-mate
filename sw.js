@@ -1,11 +1,11 @@
 'use strict';
 // Increment when changing any app-shell file so installed copies refresh together.
-const VERSION='v28-playable-voicings';
+const VERSION='v55-score-paste-message';
 // Keep the storage namespace so activation also removes pre-rebrand caches.
 const CACHE_PREFIX=`six-strings:${self.registration.scope}:`;
 const CACHE_NAME=CACHE_PREFIX+VERSION;
 const scope=new URL(self.registration.scope);
-const pages=['chord-search','chord-identifier','score-key-transposer'];
+const pages=['chord-search','chord-identifier','score-key-transposer','guide'];
 const menuRoutes=new Map([
   ['', './'],
   ...pages.flatMap(name=>[[name, `./${name}.html`], [`${name}.html`, `./${name}.html`]])
@@ -15,7 +15,7 @@ const pageRoutes=new Map([
   ...[['tuner','./'], ['identify','./chord-identifier.html'], ['score','./score-key-transposer.html']]
     .flatMap(([name,path])=>[[name,path],[`${name}.html`,path]])
 ]);
-const assets=['./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png','./icons/maskable-512.png','./icons/apple-touch-icon.png','./favicon.svg','./favicon-32.png','./favicon-16.png'];
+const assets=['./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png','./icons/maskable-512.png','./icons/apple-touch-icon.png','./favicon.svg','./favicon-32.png','./favicon-16.png','./guide-dialog.css','./guide-dialog.js'];
 const assetURLs=new Set(assets.map(path=>new URL(path,scope).href));
 const appURLs=new Set([...assetURLs,...[...pageRoutes.values()].map(path=>new URL(path,scope).href)]);
 self.addEventListener('install',event=>{

@@ -3,9 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
 const html=fs.readFileSync('score-key-transposer.html','utf8');
-assert.match(html,/카포 없이 키 바꾸기 \(반음 ±\)/);
-assert.match(html,/<button id="score-semi-minus"[^>]*>−1<\/button>/);
-assert.match(html,/<button id="score-semi-plus"[^>]*>\+1<\/button>/);
+assert.doesNotMatch(html,/name="score-mode"/);
 const script=html.match(/<script data-main-app[^>]*>([\s\S]*?)<\/script>/)[1];
 new vm.Script(script);
 const pure=script.slice(script.indexOf('// Score music functions:'),script.indexOf('// End score music functions.'));
@@ -118,7 +116,7 @@ assert.deepEqual(Array.from(merge([word('G/B',350,198),word('CM7',50,200)]),c=>c
 
 // No browser: execute actual UI wiring with small DOM/canvas doubles.
 class Element{
-constructor(){this.children=[];this.value='';this.style={};this.dataset={};this.handlers={};this.classList={toggle(){}};this.hidden=false;}
+constructor(){this.children=[];this.value='';this.style={};this.dataset={};this.handlers={};this.classList={toggle(){},remove(){}};this.hidden=false;}
 append(...children){this.children.push(...children);}
 replaceChildren(...children){this.children=children;}
 setAttribute(name,value){this[name]=value;}
@@ -129,7 +127,6 @@ getContext(){return painter;}
 const paint=[];
 const painter={drawImage(...a){paint.push(['image',...a]);},getImageData(_x,_y,w=1,h=1){return {data:new Uint8ClampedArray(w*h*4).fill(255)};},createImageData(w,h){return {data:new Uint8ClampedArray(w*h*4)};},putImageData(){},measureText(text){return {width:text.length*12};},fillRect(...a){paint.push(['mask',...a]);},fillText(...a){paint.push(['text',...a]);}};
 const elements=new Map(),$=id=>{if(!elements.has(id))elements.set(id,new Element());return elements.get(id);};
-$('score-key-select').value='auto';
 const documentHandlers={};
 const head=new Element(),start=script.indexOf('// Score editor: images');
 const ui=script.slice(start,script.indexOf("if(ready(['chords']))",start));
@@ -137,12 +134,12 @@ Object.assign(context,{painter,$,ready:modes=>modes.includes('score'),document:{
 vm.runInContext(ui,context);
 context.loadScoreRecognizer=async()=>{throw Error('Exercise legacy fallback in DOM doubles');};
 assert.equal(head.children.length,0,'OCR must not download at app startup');
-assert.match(html,/<div id="score-guide"[^>]* hidden>/);
-$('score-guide').hidden=true;
-$('score-help').handlers.click();assert.equal($('score-guide').hidden,false);
-$('score-guide-close').handlers.click();assert.equal($('score-guide').hidden,true);
-assert.equal(head.children.length,0,'Guide alone must not download OCR');
-assert.equal($('score-frets').children.length,12);
+assert.equal(head.children.length,0,'Opening the page must not download OCR');
+assert.equal($('score-frets').children.length,11);
+$('score-frets').children[0].handlers.click();
+assert.equal($('score-capo-value').textContent,'카포 1');
+assert.equal($('score-frets').children[0]['aria-pressed'],'true');
+$('score-capo-minus').handlers.click();
 vm.runInContext("scoreState.source={width:1000,height:1000,getContext:()=>({getImageData:()=>({data:[255,255,255,255]})})};scoreState.image={};scoreState.codes=[{text:'G',bbox:{x0:50,y0:200,x1:85,y1:218}}];scoreState.capo=1;",context);
 context.drawScore(new Element(),false);
 assert(paint.some(call=>call[0]==='text'&&call[1]==='F#'));
@@ -154,23 +151,22 @@ assert(paint.find(p=>p[0]==='text')[3]<200,'Above mode draws above original chor
 {
   const click=id=>$(id).handlers.click(),state=()=>JSON.parse(vm.runInContext('JSON.stringify([scoreState.capo,scoreState.keyDown])',context));
   const shown=chord=>vm.runInContext(`transformedScoreChord(${JSON.stringify(chord)},{pc:7,minor:false,name:'G'})`,context);
-  vm.runInContext("scoreState.capo=0;scoreState.keyDown=0;scoreState.mode='capo';",context);
+  vm.runInContext("scoreState.capo=0;scoreState.keyDown=0;",context);
   context.renderScore();assert(!$('score-capo-minus').disabled,'− is available at capo 0');
   assert.equal(shown('G'),'G');
   click('score-capo-minus');assert.deepEqual(state(),[0,1]);
   assert.equal(shown('G'),'F#');assert.equal(shown('C/E'),'B/D#');assert.equal(shown('Gm/Bb'),'F#m/A');assert.equal(shown('Em7'),'D#m7');
-  assert.equal($('score-capo-value').textContent,'카포 없음 · 키 −1반음');assert.match($('score-result-key').textContent,/카포는 0보다 낮출 수 없어/);
+  assert.equal($('score-capo-value').textContent,'카포 없음 · 키 −1반음');assert.match($('score-result-key').textContent,/소리의 키/);
   assert(!/카포 −/.test($('score-capo-value').textContent));
   click('score-capo-minus');assert.deepEqual(state(),[0,2]);assert.equal(shown('G'),'F');
   for(let i=0;i<20;i++)click('score-capo-minus');assert.deepEqual(state(),[0,11]);assert($('score-capo-minus').disabled);
   for(let i=0;i<11;i++)click('score-capo-plus');assert.deepEqual(state(),[0,0]);assert.equal(shown('G'),'G');
   click('score-capo-plus');assert.deepEqual(state(),[1,0]);assert.equal(shown('G'),'F#');
   click('score-capo-minus');assert.deepEqual(state(),[0,0]);click('score-capo-minus');assert.deepEqual(state(),[0,1]);
-  $('score-frets').children[3].handlers.click();assert.deepEqual(state(),[3,0],'fret button resets the key shift');
+  $('score-frets').children[2].handlers.click();assert.deepEqual(state(),[3,0],'fret button resets the key shift');
   assert.equal($('score-capo-value').textContent,'카포 3');
   click('score-capo-minus');click('score-capo-minus');click('score-capo-minus');click('score-capo-minus');assert.deepEqual(state(),[0,1]);
-  vm.runInContext("scoreState.mode='transpose';scoreState.semitones=2;",context);assert.equal(shown('G'),'A','transpose mode ignores capo-view key shift');
-  vm.runInContext("scoreState.mode='capo';scoreState.capo=1;scoreState.keyDown=0;",context);
+  vm.runInContext("scoreState.capo=1;scoreState.keyDown=0;",context);
 }
 async function checkOCR(){
 let regionPSM,regionCalls=0;
@@ -220,10 +216,13 @@ let finish;
 context.window.Tesseract.createWorker=async()=>({setParameters:async()=>{},recognize:()=>new Promise(resolve=>{finish=resolve;}),terminate:async()=>{}});
 const pending=context.recognizeScore();
 for(let i=0;i<30&&!finish;i++)await new Promise(resolve=>setTimeout(resolve,0));
-assert(finish);context.cancelScoreOCR();
+assert(finish);assert.equal($('score-add').disabled,false);
+$('score-add').handlers.click();
+assert.equal($('score-manual-position').hidden,false);
 finish({data:{words:[]}});await pending;
 assert.equal(vm.runInContext('scoreState.codes.length',context),2);
 assert.equal($('score-add').disabled,false);
+$('score-add').handlers.click();
 // Library download fails cleanly and can be retried.
 delete context.window.Tesseract;
 const loading=context.loadScoreLibrary();assert.equal(head.children.length,1);head.children[0].onerror();await assert.rejects(loading);
@@ -238,14 +237,17 @@ let revoked=0;
 context.URL={createObjectURL:()=> 'blob:test',revokeObjectURL:()=>{revoked++;}};
 context.Image=class {constructor(){this.naturalWidth=8000;this.naturalHeight=4000;}set src(value){Promise.resolve().then(()=>this.onload());}};
 context.navigator.onLine=false;
-$('score-file').files=[{type:'image/png',size:20*1024*1024}];
-await $('score-file').handlers.change();
+const dropFile={type:'image/png',size:20*1024*1024};
+let dropPrevented=false;
+const dropImages=files=>$('score-drop').handlers.drop({dataTransfer:{files},preventDefault(){dropPrevented=true;}});
+await dropImages([dropFile,dropFile]);assert.match($('score-status').textContent,/한 장씩/);
+await dropImages([dropFile]);assert(dropPrevented);
 assert.equal(vm.runInContext('scoreState.source.width',context),4096);
 assert.equal(vm.runInContext('scoreState.source.height',context),2048);
 assert.equal($('score-work').hidden,false);assert.equal($('score-add').disabled,false);assert.equal(revoked,1);
 // Clipboard entry points share image loading, validation and OCR with file selection.
 const pasted={type:'image/webp',size:100};let prevented=0;
-const pasteEvent={target:$('score-paste-area'),clipboardData:{items:[textItem,{kind:'file',type:pasted.type,getAsFile:()=>pasted}]},preventDefault(){prevented++;}};
+const pasteEvent={target:$('score-panel'),clipboardData:{items:[textItem,{kind:'file',type:pasted.type,getAsFile:()=>pasted}]},preventDefault(){prevented++;}};
 $('score-panel').hidden=true;
 await documentHandlers.paste(pasteEvent);assert.equal(revoked,1);assert.equal(prevented,0);
 $('score-panel').hidden=false;
@@ -254,15 +256,13 @@ vm.runInContext('scoreState.busy=true',context);
 await documentHandlers.paste(pasteEvent);assert.equal(revoked,2);assert.match($('score-status').textContent,/처리 중/);
 vm.runInContext('scoreState.busy=false',context);
 await documentHandlers.paste({...pasteEvent,clipboardData:{items:[textItem]}});
-assert.equal(revoked,2);assert.equal(prevented,3);assert.match($('score-status').textContent,/텍스트/);
+assert.equal(revoked,2);assert.equal(prevented,2);assert.match($('score-status').textContent,/텍스트/);
 // Ordinary text fields still receive native text paste; no image load is attempted.
 await documentHandlers.paste({...pasteEvent,target:$('score-edit-text'),clipboardData:{items:[textItem]}});
-assert.equal(prevented,3);assert.equal(revoked,2);
-$('score-paste-fallback').hidden=true;
-await $('score-paste').handlers.click();assert.equal($('score-paste-fallback').hidden,false);assert.match($('score-status').textContent,/길게 눌러/);
+assert.equal(prevented,2);assert.equal(revoked,2);
+await $('score-paste').handlers.click();assert.match($('score-status').textContent,/파일 선택/);
 context.navigator.clipboard={read:async()=>{throw Error('NotAllowedError');}};
-$('score-paste-fallback').hidden=true;
-await $('score-paste').handlers.click();assert.equal($('score-paste-fallback').hidden,false);assert.equal($('score-paste').disabled,false);
+await $('score-paste').handlers.click();assert.match($('score-status').textContent,/파일 선택/);assert.equal($('score-paste').disabled,false);
 context.navigator.clipboard.read=async()=>[{types:['text/plain']}];
 await $('score-paste').handlers.click();assert.equal(revoked,2);assert.match($('score-status').textContent,/텍스트/);
 context.navigator.clipboard.read=async()=>[{types:['text/html','image/webp'],getType:async type=>{assert.equal(type,'image/webp');return pasted;}}];

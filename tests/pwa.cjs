@@ -62,7 +62,7 @@ async function checkScope(scope){
   });
   async function lifecycle(name){let pending;handlers[name]({waitUntil:promise=>{pending=promise;}});await pending;}
   await lifecycle('install');
-  assert(skipped);assert.equal(requests.length,12);
+  assert(skipped);assert.equal(requests.length,15);
   await lifecycle('activate');
   assert(claimed);assert.deepEqual(deleted,[prefix+'old']);
   assert(stored.has('unrelated-app-v1'));

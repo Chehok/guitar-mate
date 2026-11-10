@@ -57,8 +57,6 @@ await page.locator('#score-edit-text').fill('C(SUS4)/E');
 await page.locator('#score-edit-form button[type=submit]').click();
 assert.match(await page.locator('#score-count').textContent(),/1개/);
 await page.locator('#score-capo-plus').click();
-await page.locator('input[name=score-mode][value=transpose]').check();
-await page.locator('#score-semi-plus').click();
 await page.locator('input[name=score-overlay][value=above]').check();
 await page.locator('#score-original').check();
 const downloaded=page.waitForEvent('download');await page.locator('#score-download').click();
@@ -78,9 +76,6 @@ await page.waitForFunction(()=>!document.querySelector('#score-file').disabled,{
 const count=await page.evaluate(()=>scoreState.codes.length);
 assert(count>=4,'Real browser OCR should recognize multiple generated chords');
 assert(await page.evaluate(()=>scoreState.codes.some(code=>code.engine==='paddle'||code.engine==='tesseract-consensus')),'The region model must actually run');
-await page.locator('#score-ocr').click();await page.locator('#score-cancel-ocr').click();
-await page.waitForFunction(()=>!document.querySelector('#score-file').disabled);
-assert.equal(await page.evaluate(()=>scoreState.codes.length),count);
 console.log('Real browser Paddle/Tesseract synthetic chord detections:',count);
 if(process.env.OCR_SAMPLE_IMAGE){
 await page.locator('#score-file').setInputFiles(process.env.OCR_SAMPLE_IMAGE);
