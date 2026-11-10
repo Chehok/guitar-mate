@@ -84,6 +84,9 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .quick button { min-width: 44px; padding: 8px 13px; font-size: 14px; border-color: var(--line); }
 .quick button[aria-pressed=true] { background: var(--soft); border-color: var(--green); color: var(--green); }
 .chord-filter { margin: 12px 0 20px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
+.chord-filter .search { max-width: none; }
+.chord-filter .error:empty { min-height: 0; margin: 0; }
+.chord-filter .filter-selects { margin-top: 12px; }
 .filter-selects { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .filter-select { display: block; min-width: 0; font-size: 12px; font-weight: 650; color: var(--muted); }
 .filter-select span { display: block; margin-bottom: 3px; }
@@ -286,10 +289,10 @@ footer { padding: 24px 0 8px; color: var(--muted); font-size: 12px; line-height:
 <nav class="mode-tabs" aria-label="연습 모드"><a id="tuner-tab" href="./">튜닝</a><a id="chords-tab" href="./chord-search.html" aria-current="page">코드 검색</a><a id="identify-tab" href="./chord-identifier.html">코드 판별</a><a id="metronome-tab" href="./metronome.html">메트로놈</a><a id="score-tab" href="./score-key-transposer.html">악보 키 변환</a></nav>
 <section id="chords-panel">
 <h1 class="sr-only">코드 검색</h1>
+<section id="chord-filter" class="chord-filter" aria-label="코드 검색 및 필터">
 <form id="search" class="search"><label class="sr-only" for="chord-input">코드 이름</label><input id="chord-input" value="C" placeholder="코드 이름, 예: F#m, Bb, Cmaj7" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="48"><button class="primary" type="submit">코드 찾기</button></form>
 <p class="hint">장조는 C 또는 Cmajor · 단조는 Cm · 샵 # / 플랫 b · 확장 코드 F#m11, C7(b9,b13) · 슬래시 코드 C/G · 6/9 등</p>
 <p id="error" class="error" role="alert"></p>
-<section id="chord-filter" class="chord-filter" aria-label="코드 추천 필터">
 <div class="filter-selects">
 <label class="filter-select"><span>기본음</span><select id="root-filter"></select></label>
 <label class="filter-select"><span>코드 종류</span><select id="kind-filter"></select></label>

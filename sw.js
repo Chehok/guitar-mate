@@ -1,6 +1,6 @@
 'use strict';
 // Increment when changing any app-shell file so installed copies refresh together.
-const VERSION='v66-guide-dialog-layout';
+const VERSION='v67-guide-search-layout';
 // Keep the storage namespace so activation also removes pre-rebrand caches.
 const CACHE_PREFIX=`six-strings:${self.registration.scope}:`;
 const CACHE_NAME=CACHE_PREFIX+VERSION;
@@ -45,8 +45,8 @@ self.addEventListener('fetch',event=>{
       // A cached HTML response may have followed Cloudflare's .html redirect.
       return cached?.redirected?new Response(cached.body,{status:cached.status,headers:cached.headers}):cached;
     };
-    if(menuRoutes.has(route))event.respondWith(cachedPage().then(cached=>cached||fetch(request)));
-    else event.respondWith(fetch(request).catch(async error=>{
+    if(menuRoutes.has(route)&&page!=='./guide.html')event.respondWith(cachedPage().then(cached=>cached||fetch(request)));
+    else event.respondWith(fetch(request,page==='./guide.html'?{cache:'no-cache'}:undefined).catch(async error=>{
       const cached=await cachedPage();
       if(!cached)throw error;
       return cached;

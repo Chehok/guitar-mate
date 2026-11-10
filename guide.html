@@ -72,13 +72,13 @@ h2 { margin: 0; font-size: 19px; line-height: 1.4; }
 .score-capo-preview text { fill: var(--ink); }
 .guide-tabs[hidden], .panel[hidden] { display: none; }
 .guide-tabs {
-  position: sticky; top: 0; z-index: 1; display: grid; grid-template-columns: repeat(5, minmax(76px, 1fr));
+  position: sticky; top: 0; z-index: 1; display: flex; flex-wrap: nowrap;
   overflow-x: auto;
   gap: 4px; padding: 8px 0; background: var(--panel); border-bottom: 1px solid var(--line);
 }
 .guide-tabs button {
-  min-height: 44px; padding: 4px; border: 1px solid transparent; border-radius: 8px;
-  background: transparent; color: var(--muted); font: inherit; font-size: 13px; cursor: pointer; white-space: nowrap;
+  flex: 1 0 auto; min-height: 44px; padding: 4px; border: 1px solid transparent; border-radius: 8px;
+  background: transparent; color: var(--muted); font: inherit; font-size: clamp(11px, 3.5vw, 13px); cursor: pointer; white-space: nowrap;
 }
 .guide-tabs button:hover, .guide-tabs button[aria-selected=true] { background: var(--soft); color: var(--ink); }
 .guide-tabs button[aria-selected=true] { border-color: var(--green); font-weight: 750; }
