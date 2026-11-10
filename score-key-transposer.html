@@ -219,8 +219,8 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 #score-panel select:focus-visible { outline:3px solid var(--focus); outline-offset:3px; }
 #score-panel output { min-width:100px; text-align:center; font-variant-numeric:tabular-nums; }
 .score-fret-scroll { overflow-x:auto; margin-top:12px; padding:4px; }
-.score-neck { --fret-label-height:24px; --neck-height:58px; display:flex; align-items:center; min-width:540px; }
-.score-headstock { display:block; flex:0 0 56px; width:56px; height:74px; margin-top:var(--fret-label-height); }
+.score-neck { --fret-label-height:24px; --neck-height:70px; display:flex; align-items:center; min-width:566px; }
+.score-headstock { display:block; flex:0 0 82px; width:82px; height:88px; margin-top:var(--fret-label-height); }
 .score-frets {
   display:grid; flex:1; min-width:484px; position:relative; isolation:isolate;
   grid-template-columns:minmax(44px,1.55fr) minmax(44px,1.45fr) minmax(44px,1.35fr) minmax(44px,1.25fr) minmax(44px,1.15fr) repeat(6,minmax(44px,1fr));
@@ -228,7 +228,12 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .score-frets::before {
   content:''; position:absolute; inset:var(--fret-label-height) 0 0; z-index:-1; pointer-events:none;
   border:1px solid var(--fret); border-left:4px solid var(--fret); border-radius:0 4px 4px 0;
-  background:repeating-linear-gradient(to bottom,var(--string) 0 1px,transparent 1px 6px) center / 100% 31px no-repeat,var(--neck);
+  background:
+    linear-gradient(to bottom,
+      var(--string) 0 1px,transparent 1px 10px,var(--string) 10px 11px,transparent 11px 20px,
+      var(--string) 20px 21px,transparent 21px 30px,var(--string) 30px 31.4px,transparent 31.4px 40px,
+      var(--string) 40px 41.7px,transparent 41.7px 50px,var(--string) 50px 52px
+    ) center / 100% 52px no-repeat,var(--neck);
 }
 .score-frets button {
   display:flex; justify-content:center; align-items:flex-start; min-width:44px; min-height:calc(var(--fret-label-height) + var(--neck-height));
@@ -295,15 +300,15 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <p id="score-key" role="status">감지 키: —</p>
 <div id="score-capo-controls"><div class="score-row"><button id="score-capo-minus" type="button" aria-label="카포 한 프렛 내리기 (카포 없음에서는 키를 반음 내림)">−</button><output id="score-capo-value" aria-live="polite">카포 없음</output><button id="score-capo-plus" type="button" aria-label="카포 한 프렛 올리기">+</button></div>
 <div class="score-fret-scroll" tabindex="0" role="region" aria-label="카포 1부터 11프렛 선택, 좌우로 스크롤"><div class="score-neck">
-<svg class="score-headstock" viewBox="0 0 96 126" aria-hidden="true" focusable="false">
+<svg class="score-headstock" viewBox="0 0 96 126" preserveAspectRatio="none" aria-hidden="true" focusable="false">
 <path d="M16 22 37 18q4-1 8 1l18 9 20-11 13-4v100l-13-4-20-11-18 9q-4 2-8 1l-21-4q-6-4-6-12V34q0-8 6-12Z" fill="var(--green)" stroke="var(--fret)"/>
 <path d="M16 35q0-6 4-8l19-4 24 11 27-13M16 91q0 6 4 8l19 4 24-11 27 13" fill="none" stroke="var(--neck)" stroke-opacity=".38"/>
 <path d="M26 29V12m17 15V9m17 25V16M26 97v17m17-15v18m17-25v18" stroke="var(--fret)" stroke-width="3"/>
 <path d="M21 12h10M38 9h10m7 7h10M21 114h10m7 3h10m7-7h10" stroke="var(--fret)" stroke-width="7" stroke-linecap="round"/>
 <path d="M22 11h8m9-3h8m9 7h8M22 113h8m9 3h8m9-7h8" stroke="var(--neck)" stroke-width="1.5" stroke-linecap="round" opacity=".8"/>
 <g fill="none" stroke="var(--neck)" stroke-opacity=".85">
-<path d="M26 34 96 37M43 32l53 15M60 39l36 18" stroke-width=".9"/>
-<path d="M60 87l36-20" stroke-width="1.2"/><path d="M43 94l53-17" stroke-width="1.4"/><path d="M26 92l70-5" stroke-width="1.65"/>
+<path d="M26 34 96 27M43 32 96 41M60 39 96 55" stroke-width=".9"/>
+<path d="M60 87 96 70" stroke-width="1.2"/><path d="M43 94 96 84" stroke-width="1.4"/><path d="M26 92 96 99" stroke-width="1.65"/>
 </g>
 <g fill="var(--neck)" stroke="var(--fret)"><circle cx="26" cy="34" r="4"/><circle cx="43" cy="32" r="4"/><circle cx="60" cy="39" r="4"/><circle cx="60" cy="87" r="4"/><circle cx="43" cy="94" r="4"/><circle cx="26" cy="92" r="4"/></g>
 <path d="M24 34h4M41 32h4M58 39h4M58 87h4M41 94h4M24 92h4" stroke="var(--fret)" stroke-linecap="round"/>
