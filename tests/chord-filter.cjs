@@ -51,4 +51,13 @@ assert.match(html,/id="filter-reset"[^>]*aria-label="필터 초기화 \(C · M �
 assert(!/class="chips"/.test(html),'no always-open option grids');
 assert.match(html,/id="filter-empty"[^>]*hidden/);
 assert.match(html,/id="filter-reset"/);
-console.log('Chord filter combinations, ordering, exclusivity and voicing support passed.');
+vm.runInContext(script.slice(script.indexOf('const svg='),script.indexOf('function diagram(')),ctx);
+vm.runInContext(script.slice(script.indexOf('function neck('),script.indexOf('function renderNeck(')),ctx);
+const fretboards=run("const current=parse('C'), grip=makeVoicings(current)[0]; [neck(grip,false),neck(grip,true)]");
+for(const board of fretboards){
+  assert.deepEqual([...board.matchAll(/>(\d+)<\/text>/g)].map(match=>Number(match[1])),Array.from({length:16},(_,i)=>i));
+  assert.equal([...board.matchAll(/<circle[^>]*fill="var\(--(?:orange|green)\)"/g)].length,5,'Same open C fingering highlighted');
+}
+assert.match(fretboards[0],/<circle cx="59" cy="35" r="12" fill="var\(--green\)"/,'High E open note at the top on desktop');
+assert.match(fretboards[1],/<circle cx="256" cy="48" r="12" fill="var\(--green\)"/,'High E open note at the right on mobile');
+console.log('Chord filters, voicings, and both fretboard orientations passed.');
