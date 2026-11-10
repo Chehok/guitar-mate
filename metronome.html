@@ -9,6 +9,9 @@
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" type="image/svg+xml" href="./favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="기타메이트">
 <title>기타메이트 · 메트로놈</title>
 <link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"></noscript>
@@ -51,6 +54,25 @@ footer { padding:18px 0 8px; color:var(--muted); font-size:12px; line-height:1.8
 @media (min-width:760px) { .wrap { padding:32px; } header { margin-bottom:28px; } .brand { gap:12px; } .brand-name { font-size:24px; } .brand-subtitle { font-size:13px; } .mode-tabs { margin-bottom:32px; } .mode-tabs a { font-size:15px; } .panel { padding:32px; } }
 @media (prefers-color-scheme:dark) { :root { color-scheme:dark; --paper:#131713; --panel:#1c221d; --soft:#29332b; --ink:#f0f1e6; --muted:#b2beb1; --line:#374438; --control:#7c907d; --green:#a2d2b5; --on-green:#172c21; --focus:#e8c879; } }
 @media (prefers-reduced-motion:reduce) { *,*::before,*::after { transition:none !important; animation:none !important; scroll-behavior:auto !important; } .beats li.active { transform:none; } }
+.wrap > header { flex-wrap: wrap; }
+.install-action button, .install-guide button { min-height:44px; border:1px solid var(--control); background:var(--panel); color:var(--ink); font-weight:650; cursor:pointer; }
+.install-action { display: flex; align-items: center; flex: none; }
+.install-action button { min-width: 44px; min-height: 44px; white-space: nowrap; }
+.install-action button, .install-guide button { border-radius: 24px; font-size: 12px; padding: 8px 14px; }
+.install-guide { width: calc(100% - 32px); max-width: 352px; max-height: calc(100% - 32px); padding: 24px; border: 1px solid var(--line); border-radius: 24px; background: var(--panel); color: var(--ink); text-align: center; overflow-wrap: anywhere; }
+.install-guide::backdrop { background: #0006; }
+.install-guide h2 { margin: 0 0 12px; font-size: 18px; }
+.install-steps { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; text-align: left; }
+.install-steps li { display: grid; grid-template-columns: 24px minmax(0, 1fr); column-gap: 10px; align-items: start; }
+.install-steps .step-no { grid-row: 1 / span 2; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--green); color: var(--on-green); font-size: 13px; font-weight: 700; }
+.install-steps p { margin: 4px 0 0; font-size: 14px; line-height: 1.6; }
+.step-art { display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 12px; background: var(--soft); font-size: 13px; min-width: 0; }
+.step-art img { border-radius: 9px; flex: none; }
+.mock-bar { display: flex; flex: 1; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; padding: 6px 10px; border-radius: 16px; background: var(--panel); }
+.mock-bar b { padding: 2px 8px; border-radius: 10px; background: var(--green); color: var(--on-green); white-space: nowrap; font-size: 12px; }
+.mock-row { flex: 1; padding: 6px 10px; border-radius: 10px; background: var(--panel); min-width: 0; }
+.install-note { margin: 14px 0 0; font-size: 12px; line-height: 1.6; color: var(--muted); text-align: left; }
+.install-guide form { margin-top: 20px; }
 </style>
 <link rel="stylesheet" href="./guide-dialog.css">
 <script defer src="./guide-dialog.js"></script>
@@ -59,7 +81,7 @@ footer { padding:18px 0 8px; color:var(--muted); font-size:12px; line-height:1.8
 </head>
 <body>
 <div class="wrap">
-<header><a class="brand" href="./"><img src="./favicon.svg" width="40" height="40" alt=""><span class="brand-name">기타메이트<span class="brand-subtitle">기타 연습 도우미</span></span></a><a class="guide-launch" href="./guide.html#example-metronome">사용 가이드</a></header>
+<header><a class="brand" href="./"><img src="./favicon.svg" width="40" height="40" alt=""><span class="brand-name">기타메이트<span class="brand-subtitle">기타 연습 도우미</span></span></a><div class="install-action"><a class="guide-launch" href="./guide.html#example-metronome">사용 가이드</a><button id="install-button" type="button" hidden>홈 화면에 추가</button></div></header>
 <nav class="mode-tabs" aria-label="연습 모드"><a href="./">튜닝</a><a href="./chord-search.html">코드 검색</a><a href="./chord-identifier.html">코드 판별</a><a href="./metronome.html" aria-current="page">메트로놈</a><a href="./score-key-transposer.html">악보 키 변환</a></nav>
 <main>
 <h1>메트로놈</h1>
@@ -98,6 +120,17 @@ footer { padding:18px 0 8px; color:var(--muted); font-size:12px; line-height:1.8
 <footer>첫 박은 조금 더 강하게 들립니다. 기기 음량과 무음 설정을 확인해 주세요.<br><a href="./about.html">소개 · 문의</a> · <a href="./privacy.html">개인정보처리방침</a></footer>
 </main>
 </div>
+<dialog id="install-guide" class="install-guide" aria-labelledby="install-guide-title" aria-describedby="install-guide-description">
+<h2 id="install-guide-title">홈 화면에 추가</h2>
+<p id="install-guide-description">Chrome에서 공유 메뉴로 홈 화면에 추가하세요.</p>
+<ol class="install-steps">
+<li><span class="step-no" aria-hidden="true">1</span><div class="step-art" aria-hidden="true"><span class="mock-bar"><span>🔒 기타메이트</span><b id="install-share-mark">⬆️ 공유</b></span></div><p id="install-step-1">주소창 오른쪽의 공유 아이콘(⬆️)을 누르세요.</p></li>
+<li><span class="step-no" aria-hidden="true">2</span><div class="step-art" aria-hidden="true"><span class="mock-row">➕ 홈 화면에 추가</span></div><p>목록을 아래로 밀어 <strong>홈 화면에 추가</strong>를 고르세요.</p></li>
+<li><span class="step-no" aria-hidden="true">3</span><div class="step-art" aria-hidden="true"><img src="./icons/icon-192.png" width="40" height="40" alt=""><span class="mock-row">기타메이트 · <b>추가</b></span></div><p>이름을 확인하고 <strong>추가</strong>를 누르면 홈 화면에 아이콘이 생겨요 🏠</p></li>
+</ol>
+<p class="install-note">그림은 이해를 돕는 설명용이며 실제 화면과 다를 수 있어요. iOS 16.4 이상이 필요하고, 추가된 아이콘이 앱처럼 열릴지는 iOS 설정에 따라 달라요. 직접 따라 해야 추가됩니다.</p>
+<form method="dialog"><button autofocus>닫기</button></form>
+</dialog>
 <script>
 'use strict';
 const tempoRange=document.getElementById('tempo-range');
@@ -210,6 +243,35 @@ startStop.addEventListener('click',async()=>{
   }
 });
 window.addEventListener('pagehide',()=>{if(running)stop();});
+// Home-screen installation: native prompt on Chromium, instructions on iOS Safari and Chrome.
+const installButton=document.getElementById('install-button'),installGuide=document.getElementById('install-guide');
+const standalone=window.matchMedia('(display-mode: standalone)');
+const iosDevice=/iPhone|iPad|iPod/.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&navigator.maxTouchPoints>1);
+const iosChrome=iosDevice&&/CriOS/.test(navigator.userAgent);
+const iosSafari=iosDevice&&!/CriOS|FxiOS|EdgiOS|OPiOS/.test(navigator.userAgent);
+const iosGuide=iosSafari||iosChrome;
+let installPrompt=null,appInstalled=false;
+const isInstalled=()=>appInstalled||standalone.matches||navigator.standalone===true;
+function updateInstallButton(){
+installButton.hidden=isInstalled()||(!installPrompt&&!iosGuide);
+if(isInstalled()&&installGuide.open)installGuide.close();
+}
+window.addEventListener('beforeinstallprompt',event=>{
+event.preventDefault();
+installPrompt=event;updateInstallButton();
+});
+window.addEventListener('appinstalled',()=>{appInstalled=true;installPrompt=null;updateInstallButton();});
+standalone.addEventListener('change',updateInstallButton);
+installButton.addEventListener('click',async()=>{
+if(isInstalled()){updateInstallButton();return;}
+if(installPrompt){
+const prompt=installPrompt;installPrompt=null;installButton.hidden=true;
+try{await prompt.prompt();await prompt.userChoice;}catch(_){/* A dismissed or unavailable prompt can be offered again by the browser. */}
+}else if(iosGuide&&!installGuide.open){installGuide.showModal();}
+});
+if(!iosChrome&&installGuide.querySelector){const d=installGuide.querySelector('#install-guide-description');if(d)d.textContent='Safari에서 공유 메뉴로 홈 화면에 추가하세요.';const s=installGuide.querySelector('#install-step-1');if(s)s.textContent='공유 아이콘(⬆️)을 누르세요.';}
+installGuide.addEventListener('click',event=>{if(event.target===installGuide)installGuide.close();});
+updateInstallButton();
 if('serviceWorker' in navigator&&window.isSecureContext)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{}));
 </script>
 </body>
