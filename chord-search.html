@@ -35,6 +35,7 @@
   --orange: #a34625;
   --root-soft: #eed8c7;
   --root-ink: #814022;
+  --neck-tone-soft: #e3e9dc;
   --error: #a12f20;
   --focus: #9a651b;
   --fret: #72816e;
@@ -127,8 +128,9 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--muted); }
 .legend span { display: flex; align-items: center; gap: 6px; }
 .key { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: var(--note); border: 1px solid var(--fret); }
-.key.root { background: var(--root-soft); border-color: var(--root-ink); }
-.key.current { background: var(--green); outline: 2px solid var(--ink); outline-offset: 2px; border: 0; }
+.fret-panel .key { background: var(--neck-tone-soft); border: 0; }
+.fret-panel .key.root { background: var(--root-soft); }
+.fret-panel .key.current { background: var(--green); }
 .scroll { overflow-x: auto; overscroll-behavior-x: contain; margin-top: 12px; padding: 8px 16px; scrollbar-color: var(--control) var(--soft); }
 .scroll:focus-visible { outline-offset: -4px; }
 .neck { display: block; width: 100%; min-width: 1010px; height: auto; }
@@ -206,7 +208,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
     --ink: #f0f1e6; --muted: #b2beb1; --line: #374438; --control: #7c907d;
     --green: #a2d2b5; --on-green: #172c21; --green-hover: #b9e0c8;
     --lime: #dfea9c; --orange: #efb17f; --error: #ffa392; --focus: #e8c879;
-    --root-soft: #624637; --root-ink: #f2d5bf;
+    --root-soft: #624637; --root-ink: #f2d5bf; --neck-tone-soft: #344238;
     --fret: #83977e; --string: #92a58d; --neck: #242c24; --inlay: #67755f;
     --note: #3c513d; --note-ink: #ecf1e5; --hit: #a2d2b524;
   }
@@ -290,7 +292,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <section class="panel" aria-label="코드 운지법"><div class="diagram-head"><div><h2 id="chord-title" class="chord-title"></h2><p id="quality" class="quality"></p></div><button id="play" class="play" type="button">소리 듣기</button></div><div id="diagram"></div><div class="nav"><button id="prev" type="button" aria-label="이전 보이싱">← 이전</button><span id="counter" class="counter" aria-live="polite"></span><button id="next" type="button" aria-label="다음 보이싱">다음 →</button></div><p id="audio-status" role="status"></p></section>
 <section class="panel info-panel" aria-label="코드 구성음"><h2 class="overline">코드 구성음</h2><div id="tones" class="tones"></div><div class="details"><div><span>현재 운지 · 6번 → 1번 줄</span><strong id="frets"></strong></div><div><span>가장 낮은 음</span><strong id="bass"></strong></div><div><span>튜닝 · 6번 → 1번 줄</span><strong>E A D G B E</strong></div><div><span>보이싱 유형</span><strong id="shape"></strong></div></div><p class="explain">다이어그램은 왼쪽부터 6번 줄(낮은 E)입니다. O는 개방현, X는 치지 않는 줄, 점 안의 숫자는 손가락 번호입니다. 굵은 막대는 한 손가락으로 여러 줄을 누르는 바레입니다.<br>1 검지 · 2 중지 · 3 약지 · 4 소지<br>확장 코드에서는 5음, 근음, 안쪽 확장음을 생략할 수 있으며 현재 운지에 표시합니다.</p></section>
 </div>
-<section class="panel fret-panel" aria-label="전체 기타 지판"><div class="fret-header"><h2>지판에서 찾기</h2><div class="legend"><span><i class="key root"></i>근음</span><span><i class="key"></i>구성음</span><span><i class="key current"></i>현재 운지 (테두리)</span></div></div><div class="scroll" tabindex="0" role="region" aria-label="0부터 15프렛 지판, 좌우로 스크롤"><div id="neck"></div></div><p class="scroll-note">0–15프렛 · 위쪽이 1번 줄(높은 E) · 좁은 화면에서는 좌우로 밀어 보세요.</p></section>
+<section class="panel fret-panel" aria-label="전체 기타 지판"><div class="fret-header"><h2>지판에서 찾기</h2><div class="legend"><span><i class="key root"></i>근음</span><span><i class="key"></i>구성음</span><span><i class="key current"></i>현재 운지 (진한 색)</span></div></div><div class="scroll" tabindex="0" role="region" aria-label="0부터 15프렛 지판, 좌우로 스크롤"><div id="neck"></div></div><p class="scroll-note">0–15프렛 · 위쪽이 1번 줄(높은 E) · 좁은 화면에서는 좌우로 밀어 보세요.</p></section>
 </section>
 </main>
 <gm-footer></gm-footer>
@@ -629,12 +631,12 @@ for(const f of [3,5,7,9,12,15]){if(f===12){for(const yy of [87.5,157.5])s+=`<cir
 for(let i=0;i<6;i++){
 s+=`<text x="17" y="${y(i)+4}" text-anchor="middle" font-size="12" fill="var(--muted)">${['E','A','D','G','B','e'][i]}</text><line x1="43" x2="1011" y1="${y(i)}" y2="${y(i)}" stroke="var(--string)" stroke-width="${1+i*.15}"/>`;
 for(let f=0;f<=15;f++){const pc=mod(tuning[i]+f),selected=v&&v.frets[i]===f;if(!selected&&!current.tones.some(t=>mod(current.pc+t[0])===pc))continue;const root=pc===current.pc;
-const fill=selected?(root?'var(--orange)':'var(--green)'):(root?'var(--root-soft)':'var(--note)');
+const fill=selected?(root?'var(--orange)':'var(--green)'):(root?'var(--root-soft)':'var(--neck-tone-soft)');
 const ink=selected?'var(--on-green)':(root?'var(--root-ink)':'var(--note-ink)');
 const label=noteName(current,pc);
-s+=`<circle cx="${x(f)}" cy="${y(i)}" r="${selected?14:12}" fill="${fill}" ${selected?'stroke="var(--ink)" stroke-width="2.5"':''}/><text x="${x(f)}" y="${y(i)+4}" text-anchor="middle" font-size="${label.length>2?9:11}" font-weight="${selected?700:500}" fill="${ink}">${label}</text>`;
+s+=`<circle cx="${x(f)}" cy="${y(i)}" r="12" fill="${fill}"/><text x="${x(f)}" y="${y(i)+4}" text-anchor="middle" font-size="${label.length>2?9:11}" font-weight="600" fill="${ink}">${label}</text>`;
 }}
-return svg(s,'0 0 1040 237','neck',`${current.label} 코드 구성음의 전체 지판 위치. 근음은 주황색, 현재 운지는 테두리로 표시.`);}
+return svg(s,'0 0 1040 237','neck',`${current.label} 코드 구성음의 전체 지판 위치. 근음은 주황 계열, 현재 운지는 진한 색으로 표시.`);}
 function render(){const v=voicings[position];$('chord-title').textContent=current.label;$('quality').textContent=current.name;$('diagram').innerHTML=diagram(v);$('counter').textContent=voicings.length?`보이싱 ${position+1}/${voicings.length}`:'보이싱 없음';$('prev').disabled=$('next').disabled=voicings.length<2;$('play').disabled=!v;
 $('tones').replaceChildren(...current.tones.map(t=>{const div=document.createElement('div');div.className='tone'+(t[0]===0?' root':'');const strong=document.createElement('strong'),small=document.createElement('small');strong.textContent=toneName(current,t);small.textContent=t[1];div.append(strong,small);return div;}));
 $('frets').textContent=v?v.frets.map(f=>f<0?'X':f).join(' · '):'—';$('bass').textContent=v?noteName(current,v.bass)+(v.bass===current.pc?' · 근음':' · 전위형'):'—';$('shape').textContent=v?v.name+(v.omitted.length?' · 생략: '+v.omitted.join(', '):''):'—';$('neck').innerHTML=neck(v);$('audio-status').textContent='';document.querySelectorAll('#quick button').forEach(b=>b.setAttribute('aria-pressed',String(b.textContent===current.label)));}
