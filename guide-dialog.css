@@ -37,6 +37,19 @@ footer a { color: var(--green); text-underline-offset: 3px; }
   border-bottom: 1px solid var(--line);
 }
 .usage-dialog-bar h2 { margin: 0; font-size: 18px; }
+.usage-dialog-bar button {
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid var(--control);
+  border-radius: 10px;
+  background: var(--panel);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+.usage-dialog-bar button:hover { background: var(--soft); }
+.usage-dialog-bar button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .usage-dialog iframe { display: block; width: 100%; height: 100%; border: 0; }
 @media (max-width: 380px) {
   .wrap > header { flex-wrap: wrap; gap: 8px; }

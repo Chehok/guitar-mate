@@ -45,7 +45,6 @@ h2 { margin: 0; font-size: 19px; line-height: 1.4; }
 .panel ol { padding-inline-start: 1.5em; }
 .panel li + li { margin-top: 5px; }
 .tool-link { display: inline-flex; align-items: center; min-height: 44px; margin-top: 8px; font-weight: 650; }
-footer { max-width:760px; padding:16px 0; color:var(--muted); }
 .tool-button { padding: 8px 14px; border: 1px solid var(--green); border-radius: 10px; background: var(--green); color: var(--paper); text-decoration: none; }
 .tool-button:hover { background: var(--panel); color: var(--green); }
 .example-art { display: grid; place-items: center; margin: 14px 0; padding: 10px; border-radius: 12px; background: var(--soft); }
@@ -73,12 +72,13 @@ footer { max-width:760px; padding:16px 0; color:var(--muted); }
 .score-capo-preview text { fill: var(--ink); }
 .guide-tabs[hidden], .panel[hidden] { display: none; }
 .guide-tabs {
-  position: sticky; top: 0; z-index: 1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  position: sticky; top: 0; z-index: 1; display: grid; grid-template-columns: repeat(5, minmax(76px, 1fr));
+  overflow-x: auto;
   gap: 4px; padding: 8px 0; background: var(--panel); border-bottom: 1px solid var(--line);
 }
 .guide-tabs button {
   min-height: 44px; padding: 4px; border: 1px solid transparent; border-radius: 8px;
-  background: transparent; color: var(--muted); font: inherit; font-size: 13px; cursor: pointer;
+  background: transparent; color: var(--muted); font: inherit; font-size: 13px; cursor: pointer; white-space: nowrap;
 }
 .guide-tabs button:hover, .guide-tabs button[aria-selected=true] { background: var(--soft); color: var(--ink); }
 .guide-tabs button[aria-selected=true] { border-color: var(--green); font-weight: 750; }
@@ -270,7 +270,6 @@ footer { max-width:760px; padding:16px 0; color:var(--muted); }
 <a class="tool-link tool-button" href="./score-key-transposer.html">악보 키 변환 열기</a>
 </section>
 </main>
-<footer><a href="./about.html">소개 · 문의</a> · <a href="./privacy.html">개인정보처리방침</a></footer>
 </div>
 <script>
 const exampleNav = document.querySelector('.score-example-nav');
