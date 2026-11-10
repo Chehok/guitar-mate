@@ -45,7 +45,6 @@ h1 { margin:0 0 8px; font-size:clamp(24px,3vw,30px); font-weight:700; line-heigh
 .start-button { width:100%; min-height:52px; border:1px solid var(--green); border-radius:10px; background:var(--green); color:var(--on-green); font-weight:700; cursor:pointer; }
 .start-button:active { transform:translateY(1px); }
 .status { min-height:24px; margin:12px 0 0; color:var(--muted); text-align:center; font-size:13px; }
-.ad-slot { min-height:58px; margin-top:24px; border:1px solid var(--line); border-radius:var(--radius); background:var(--panel); }
 footer { padding:18px 0 8px; color:var(--muted); font-size:12px; line-height:1.8; }
 @media (min-width:760px) { .wrap { padding:32px; } header { margin-bottom:28px; } .brand { gap:12px; } .brand-name { font-size:24px; } .brand-subtitle { font-size:13px; } .mode-tabs { margin-bottom:32px; } .mode-tabs a { font-size:15px; } .panel { padding:32px; } }
 @media (prefers-color-scheme:dark) { :root { color-scheme:dark; --paper:#131713; --panel:#1c221d; --soft:#29332b; --ink:#f0f1e6; --muted:#b2beb1; --line:#374438; --control:#7c907d; --green:#a2d2b5; --on-green:#172c21; --focus:#e8c879; } }
@@ -69,7 +68,6 @@ footer { padding:18px 0 8px; color:var(--muted); font-size:12px; line-height:1.8
 <button class="start-button" id="start-stop" type="button" aria-pressed="false">시작</button>
 <p class="status" id="status" role="status" aria-live="polite">시작을 누르면 메트로놈이 재생됩니다.</p>
 </section>
-<div class="ad-slot" data-ad-slot aria-label="광고"></div>
 <footer>첫 박은 조금 더 강하게 들립니다. 기기 음량과 무음 설정을 확인해 주세요.</footer>
 </main>
 </div>
