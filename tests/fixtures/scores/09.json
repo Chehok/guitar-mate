@@ -1,0 +1,95 @@
+{
+  "image": ".ref/scores/09.png",
+  "width": 800,
+  "height": 986,
+  "source": "Manually transcribed by viewing the image; printed chords only. ASCII #/b and baseline digits normalize musical accidentals/superscripts. Parentheses are preserved.",
+  "lines": [
+    {
+      "y": 122,
+      "chords": [
+        "DbM7",
+        "Eb/Db",
+        "Cm7",
+        "Fm7",
+        "Bbm7",
+        "Ebsus4",
+        "Eb"
+      ]
+    },
+    {
+      "y": 234,
+      "chords": [
+        "Ab",
+        "Db(Bbm7)",
+        "Cm7",
+        "Fm7",
+        "Bbm7",
+        "Db/Eb",
+        "(Eb/Db)",
+        "Ab",
+        "Gb/Ab",
+        "Db",
+        "Eb/Db"
+      ]
+    },
+    {
+      "y": 252,
+      "chords": [
+        "(Cm7)",
+        "(Fm7)"
+      ],
+      "x0": 525,
+      "x1": 620
+    },
+    {
+      "y": 394,
+      "chords": [
+        "Cm7",
+        "Fm7",
+        "Bbm7",
+        "Db/Eb",
+        "Eb"
+      ]
+    },
+    {
+      "y": 524,
+      "chords": [
+        "Cm7",
+        "Fm7",
+        "Ab/Bb",
+        "Bb/D",
+        "Ebsus4",
+        "Eb",
+        "Ab/C"
+      ]
+    },
+    {
+      "y": 663,
+      "chords": [
+        "DbM7",
+        "Eb/Db",
+        "Cm7",
+        "Fm7",
+        "Bbm7",
+        "Db/Eb",
+        "Dbm/Ab",
+        "Ab"
+      ]
+    },
+    {
+      "y": 793,
+      "chords": [
+        "DbM7(Bb/D)",
+        "Eb/Db",
+        "Cm7",
+        "Fm7",
+        "Bbm7",
+        "Db/Eb",
+        "Db/Ab",
+        "Ab"
+      ]
+    }
+  ],
+  "count": 48,
+  "note": "Db(Bbm7) and DbM7(Bb/D) are single grouped labels. The lower (Cm7 Fm7) alternatives are counted as two parenthesized chord occurrences on their own row."
+}

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1">
+<title>기타메이트</title>
+<path fill="#245b47" d="M0 0h1v1H0z"/>
+<path fill="#f6f4ec" d="M .5 .20 C .28 .20 .22 .28 .245 .43 C .275 .62 .4 .77 .5 .81 C .60 .77 .725 .62 .755 .43 C .78 .28 .72 .20 .5 .20 Z"/>
+<path d="M.5 .30V.49" stroke="#245b47" stroke-width=".055" stroke-linecap="round"/>
+<circle cx=".5" cy=".49" r=".082" fill="#245b47"/>
+<path d="M.43 .65H.57" stroke="#245b47" stroke-width=".065" stroke-linecap="round"/>
+<path d="M.45 .65H.55" stroke="#dfea9c" stroke-width=".022" stroke-linecap="round"/>
+</svg>

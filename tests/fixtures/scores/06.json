@@ -1,0 +1,60 @@
+{
+  "image": ".ref/scores/06.jpg",
+  "width": 904,
+  "height": 1054,
+  "source": "Manually transcribed by viewing the image; printed chords only. ASCII #/b and baseline digits normalize musical accidentals/superscripts. Parentheses are preserved.",
+  "lines": [
+    {
+      "y": 227,
+      "chords": [
+        "F",
+        "Gm",
+        "Am",
+        "Dm",
+        "Gm",
+        "G/B",
+        "C"
+      ]
+    },
+    {
+      "y": 469,
+      "chords": [
+        "F",
+        "Gm",
+        "Am",
+        "Dm",
+        "Gm",
+        "C",
+        "F",
+        "C"
+      ]
+    },
+    {
+      "y": 717,
+      "chords": [
+        "F",
+        "C/E",
+        "Dm",
+        "F/C",
+        "Bb",
+        "F/A",
+        "Gm",
+        "C"
+      ]
+    },
+    {
+      "y": 874,
+      "chords": [
+        "F",
+        "C/E",
+        "Dm",
+        "F/C",
+        "Bb",
+        "C",
+        "F"
+      ]
+    }
+  ],
+  "count": 30,
+  "note": "Ignore red handwritten transposition annotations and colored verse/chorus labels; black printed chords are the reference."
+}

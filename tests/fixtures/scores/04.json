@@ -1,0 +1,127 @@
+{
+  "image": ".ref/scores/04.png",
+  "width": 966,
+  "height": 1367,
+  "source": "Manually transcribed by viewing the image; printed chords only. ASCII #/b and baseline digits normalize musical accidentals/superscripts. Parentheses are preserved.",
+  "lines": [
+    {
+      "y": 127,
+      "chords": [
+        "F#m7",
+        "D",
+        "E(sus4)",
+        "A",
+        "F#m7",
+        "D",
+        "E(sus4)",
+        "A"
+      ]
+    },
+    {
+      "y": 262,
+      "chords": [
+        "F#m7",
+        "D",
+        "E(sus4)",
+        "A",
+        "F#m7",
+        "D",
+        "E(sus4)",
+        "A"
+      ]
+    },
+    {
+      "y": 398,
+      "chords": [
+        "F#m7",
+        "D",
+        "E(sus4)",
+        "A",
+        "F#m7",
+        "D",
+        "E(sus4)",
+        "A"
+      ]
+    },
+    {
+      "y": 534,
+      "chords": [
+        "F#m7",
+        "D",
+        "E(sus4)",
+        "A",
+        "F#m7",
+        "D",
+        "E(sus4)",
+        "A"
+      ]
+    },
+    {
+      "y": 670,
+      "chords": [
+        "F#m7",
+        "D",
+        "E(sus4)",
+        "A",
+        "F#m7",
+        "D",
+        "E(sus4)",
+        "A"
+      ]
+    },
+    {
+      "y": 805,
+      "chords": [
+        "F#m7",
+        "D",
+        "E(sus4)",
+        "A",
+        "F#m7",
+        "D",
+        "E(sus4)",
+        "A",
+        "A"
+      ]
+    },
+    {
+      "y": 940,
+      "chords": [
+        "F#m7",
+        "D",
+        "E(sus4)",
+        "A",
+        "F#m7",
+        "D",
+        "E(sus4)",
+        "A"
+      ]
+    },
+    {
+      "y": 1077,
+      "chords": [
+        "F#m7",
+        "D",
+        "E(sus4)",
+        "A",
+        "F#m7",
+        "D",
+        "E(sus4)",
+        "A"
+      ]
+    },
+    {
+      "y": 1213,
+      "chords": [
+        "F#m7",
+        "D",
+        "E(sus4)",
+        "A",
+        "F#m7",
+        "D",
+        "E(sus4)",
+        "A"
+      ]
+    }
+  ],
+  "count": 73
+}

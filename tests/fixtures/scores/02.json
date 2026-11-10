@@ -1,0 +1,53 @@
+{
+  "image": ".ref/scores/02.jpg",
+  "width": 800,
+  "height": 899,
+  "source": "Manually transcribed by viewing the image; printed chords only. ASCII #/b and baseline digits normalize musical accidentals/superscripts. Parentheses are preserved.",
+  "lines": [
+    {
+      "y": 220,
+      "chords": [
+        "G",
+        "D/F#",
+        "Em",
+        "G/D",
+        "C",
+        "G/B",
+        "Am7",
+        "D"
+      ]
+    },
+    {
+      "y": 360,
+      "chords": [
+        "G",
+        "D/F#",
+        "Em",
+        "G/D",
+        "C",
+        "D",
+        "G"
+      ]
+    },
+    {
+      "y": 496,
+      "chords": [
+        "G",
+        "Em",
+        "C",
+        "D"
+      ]
+    },
+    {
+      "y": 635,
+      "chords": [
+        "G",
+        "Em",
+        "C",
+        "D",
+        "G"
+      ]
+    }
+  ],
+  "count": 24
+}

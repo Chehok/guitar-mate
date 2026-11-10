@@ -1,0 +1,1761 @@
+[
+  {
+    "round": 0,
+    "description": "기준선: 기존 전체 이미지 3패스 + 빨간 영역",
+    "complete": true,
+    "reports": [
+      {
+        "image": "01.png",
+        "count": 36,
+        "seconds": 26.987,
+        "expected": 36,
+        "correct": 36,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "02.jpg",
+        "count": 4,
+        "seconds": 12.687,
+        "expected": 24,
+        "correct": 4,
+        "precision": 1,
+        "recall": 0.16666666666666666
+      },
+      {
+        "image": "03.jpg",
+        "count": 16,
+        "seconds": 11.799,
+        "expected": 33,
+        "correct": 15,
+        "precision": 0.9375,
+        "recall": 0.45454545454545453
+      },
+      {
+        "image": "04.png",
+        "count": 1,
+        "seconds": 22.912,
+        "expected": 73,
+        "correct": 1,
+        "precision": 1,
+        "recall": 0.0136986301369863
+      },
+      {
+        "image": "05.jpg",
+        "count": 8,
+        "seconds": 12.033,
+        "expected": 17,
+        "correct": 8,
+        "precision": 1,
+        "recall": 0.47058823529411764
+      },
+      {
+        "image": "06.jpg",
+        "count": 10,
+        "seconds": 14.742,
+        "expected": 30,
+        "correct": 6,
+        "precision": 0.6,
+        "recall": 0.2
+      },
+      {
+        "image": "07.jpg",
+        "count": 12,
+        "seconds": 7.93,
+        "expected": 31,
+        "correct": 12,
+        "precision": 1,
+        "recall": 0.3870967741935484
+      },
+      {
+        "image": "08.jpg",
+        "count": 13,
+        "seconds": 13.877,
+        "expected": 25,
+        "correct": 10,
+        "precision": 0.7692307692307693,
+        "recall": 0.4
+      },
+      {
+        "image": "09.png",
+        "count": 18,
+        "seconds": 14.652,
+        "expected": 48,
+        "correct": 17,
+        "precision": 0.9444444444444444,
+        "recall": 0.3541666666666667
+      },
+      {
+        "image": "10.jpg",
+        "count": 15,
+        "seconds": 8.757,
+        "expected": 31,
+        "correct": 15,
+        "precision": 1,
+        "recall": 0.4838709677419355
+      },
+      {
+        "image": "11.jpg",
+        "count": 7,
+        "seconds": 19.647,
+        "expected": 93,
+        "correct": 7,
+        "precision": 1,
+        "recall": 0.07526881720430108
+      },
+      {
+        "image": "full-score.png",
+        "count": 36,
+        "seconds": 15.625,
+        "expected": 36,
+        "correct": 36,
+        "precision": 1,
+        "recall": 1
+      }
+    ]
+  },
+  {
+    "round": 1,
+    "description": "오선 영역 첫 구현 (디버그 JSON이 너무 커 04에서 중단)",
+    "complete": false,
+    "reports": [
+      {
+        "image": "01.png",
+        "count": 31,
+        "seconds": 257.9,
+        "expected": 36,
+        "correct": 30,
+        "precision": 0.968,
+        "recall": 0.833
+      },
+      {
+        "image": "02.jpg",
+        "count": 24,
+        "seconds": 15.8,
+        "expected": 24,
+        "correct": 23,
+        "precision": 0.958,
+        "recall": 0.958
+      },
+      {
+        "image": "03.jpg",
+        "count": 36,
+        "seconds": 20.3,
+        "expected": 33,
+        "correct": 26,
+        "precision": 0.722,
+        "recall": 0.7879999999999999
+      }
+    ]
+  },
+  {
+    "round": 2,
+    "description": "오선 기준 코드 영역 + 큰 빨간 악보 경로 유지",
+    "complete": true,
+    "reports": [
+      {
+        "image": "01.png",
+        "count": 36,
+        "seconds": 28.009,
+        "expected": 36,
+        "correct": 36,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "02.jpg",
+        "count": 24,
+        "seconds": 5.249,
+        "expected": 24,
+        "correct": 23,
+        "precision": 0.9583333333333334,
+        "recall": 0.9583333333333334
+      },
+      {
+        "image": "03.jpg",
+        "count": 36,
+        "seconds": 10.047,
+        "expected": 33,
+        "correct": 26,
+        "precision": 0.7222222222222222,
+        "recall": 0.7878787878787878
+      },
+      {
+        "image": "04.png",
+        "count": 33,
+        "seconds": 49.239,
+        "expected": 73,
+        "correct": 28,
+        "precision": 0.8484848484848485,
+        "recall": 0.3835616438356164
+      },
+      {
+        "image": "05.jpg",
+        "count": 17,
+        "seconds": 216.741,
+        "expected": 17,
+        "correct": 15,
+        "precision": 0.8823529411764706,
+        "recall": 0.8823529411764706
+      },
+      {
+        "image": "06.jpg",
+        "count": 22,
+        "seconds": 9.804,
+        "expected": 30,
+        "correct": 10,
+        "precision": 0.45454545454545453,
+        "recall": 0.3333333333333333
+      },
+      {
+        "image": "07.jpg",
+        "count": 26,
+        "seconds": 4.681,
+        "expected": 31,
+        "correct": 26,
+        "precision": 1,
+        "recall": 0.8387096774193549
+      },
+      {
+        "image": "08.jpg",
+        "count": 18,
+        "seconds": 5.269,
+        "expected": 25,
+        "correct": 18,
+        "precision": 1,
+        "recall": 0.72
+      },
+      {
+        "image": "09.png",
+        "count": 34,
+        "seconds": 7.595,
+        "expected": 48,
+        "correct": 33,
+        "precision": 0.9705882352941176,
+        "recall": 0.6875
+      },
+      {
+        "image": "10.jpg",
+        "count": 29,
+        "seconds": 11.694,
+        "expected": 31,
+        "correct": 25,
+        "precision": 0.8620689655172413,
+        "recall": 0.8064516129032258
+      },
+      {
+        "image": "11.jpg",
+        "count": 88,
+        "seconds": 16.017,
+        "expected": 93,
+        "correct": 85,
+        "precision": 0.9659090909090909,
+        "recall": 0.9139784946236559
+      },
+      {
+        "image": "full-score.png",
+        "count": 36,
+        "seconds": 15.858,
+        "expected": 36,
+        "correct": 36,
+        "precision": 1,
+        "recall": 1
+      }
+    ]
+  },
+  {
+    "round": 3,
+    "description": "색 선택·코드 간격·행 문맥 조정",
+    "complete": true,
+    "reports": [
+      {
+        "image": "01.png",
+        "count": 36,
+        "seconds": 27.873,
+        "expected": 36,
+        "correct": 36,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "02.jpg",
+        "count": 24,
+        "seconds": 7.023,
+        "expected": 24,
+        "correct": 23,
+        "precision": 0.9583333333333334,
+        "recall": 0.9583333333333334
+      },
+      {
+        "image": "03.jpg",
+        "count": 29,
+        "seconds": 13.416,
+        "expected": 33,
+        "correct": 26,
+        "precision": 0.896551724137931,
+        "recall": 0.7878787878787878
+      },
+      {
+        "image": "04.png",
+        "count": 37,
+        "seconds": 18.4,
+        "expected": 73,
+        "correct": 35,
+        "precision": 0.9459459459459459,
+        "recall": 0.4794520547945205
+      },
+      {
+        "image": "05.jpg",
+        "count": 17,
+        "seconds": 5.857,
+        "expected": 17,
+        "correct": 15,
+        "precision": 0.8823529411764706,
+        "recall": 0.8823529411764706
+      },
+      {
+        "image": "06.jpg",
+        "count": 27,
+        "seconds": 17.165,
+        "expected": 30,
+        "correct": 24,
+        "precision": 0.8888888888888888,
+        "recall": 0.8
+      },
+      {
+        "image": "07.jpg",
+        "count": 26,
+        "seconds": 6.438,
+        "expected": 31,
+        "correct": 26,
+        "precision": 1,
+        "recall": 0.8387096774193549
+      },
+      {
+        "image": "08.jpg",
+        "count": 27,
+        "seconds": 8.326,
+        "expected": 25,
+        "correct": 25,
+        "precision": 0.9259259259259259,
+        "recall": 1
+      },
+      {
+        "image": "09.png",
+        "count": 42,
+        "seconds": 12.652,
+        "expected": 48,
+        "correct": 41,
+        "precision": 0.9761904761904762,
+        "recall": 0.8541666666666666
+      },
+      {
+        "image": "10.jpg",
+        "count": 29,
+        "seconds": 18.368,
+        "expected": 31,
+        "correct": 27,
+        "precision": 0.9310344827586207,
+        "recall": 0.8709677419354839
+      },
+      {
+        "image": "11.jpg",
+        "count": 87,
+        "seconds": 20.024,
+        "expected": 93,
+        "correct": 85,
+        "precision": 0.9770114942528736,
+        "recall": 0.9139784946236559
+      },
+      {
+        "image": "full-score.png",
+        "count": 36,
+        "seconds": 15.846,
+        "expected": 36,
+        "correct": 36,
+        "precision": 1,
+        "recall": 1
+      }
+    ]
+  },
+  {
+    "round": 4,
+    "description": "색 가장자리·위첨자 평탄화 재시도",
+    "complete": true,
+    "reports": [
+      {
+        "image": "01.png",
+        "count": 36,
+        "seconds": 27.716,
+        "expected": 36,
+        "correct": 36,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "02.jpg",
+        "count": 24,
+        "seconds": 9.669,
+        "expected": 24,
+        "correct": 24,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "03.jpg",
+        "count": 31,
+        "seconds": 20.066,
+        "expected": 33,
+        "correct": 29,
+        "precision": 0.9354838709677419,
+        "recall": 0.8787878787878788
+      },
+      {
+        "image": "04.png",
+        "count": 18,
+        "seconds": 28.176,
+        "expected": 73,
+        "correct": 13,
+        "precision": 0.7222222222222222,
+        "recall": 0.1780821917808219
+      },
+      {
+        "image": "05.jpg",
+        "count": 17,
+        "seconds": 7.715,
+        "expected": 17,
+        "correct": 17,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "06.jpg",
+        "count": 30,
+        "seconds": 22.423,
+        "expected": 30,
+        "correct": 29,
+        "precision": 0.9666666666666667,
+        "recall": 0.9666666666666667
+      },
+      {
+        "image": "07.jpg",
+        "count": 24,
+        "seconds": 8.96,
+        "expected": 31,
+        "correct": 24,
+        "precision": 1,
+        "recall": 0.7741935483870968
+      },
+      {
+        "image": "08.jpg",
+        "count": 27,
+        "seconds": 11.671,
+        "expected": 25,
+        "correct": 25,
+        "precision": 0.9259259259259259,
+        "recall": 1
+      },
+      {
+        "image": "09.png",
+        "count": 43,
+        "seconds": 18.897,
+        "expected": 48,
+        "correct": 41,
+        "precision": 0.9534883720930233,
+        "recall": 0.8541666666666666
+      },
+      {
+        "image": "10.jpg",
+        "count": 31,
+        "seconds": 29.766,
+        "expected": 31,
+        "correct": 28,
+        "precision": 0.9032258064516129,
+        "recall": 0.9032258064516129
+      },
+      {
+        "image": "11.jpg",
+        "count": 93,
+        "seconds": 28.813,
+        "expected": 93,
+        "correct": 91,
+        "precision": 0.978494623655914,
+        "recall": 0.978494623655914
+      },
+      {
+        "image": "full-score.png",
+        "count": 36,
+        "seconds": 16.021,
+        "expected": 36,
+        "correct": 36,
+        "precision": 1,
+        "recall": 1
+      }
+    ]
+  },
+  {
+    "round": 5,
+    "description": "반복 글자 판독 교차 확인",
+    "complete": true,
+    "reports": [
+      {
+        "image": "01.png",
+        "count": 36,
+        "seconds": 28.26,
+        "expected": 36,
+        "correct": 36,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "02.jpg",
+        "count": 24,
+        "seconds": 10.197,
+        "expected": 24,
+        "correct": 24,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "03.jpg",
+        "count": 31,
+        "seconds": 20.025,
+        "expected": 33,
+        "correct": 28,
+        "precision": 0.9032258064516129,
+        "recall": 0.8484848484848485
+      },
+      {
+        "image": "04.png",
+        "count": 55,
+        "seconds": 28.526,
+        "expected": 73,
+        "correct": 41,
+        "precision": 0.7454545454545455,
+        "recall": 0.5616438356164384
+      },
+      {
+        "image": "05.jpg",
+        "count": 17,
+        "seconds": 7.945,
+        "expected": 17,
+        "correct": 17,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "06.jpg",
+        "count": 30,
+        "seconds": 21.303,
+        "expected": 30,
+        "correct": 30,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "07.jpg",
+        "count": 24,
+        "seconds": 8.498,
+        "expected": 31,
+        "correct": 24,
+        "precision": 1,
+        "recall": 0.7741935483870968
+      },
+      {
+        "image": "08.jpg",
+        "count": 27,
+        "seconds": 11.972,
+        "expected": 25,
+        "correct": 25,
+        "precision": 0.9259259259259259,
+        "recall": 1
+      },
+      {
+        "image": "09.png",
+        "count": 44,
+        "seconds": 18.868,
+        "expected": 48,
+        "correct": 42,
+        "precision": 0.9545454545454546,
+        "recall": 0.875
+      },
+      {
+        "image": "10.jpg",
+        "count": 31,
+        "seconds": 31.979,
+        "expected": 31,
+        "correct": 28,
+        "precision": 0.9032258064516129,
+        "recall": 0.9032258064516129
+      },
+      {
+        "image": "11.jpg",
+        "count": 93,
+        "seconds": 31.997,
+        "expected": 93,
+        "correct": 93,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "full-score.png",
+        "count": 36,
+        "seconds": 16.512,
+        "expected": 36,
+        "correct": 36,
+        "precision": 1,
+        "recall": 1
+      }
+    ]
+  },
+  {
+    "round": 6,
+    "description": "검은 글자 가장자리 복원·괄호 보정",
+    "complete": true,
+    "reports": [
+      {
+        "image": "01.png",
+        "count": 36,
+        "seconds": 30.176,
+        "expected": 36,
+        "correct": 36,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "02.jpg",
+        "count": 24,
+        "seconds": 10.485,
+        "expected": 24,
+        "correct": 24,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "03.jpg",
+        "count": 37,
+        "seconds": 21.824,
+        "expected": 33,
+        "correct": 28,
+        "precision": 0.7567567567567568,
+        "recall": 0.8484848484848485
+      },
+      {
+        "image": "04.png",
+        "count": 68,
+        "seconds": 28.361,
+        "expected": 73,
+        "correct": 58,
+        "precision": 0.8529411764705882,
+        "recall": 0.7945205479452054
+      },
+      {
+        "image": "05.jpg",
+        "count": 17,
+        "seconds": 7.943,
+        "expected": 17,
+        "correct": 17,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "06.jpg",
+        "count": 27,
+        "seconds": 22.523,
+        "expected": 30,
+        "correct": 27,
+        "precision": 1,
+        "recall": 0.9
+      },
+      {
+        "image": "07.jpg",
+        "count": 25,
+        "seconds": 9.357,
+        "expected": 31,
+        "correct": 25,
+        "precision": 1,
+        "recall": 0.8064516129032258
+      },
+      {
+        "image": "08.jpg",
+        "count": 26,
+        "seconds": 12.105,
+        "expected": 25,
+        "correct": 25,
+        "precision": 0.9615384615384616,
+        "recall": 1
+      },
+      {
+        "image": "09.png",
+        "count": 47,
+        "seconds": 19.317,
+        "expected": 48,
+        "correct": 45,
+        "precision": 0.9574468085106383,
+        "recall": 0.9375
+      },
+      {
+        "image": "10.jpg",
+        "count": 31,
+        "seconds": 30.447,
+        "expected": 31,
+        "correct": 29,
+        "precision": 0.9354838709677419,
+        "recall": 0.9354838709677419
+      },
+      {
+        "image": "11.jpg",
+        "count": 93,
+        "seconds": 31.529,
+        "expected": 93,
+        "correct": 93,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "full-score.png",
+        "count": 36,
+        "seconds": 16.978,
+        "expected": 36,
+        "correct": 36,
+        "precision": 1,
+        "recall": 1
+      }
+    ]
+  },
+  {
+    "round": 7,
+    "description": "확대·괄호 결합·판독 방식 구분",
+    "complete": true,
+    "reports": [
+      {
+        "image": "01.png",
+        "count": 36,
+        "seconds": 29.14,
+        "expected": 36,
+        "correct": 36,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "02.jpg",
+        "count": 24,
+        "seconds": 13.149,
+        "expected": 24,
+        "correct": 24,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "03.jpg",
+        "count": 32,
+        "seconds": 27.453,
+        "expected": 33,
+        "correct": 32,
+        "precision": 1,
+        "recall": 0.9696969696969697
+      },
+      {
+        "image": "04.png",
+        "count": 72,
+        "seconds": 39.658,
+        "expected": 73,
+        "correct": 65,
+        "precision": 0.9027777777777778,
+        "recall": 0.8904109589041096
+      },
+      {
+        "image": "05.jpg",
+        "count": 17,
+        "seconds": 10.204,
+        "expected": 17,
+        "correct": 15,
+        "precision": 0.8823529411764706,
+        "recall": 0.8823529411764706
+      },
+      {
+        "image": "06.jpg",
+        "count": 28,
+        "seconds": 30.156,
+        "expected": 30,
+        "correct": 28,
+        "precision": 1,
+        "recall": 0.9333333333333333
+      },
+      {
+        "image": "07.jpg",
+        "count": 26,
+        "seconds": 12.812,
+        "expected": 31,
+        "correct": 26,
+        "precision": 1,
+        "recall": 0.8387096774193549
+      },
+      {
+        "image": "08.jpg",
+        "count": 26,
+        "seconds": 15.875,
+        "expected": 25,
+        "correct": 25,
+        "precision": 0.9615384615384616,
+        "recall": 1
+      },
+      {
+        "image": "09.png",
+        "count": 47,
+        "seconds": 26.913,
+        "expected": 48,
+        "correct": 46,
+        "precision": 0.9787234042553191,
+        "recall": 0.9583333333333334
+      },
+      {
+        "image": "10.jpg",
+        "count": 31,
+        "seconds": 42.943,
+        "expected": 31,
+        "correct": 29,
+        "precision": 0.9354838709677419,
+        "recall": 0.9354838709677419
+      },
+      {
+        "image": "11.jpg",
+        "count": 91,
+        "seconds": 42.34,
+        "expected": 93,
+        "correct": 91,
+        "precision": 1,
+        "recall": 0.978494623655914
+      },
+      {
+        "image": "full-score.png",
+        "count": 36,
+        "seconds": 16.423,
+        "expected": 36,
+        "correct": 36,
+        "precision": 1,
+        "recall": 1
+      }
+    ]
+  },
+  {
+    "round": 8,
+    "description": "반복 글자 비교 완화·접미사 결합",
+    "complete": true,
+    "reports": [
+      {
+        "image": "01.png",
+        "count": 36,
+        "seconds": 29.285,
+        "expected": 36,
+        "correct": 36,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "02.jpg",
+        "count": 24,
+        "seconds": 13.563,
+        "expected": 24,
+        "correct": 24,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "03.jpg",
+        "count": 32,
+        "seconds": 28.518,
+        "expected": 33,
+        "correct": 31,
+        "precision": 0.96875,
+        "recall": 0.9393939393939394
+      },
+      {
+        "image": "04.png",
+        "count": 72,
+        "seconds": 39.486,
+        "expected": 73,
+        "correct": 72,
+        "precision": 1,
+        "recall": 0.9863013698630136
+      },
+      {
+        "image": "05.jpg",
+        "count": 17,
+        "seconds": 11.053,
+        "expected": 17,
+        "correct": 15,
+        "precision": 0.8823529411764706,
+        "recall": 0.8823529411764706
+      },
+      {
+        "image": "06.jpg",
+        "count": 26,
+        "seconds": 30.823,
+        "expected": 30,
+        "correct": 26,
+        "precision": 1,
+        "recall": 0.8666666666666667
+      },
+      {
+        "image": "07.jpg",
+        "count": 26,
+        "seconds": 12.463,
+        "expected": 31,
+        "correct": 26,
+        "precision": 1,
+        "recall": 0.8387096774193549
+      },
+      {
+        "image": "08.jpg",
+        "count": 26,
+        "seconds": 16.07,
+        "expected": 25,
+        "correct": 25,
+        "precision": 0.9615384615384616,
+        "recall": 1
+      },
+      {
+        "image": "09.png",
+        "count": 47,
+        "seconds": 27.064,
+        "expected": 48,
+        "correct": 46,
+        "precision": 0.9787234042553191,
+        "recall": 0.9583333333333334
+      },
+      {
+        "image": "10.jpg",
+        "count": 31,
+        "seconds": 40.703,
+        "expected": 31,
+        "correct": 31,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "11.jpg",
+        "count": 89,
+        "seconds": 38.95,
+        "expected": 93,
+        "correct": 89,
+        "precision": 1,
+        "recall": 0.956989247311828
+      },
+      {
+        "image": "full-score.png",
+        "count": 36,
+        "seconds": 16.679,
+        "expected": 36,
+        "correct": 36,
+        "precision": 1,
+        "recall": 1
+      }
+    ]
+  },
+  {
+    "round": 9,
+    "description": "빨간 코드 첫 줄·별도 베이스·루트 문맥",
+    "complete": true,
+    "reports": [
+      {
+        "image": "01.png",
+        "count": 36,
+        "seconds": 30.354,
+        "expected": 36,
+        "correct": 36,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "02.jpg",
+        "count": 24,
+        "seconds": 13.459,
+        "expected": 24,
+        "correct": 24,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "03.jpg",
+        "count": 33,
+        "seconds": 27.22,
+        "expected": 33,
+        "correct": 31,
+        "precision": 0.9393939393939394,
+        "recall": 0.9393939393939394
+      },
+      {
+        "image": "04.png",
+        "count": 73,
+        "seconds": 37.868,
+        "expected": 73,
+        "correct": 73,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "05.jpg",
+        "count": 17,
+        "seconds": 9.522,
+        "expected": 17,
+        "correct": 15,
+        "precision": 0.8823529411764706,
+        "recall": 0.8823529411764706
+      },
+      {
+        "image": "06.jpg",
+        "count": 25,
+        "seconds": 20.573,
+        "expected": 30,
+        "correct": 21,
+        "precision": 0.84,
+        "recall": 0.7
+      },
+      {
+        "image": "07.jpg",
+        "count": 31,
+        "seconds": 13.749,
+        "expected": 31,
+        "correct": 26,
+        "precision": 0.8387096774193549,
+        "recall": 0.8387096774193549
+      },
+      {
+        "image": "08.jpg",
+        "count": 26,
+        "seconds": 14.756,
+        "expected": 25,
+        "correct": 25,
+        "precision": 0.9615384615384616,
+        "recall": 1
+      },
+      {
+        "image": "09.png",
+        "count": 48,
+        "seconds": 25.619,
+        "expected": 48,
+        "correct": 48,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "10.jpg",
+        "count": 31,
+        "seconds": 41.627,
+        "expected": 31,
+        "correct": 30,
+        "precision": 0.967741935483871,
+        "recall": 0.967741935483871
+      },
+      {
+        "image": "11.jpg",
+        "count": 89,
+        "seconds": 39.505,
+        "expected": 93,
+        "correct": 89,
+        "precision": 1,
+        "recall": 0.956989247311828
+      },
+      {
+        "image": "full-score.png",
+        "count": 36,
+        "seconds": 16.582,
+        "expected": 36,
+        "correct": 36,
+        "precision": 1,
+        "recall": 1
+      }
+    ]
+  },
+  {
+    "round": 10,
+    "description": "후보 정렬·이름 충돌 제한",
+    "complete": true,
+    "reports": [
+      {
+        "image": "01.png",
+        "count": 36,
+        "seconds": 30.26,
+        "expected": 36,
+        "correct": 36,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "02.jpg",
+        "count": 24,
+        "seconds": 14.279,
+        "expected": 24,
+        "correct": 24,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "03.jpg",
+        "count": 33,
+        "seconds": 30.017,
+        "expected": 33,
+        "correct": 32,
+        "precision": 0.9696969696969697,
+        "recall": 0.9696969696969697
+      },
+      {
+        "image": "04.png",
+        "count": 73,
+        "seconds": 41.27,
+        "expected": 73,
+        "correct": 73,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "05.jpg",
+        "count": 17,
+        "seconds": 10.319,
+        "expected": 17,
+        "correct": 17,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "06.jpg",
+        "count": 28,
+        "seconds": 30.622,
+        "expected": 30,
+        "correct": 28,
+        "precision": 1,
+        "recall": 0.9333333333333333
+      },
+      {
+        "image": "07.jpg",
+        "count": 30,
+        "seconds": 14.565,
+        "expected": 31,
+        "correct": 30,
+        "precision": 1,
+        "recall": 0.967741935483871
+      },
+      {
+        "image": "08.jpg",
+        "count": 25,
+        "seconds": 16.02,
+        "expected": 25,
+        "correct": 25,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "09.png",
+        "count": 48,
+        "seconds": 27.671,
+        "expected": 48,
+        "correct": 48,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "10.jpg",
+        "count": 31,
+        "seconds": 85.19,
+        "expected": 31,
+        "correct": 30,
+        "precision": 0.967741935483871,
+        "recall": 0.967741935483871
+      },
+      {
+        "image": "11.jpg",
+        "count": 88,
+        "seconds": 43.615,
+        "expected": 93,
+        "correct": 84,
+        "precision": 0.9545454545454546,
+        "recall": 0.9032258064516129
+      },
+      {
+        "image": "full-score.png",
+        "count": 36,
+        "seconds": 17.072,
+        "expected": 36,
+        "correct": 36,
+        "precision": 1,
+        "recall": 1
+      }
+    ]
+  },
+  {
+    "round": 11,
+    "description": "누락 슬래시·페이지 순서·신뢰도 출처",
+    "complete": true,
+    "reports": [
+      {
+        "image": "01.png",
+        "count": 36,
+        "seconds": 29.324,
+        "expected": 36,
+        "correct": 36,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "02.jpg",
+        "count": 24,
+        "seconds": 13.461,
+        "expected": 24,
+        "correct": 24,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "03.jpg",
+        "count": 33,
+        "seconds": 28.004,
+        "expected": 33,
+        "correct": 33,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "04.png",
+        "count": 73,
+        "seconds": 79.988,
+        "expected": 73,
+        "correct": 73,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "05.jpg",
+        "count": 17,
+        "seconds": 10.397,
+        "expected": 17,
+        "correct": 17,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "06.jpg",
+        "count": 28,
+        "seconds": 31.025,
+        "expected": 30,
+        "correct": 28,
+        "precision": 1,
+        "recall": 0.9333333333333333
+      },
+      {
+        "image": "07.jpg",
+        "count": 30,
+        "seconds": 15.068,
+        "expected": 31,
+        "correct": 30,
+        "precision": 1,
+        "recall": 0.967741935483871
+      },
+      {
+        "image": "08.jpg",
+        "count": 25,
+        "seconds": 16.442,
+        "expected": 25,
+        "correct": 25,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "09.png",
+        "count": 48,
+        "seconds": 27.797,
+        "expected": 48,
+        "correct": 48,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "10.jpg",
+        "count": 31,
+        "seconds": 44.615,
+        "expected": 31,
+        "correct": 30,
+        "precision": 0.967741935483871,
+        "recall": 0.967741935483871
+      },
+      {
+        "image": "11.jpg",
+        "count": 88,
+        "seconds": 42.503,
+        "expected": 93,
+        "correct": 84,
+        "precision": 0.9545454545454546,
+        "recall": 0.9032258064516129
+      },
+      {
+        "image": "full-score.png",
+        "count": 36,
+        "seconds": 16.978,
+        "expected": 36,
+        "correct": 36,
+        "precision": 1,
+        "recall": 1
+      }
+    ]
+  },
+  {
+    "round": 12,
+    "description": "소문자 판독·짧은 빔·행 검사",
+    "complete": true,
+    "reports": [
+      {
+        "image": "01.png",
+        "count": 36,
+        "seconds": 30.164,
+        "expected": 36,
+        "correct": 36,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "02.jpg",
+        "count": 24,
+        "seconds": 13.962,
+        "expected": 24,
+        "correct": 24,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "03.jpg",
+        "count": 40,
+        "seconds": 29.314,
+        "expected": 33,
+        "correct": 33,
+        "precision": 0.825,
+        "recall": 1
+      },
+      {
+        "image": "04.png",
+        "count": 73,
+        "seconds": 37.982,
+        "expected": 73,
+        "correct": 73,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "05.jpg",
+        "count": 17,
+        "seconds": 9.693,
+        "expected": 17,
+        "correct": 17,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "06.jpg",
+        "count": 30,
+        "seconds": 27.712,
+        "expected": 30,
+        "correct": 30,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "07.jpg",
+        "count": 30,
+        "seconds": 13.763,
+        "expected": 31,
+        "correct": 30,
+        "precision": 1,
+        "recall": 0.967741935483871
+      },
+      {
+        "image": "08.jpg",
+        "count": 25,
+        "seconds": 14.866,
+        "expected": 25,
+        "correct": 25,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "09.png",
+        "count": 48,
+        "seconds": 25.937,
+        "expected": 48,
+        "correct": 48,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "10.jpg",
+        "count": 46,
+        "seconds": 42.088,
+        "expected": 31,
+        "correct": 30,
+        "precision": 0.6521739130434783,
+        "recall": 0.967741935483871
+      },
+      {
+        "image": "11.jpg",
+        "count": 93,
+        "seconds": 38.281,
+        "expected": 93,
+        "correct": 88,
+        "precision": 0.946236559139785,
+        "recall": 0.946236559139785
+      },
+      {
+        "image": "full-score.png",
+        "count": 36,
+        "seconds": 16.154,
+        "expected": 36,
+        "correct": 36,
+        "precision": 1,
+        "recall": 1
+      }
+    ]
+  },
+  {
+    "round": 13,
+    "description": "빨간 보조 필기 공간 마스크·문자 모양 비교",
+    "complete": true,
+    "reports": [
+      {
+        "image": "01.png",
+        "count": 36,
+        "seconds": 28.7,
+        "expected": 36,
+        "correct": 36,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "02.jpg",
+        "count": 24,
+        "seconds": 12.594,
+        "expected": 24,
+        "correct": 24,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "03.jpg",
+        "count": 40,
+        "seconds": 26.587,
+        "expected": 33,
+        "correct": 33,
+        "precision": 0.825,
+        "recall": 1
+      },
+      {
+        "image": "04.png",
+        "count": 73,
+        "seconds": 6411.491,
+        "expected": 73,
+        "correct": 69,
+        "precision": 0.9452054794520548,
+        "recall": 0.9452054794520548
+      },
+      {
+        "image": "05.jpg",
+        "count": 17,
+        "seconds": 10.286,
+        "expected": 17,
+        "correct": 17,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "06.jpg",
+        "count": 30,
+        "seconds": 28.435,
+        "expected": 30,
+        "correct": 29,
+        "precision": 0.9666666666666667,
+        "recall": 0.9666666666666667
+      },
+      {
+        "image": "07.jpg",
+        "count": 30,
+        "seconds": 14.453,
+        "expected": 31,
+        "correct": 30,
+        "precision": 1,
+        "recall": 0.967741935483871
+      },
+      {
+        "image": "08.jpg",
+        "count": 25,
+        "seconds": 16.381,
+        "expected": 25,
+        "correct": 25,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "09.png",
+        "count": 48,
+        "seconds": 27.348,
+        "expected": 48,
+        "correct": 48,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "10.jpg",
+        "count": 46,
+        "seconds": 44.663,
+        "expected": 31,
+        "correct": 30,
+        "precision": 0.6521739130434783,
+        "recall": 0.967741935483871
+      },
+      {
+        "image": "11.jpg",
+        "count": 93,
+        "seconds": 40.332,
+        "expected": 93,
+        "correct": 93,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "full-score.png",
+        "count": 36,
+        "seconds": 17.207,
+        "expected": 36,
+        "correct": 36,
+        "precision": 1,
+        "recall": 1
+      }
+    ]
+  },
+  {
+    "round": 14,
+    "description": "글자 폭 검사 회귀 (폐기)",
+    "complete": true,
+    "reports": [
+      {
+        "image": "01.png",
+        "count": 36,
+        "seconds": 31.27,
+        "expected": 36,
+        "correct": 36,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "02.jpg",
+        "count": 20,
+        "seconds": 11.27,
+        "expected": 24,
+        "correct": 20,
+        "precision": 1,
+        "recall": 0.8333333333333334
+      },
+      {
+        "image": "03.jpg",
+        "count": 32,
+        "seconds": 27.77,
+        "expected": 33,
+        "correct": 32,
+        "precision": 1,
+        "recall": 0.9696969696969697
+      },
+      {
+        "image": "04.png",
+        "count": 35,
+        "seconds": 36.998,
+        "expected": 73,
+        "correct": 31,
+        "precision": 0.8857142857142857,
+        "recall": 0.4246575342465753
+      },
+      {
+        "image": "05.jpg",
+        "count": 17,
+        "seconds": 7.82,
+        "expected": 17,
+        "correct": 17,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "06.jpg",
+        "count": 29,
+        "seconds": 26.853,
+        "expected": 30,
+        "correct": 29,
+        "precision": 1,
+        "recall": 0.9666666666666667
+      },
+      {
+        "image": "07.jpg",
+        "count": 30,
+        "seconds": 13.753,
+        "expected": 31,
+        "correct": 30,
+        "precision": 1,
+        "recall": 0.967741935483871
+      },
+      {
+        "image": "08.jpg",
+        "count": 25,
+        "seconds": 13.653,
+        "expected": 25,
+        "correct": 25,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "09.png",
+        "count": 48,
+        "seconds": 1175.49,
+        "expected": 48,
+        "correct": 48,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "10.jpg",
+        "count": 31,
+        "seconds": 43.255,
+        "expected": 31,
+        "correct": 30,
+        "precision": 0.967741935483871,
+        "recall": 0.967741935483871
+      },
+      {
+        "image": "11.jpg",
+        "count": 93,
+        "seconds": 40.466,
+        "expected": 93,
+        "correct": 93,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "full-score.png",
+        "count": 36,
+        "seconds": 17.337,
+        "expected": 36,
+        "correct": 36,
+        "precision": 1,
+        "recall": 1
+      }
+    ]
+  },
+  {
+    "round": 15,
+    "description": "최종: 중복 제거 후 행 검사 (13의 원시 OCR 재처리)",
+    "complete": true,
+    "reports": [
+      {
+        "image": "01.png",
+        "count": 36,
+        "seconds": 28.7,
+        "expected": 36,
+        "correct": 36,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "02.jpg",
+        "count": 24,
+        "seconds": 12.594,
+        "expected": 24,
+        "correct": 24,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "03.jpg",
+        "count": 40,
+        "seconds": 26.587,
+        "expected": 33,
+        "correct": 33,
+        "precision": 0.825,
+        "recall": 1
+      },
+      {
+        "image": "04.png",
+        "count": 73,
+        "seconds": 6411.491,
+        "expected": 73,
+        "correct": 69,
+        "precision": 0.9452054794520548,
+        "recall": 0.9452054794520548
+      },
+      {
+        "image": "05.jpg",
+        "count": 17,
+        "seconds": 10.286,
+        "expected": 17,
+        "correct": 17,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "06.jpg",
+        "count": 30,
+        "seconds": 28.435,
+        "expected": 30,
+        "correct": 29,
+        "precision": 0.9666666666666667,
+        "recall": 0.9666666666666667
+      },
+      {
+        "image": "07.jpg",
+        "count": 30,
+        "seconds": 14.453,
+        "expected": 31,
+        "correct": 30,
+        "precision": 1,
+        "recall": 0.967741935483871
+      },
+      {
+        "image": "08.jpg",
+        "count": 25,
+        "seconds": 16.381,
+        "expected": 25,
+        "correct": 25,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "09.png",
+        "count": 48,
+        "seconds": 27.348,
+        "expected": 48,
+        "correct": 48,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "10.jpg",
+        "count": 46,
+        "seconds": 44.663,
+        "expected": 31,
+        "correct": 30,
+        "precision": 0.6521739130434783,
+        "recall": 0.967741935483871
+      },
+      {
+        "image": "11.jpg",
+        "count": 93,
+        "seconds": 40.332,
+        "expected": 93,
+        "correct": 93,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "image": "full-score.png",
+        "count": 36,
+        "seconds": 17.207,
+        "expected": 36,
+        "correct": 36,
+        "precision": 1,
+        "recall": 1
+      }
+    ]
+  }
+]

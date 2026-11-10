@@ -1,0 +1,32 @@
+{
+  "id": "./",
+  "name": "기타메이트",
+  "short_name": "기타메이트",
+  "lang": "ko",
+  "description": "코드 추천·튜닝·코드 판별을 함께하는 기타 연습 도우미",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "theme_color": "#245b47",
+  "background_color": "#f6f4ec",
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
