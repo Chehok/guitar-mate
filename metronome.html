@@ -147,7 +147,8 @@ function paintPendulum(){
   }
   const phase=Math.min(1,(time-current.time)/current.interval);
   const direction=current.beat%2===0?-1:1;
-  const angle=27*direction*Math.cos(Math.PI*phase);
+  // Each click is a center crossing; the swing reverses halfway between clicks.
+  const angle=27*direction*Math.sin(Math.PI*phase);
   pendulum.setAttribute('transform',`rotate(${angle} 126 178)`);
 }
 function playClick(time,beat){
