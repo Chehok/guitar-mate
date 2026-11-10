@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<meta name="description" content="표준 튜닝, Cmaj7 운지 읽기, Em 코드 판별, 카포를 사용한 악보 변환을 기타메이트로 따라 해보세요.">
+<meta name="description" content="표준 튜닝, Cmaj7 운지 읽기, Em 코드 판별, 카포를 사용한 악보 키 변환을 기타메이트로 따라 해보세요.">
 <base target="_top">
 <link rel="icon" type="image/svg+xml" href="./favicon.svg">
 <title>기타메이트 · 사용 가이드</title>
@@ -106,7 +106,7 @@ footer { max-width:760px; padding:16px 0; color:var(--muted); }
 <button type="button" id="guide-tab-tuner" role="tab" aria-controls="example-tuner">튜닝</button>
 <button type="button" id="guide-tab-search" role="tab" aria-controls="example-search">코드 검색</button>
 <button type="button" id="guide-tab-identify" role="tab" aria-controls="example-identify">코드 판별</button>
-<button type="button" id="guide-tab-score" role="tab" aria-controls="example-score">악보 변환</button>
+<button type="button" id="guide-tab-score" role="tab" aria-controls="example-score">악보 키 변환</button>
 </div>
 
 <section class="panel" id="example-tuner" aria-labelledby="guide-tuner">
@@ -182,7 +182,7 @@ footer { max-width:760px; padding:16px 0; color:var(--muted); }
 <div class="score-examples" role="group" aria-label="악보 키 변환 화면 예시">
 <div class="score-example-nav" hidden>
 <button type="button" data-direction="-1" aria-label="이전 예시">‹</button>
-<span role="status">1 / 3</span>
+<span role="status">1 / 4</span>
 <button type="button" data-direction="1" aria-label="다음 예시">›</button>
 </div>
 <div class="score-example">
@@ -233,11 +233,25 @@ footer { max-width:760px; padding:16px 0; color:var(--muted); }
 <g fill="currentColor"><ellipse cx="51" cy="72" rx="5.5" ry="3.5"/><ellipse cx="148" cy="56" rx="5.5" ry="3.5"/><ellipse cx="245" cy="52" rx="5.5" ry="3.5"/><ellipse cx="342" cy="68" rx="5.5" ry="3.5"/></g>
 </svg>
 </div>
+<div class="score-example">
+<strong class="score-example-title">4. 인식되지 않은 코드 직접 추가하기</strong>
+<div class="score-mock-row"><span class="score-mock-control score-mock-plus">코드 직접 추가</span><span class="score-mock-file">악보에서 빠진 코드 위치 선택</span></div>
+<svg class="score-paper" viewBox="0 0 440 98" role="img" aria-label="악보에서 Bm 코드가 빠진 위치를 선택해 직접 추가하는 예시입니다.">
+<g fill="currentColor" font-size="20" font-weight="750"><text x="40" y="30">D</text><text x="137" y="30">A</text><text x="331" y="30">G</text></g>
+<rect x="227" y="5" width="52" height="35" rx="6" fill="#ecefe5" stroke="#245b47" stroke-width="2" stroke-dasharray="4 3"/>
+<text x="253" y="29" text-anchor="middle" fill="#245b47" font-size="23" font-weight="750">+</text>
+<path d="M26 44h388m-388 8h388m-388 8h388m-388 8h388m-388 8h388M26 44v32m97-32v32m97-32v32m97-32v32m97-32v32" fill="none" stroke="currentColor" stroke-opacity=".6"/>
+<path d="M56 72V50m97 6V34m97 18V30m97 38V46" fill="none" stroke="currentColor"/>
+<g fill="currentColor"><ellipse cx="51" cy="72" rx="5.5" ry="3.5"/><ellipse cx="148" cy="56" rx="5.5" ry="3.5"/><ellipse cx="245" cy="52" rx="5.5" ry="3.5"/><ellipse cx="342" cy="68" rx="5.5" ry="3.5"/></g>
+</svg>
+<div class="score-mock-row"><span>원래 코드</span><span class="score-mock-control">Bm</span><span class="score-mock-control score-mock-plus">저장</span></div>
+</div>
 </div>
 <ol>
 <li>파일을 선택하거나 악보 이미지를 업로드 영역에 끌어 놓습니다. 잘못 읽힌 코드가 있으면 악보에서 그 코드를 눌러 수정합니다.</li>
 <li>지판에서 <strong>2프렛</strong>을 누르거나, 카포 없음에서 <strong>+</strong>를 두 번 누릅니다.</li>
 <li>악보에 표시된 새 코드 모양을 확인하고, 실제 기타에도 카포를 2프렛에 끼운 뒤 연주합니다.</li>
+<li>코드가 인식되지 않았다면 <strong>코드 직접 추가</strong>를 누르고, 악보에서 빠진 위치를 선택한 뒤 원래 코드 이름을 입력해 <strong>저장</strong>합니다.</li>
 </ol>
 <p>※ 원래 코드가 <strong>D–A–Bm–G</strong>일 때, 카포를 2프렛으로 설정하면 <strong>C–G–Am–F</strong>가 표시됩니다.</p>
 <a class="tool-link tool-button" href="./score-key-transposer.html">악보 키 변환 열기</a>
