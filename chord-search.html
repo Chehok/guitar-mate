@@ -33,6 +33,8 @@
   --green-hover: #194a38;
   --lime: #dfea9c;
   --orange: #a34625;
+  --root-soft: #eed8c7;
+  --root-ink: #814022;
   --error: #a12f20;
   --focus: #9a651b;
   --fret: #72816e;
@@ -125,7 +127,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--muted); }
 .legend span { display: flex; align-items: center; gap: 6px; }
 .key { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: var(--note); border: 1px solid var(--fret); }
-.key.root { background: var(--orange); border-color: var(--orange); }
+.key.root { background: var(--root-soft); border-color: var(--root-ink); }
 .key.current { background: var(--green); outline: 2px solid var(--ink); outline-offset: 2px; border: 0; }
 .scroll { overflow-x: auto; overscroll-behavior-x: contain; margin-top: 12px; padding: 8px 16px; scrollbar-color: var(--control) var(--soft); }
 .scroll:focus-visible { outline-offset: -4px; }
@@ -204,6 +206,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
     --ink: #f0f1e6; --muted: #b2beb1; --line: #374438; --control: #7c907d;
     --green: #a2d2b5; --on-green: #172c21; --green-hover: #b9e0c8;
     --lime: #dfea9c; --orange: #efb17f; --error: #ffa392; --focus: #e8c879;
+    --root-soft: #624637; --root-ink: #f2d5bf;
     --fret: #83977e; --string: #92a58d; --neck: #242c24; --inlay: #67755f;
     --note: #3c513d; --note-ink: #ecf1e5; --hit: #a2d2b524;
   }
@@ -626,7 +629,10 @@ for(const f of [3,5,7,9,12,15]){if(f===12){for(const yy of [87.5,157.5])s+=`<cir
 for(let i=0;i<6;i++){
 s+=`<text x="17" y="${y(i)+4}" text-anchor="middle" font-size="12" fill="var(--muted)">${['E','A','D','G','B','e'][i]}</text><line x1="43" x2="1011" y1="${y(i)}" y2="${y(i)}" stroke="var(--string)" stroke-width="${1+i*.15}"/>`;
 for(let f=0;f<=15;f++){const pc=mod(tuning[i]+f),selected=v&&v.frets[i]===f;if(!selected&&!current.tones.some(t=>mod(current.pc+t[0])===pc))continue;const root=pc===current.pc;
-s+=`<circle cx="${x(f)}" cy="${y(i)}" r="${selected?14:12}" fill="${root?'var(--orange)':selected?'var(--green)':'var(--note)'}" ${selected?'stroke="var(--ink)" stroke-width="2.5"':''}/><text x="${x(f)}" y="${y(i)+4}" text-anchor="middle" font-size="${noteName(current,pc).length>2?9:11}" font-weight="${root||selected?700:500}" fill="${root||selected?'var(--on-green)':'var(--note-ink)'}">${noteName(current,pc)}</text>`;
+const fill=selected?(root?'var(--orange)':'var(--green)'):(root?'var(--root-soft)':'var(--note)');
+const ink=selected?'var(--on-green)':(root?'var(--root-ink)':'var(--note-ink)');
+const label=noteName(current,pc);
+s+=`<circle cx="${x(f)}" cy="${y(i)}" r="${selected?14:12}" fill="${fill}" ${selected?'stroke="var(--ink)" stroke-width="2.5"':''}/><text x="${x(f)}" y="${y(i)+4}" text-anchor="middle" font-size="${label.length>2?9:11}" font-weight="${selected?700:500}" fill="${ink}">${label}</text>`;
 }}
 return svg(s,'0 0 1040 237','neck',`${current.label} 코드 구성음의 전체 지판 위치. 근음은 주황색, 현재 운지는 테두리로 표시.`);}
 function render(){const v=voicings[position];$('chord-title').textContent=current.label;$('quality').textContent=current.name;$('diagram').innerHTML=diagram(v);$('counter').textContent=voicings.length?`보이싱 ${position+1}/${voicings.length}`:'보이싱 없음';$('prev').disabled=$('next').disabled=voicings.length<2;$('play').disabled=!v;
