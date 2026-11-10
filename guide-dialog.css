@@ -14,6 +14,7 @@
   white-space: nowrap;
 }
 .guide-launch:hover, .guide-launch:active { background: var(--soft); }
+footer a { color: var(--green); text-underline-offset: 3px; }
 .usage-dialog {
   width: min(740px, calc(100% - 24px));
   height: min(690px, calc(100% - 24px));

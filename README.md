@@ -1,6 +1,6 @@
 # 기타메이트
 
-코드 추천·튜닝·코드 판별·악보 변환을 페이지별로 제공하는 한국어 기타 연습 도우미입니다. 메뉴 이동은 각 페이지를 새로 열어 방문 통계를 따로 집계할 수 있으며, 각 페이지에 광고 자리를 포함합니다. [Pretendard Variable 동적 서브셋](https://github.com/orioncactus/pretendard/blob/main/packages/pretendard/docs/en/README.md#variable-dynamic-subset)을 사용하며, 글꼴을 불러오는 동안 시스템 글꼴로 표시합니다. 외부 OCR 도구는 자동 악보 인식 때만 불러옵니다.
+코드 추천·튜닝·코드 판별·악보 변환을 페이지별로 제공하는 한국어 기타 연습 도우미입니다. 메뉴 이동은 각 페이지를 새로 열어 방문 통계를 따로 집계할 수 있습니다. [Pretendard Variable 동적 서브셋](https://github.com/orioncactus/pretendard/blob/main/packages/pretendard/docs/en/README.md#variable-dynamic-subset)을 사용하며, 글꼴을 불러오는 동안 시스템 글꼴로 표시합니다. 외부 OCR 도구는 자동 악보 인식 때만 불러옵니다.
 
 첫 화면은 튜닝(`index.html`)입니다. 코드 검색은 `chord-search.html`, 코드 판별은 `chord-identifier.html`, 악보 키 변환은 `score-key-transposer.html`에서 엽니다. Cloudflare Workers 기본 설정에서는 개별 HTML 주소가 확장자 없는 주소로 리디렉션됩니다.
 

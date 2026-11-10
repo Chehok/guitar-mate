@@ -10,8 +10,8 @@ for(const [file,mode,href] of pages){
   assert.deepEqual(links.map(link=>link.slice(1,3)),pages.map(([,name,url])=>[name,url]));
   assert.deepEqual(links.filter(link=>link[3]).map(link=>link.slice(1,3)),[[mode,href]]);
   assert(html.includes(`<section id="${mode}-panel">`),`${file} must show its main panel`);
-  assert(html.includes('data-ad-slot'),'Every page needs an ad placement');
+  assert(!html.includes('data-ad-slot'),`${file} has an empty ad panel`);
   const markup=html.slice(0,html.indexOf('<script data-main-app'));
   for(const [,other] of pages)if(other!==mode)assert(!markup.includes(`id="${other}-panel"`),`${file} includes another mode panel`);
 }
-console.log('Each menu has its own page, active navigation item and ad slot.');
+console.log('Each menu has its own page and active navigation item, without an empty ad panel.');

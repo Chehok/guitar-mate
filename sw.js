@@ -1,11 +1,11 @@
 'use strict';
 // Increment when changing any app-shell file so installed copies refresh together.
-const VERSION='v55-score-paste-message';
+const VERSION='v58-remove-ad-placeholder';
 // Keep the storage namespace so activation also removes pre-rebrand caches.
 const CACHE_PREFIX=`six-strings:${self.registration.scope}:`;
 const CACHE_NAME=CACHE_PREFIX+VERSION;
 const scope=new URL(self.registration.scope);
-const pages=['chord-search','chord-identifier','score-key-transposer','guide'];
+const pages=['chord-search','chord-identifier','score-key-transposer','guide','about','privacy'];
 const menuRoutes=new Map([
   ['', './'],
   ...pages.flatMap(name=>[[name, `./${name}.html`], [`${name}.html`, `./${name}.html`]])
