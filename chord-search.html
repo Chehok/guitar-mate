@@ -67,8 +67,8 @@ header { display: flex; flex-wrap: nowrap; align-items: center; justify-content:
 .brand-name { white-space: nowrap; font-size: 21px; font-weight: 800; letter-spacing: -.8px; line-height: 1.25; }
 .brand-subtitle { display: block; font-size: 12px; color: var(--muted); font-weight: 450; letter-spacing: 0; margin-top: 3px; }
 .badge { color: var(--muted); font-size: 12px; white-space: nowrap; }
-.mode-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; margin-bottom: 28px; border-bottom: 1px solid var(--line); }
-.mode-tabs a { display: flex; align-items: center; justify-content: center; min-width: 0; min-height: 48px; padding: 10px 4px 12px; border-bottom: 3px solid transparent; color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 550; white-space: nowrap; transition: color .16s ease, background-color .16s ease, border-color .16s ease; }
+.mode-tabs { display: flex; gap: 4px; margin-bottom: 28px; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; border-bottom: 1px solid var(--line); }
+.mode-tabs a { display: flex; flex: 1 0 max-content; align-items: center; justify-content: center; min-width: 0; min-height: 48px; padding: 10px 14px 12px; border-bottom: 3px solid transparent; color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 550; white-space: nowrap; transition: color .16s ease, background-color .16s ease, border-color .16s ease; }
 .mode-tabs a[aria-current=page] { color: var(--ink); border-bottom-color: var(--green); font-weight: 750; }
 .mode-tabs a:active { background: var(--soft); }
 h1 { margin: 0 0 8px; font-size: clamp(24px, 3vw, 30px); font-weight: 700; line-height: 1.4; letter-spacing: -.9px; text-wrap: balance; }
@@ -209,7 +209,7 @@ footer { padding: 24px 0 8px; color: var(--muted); font-size: 12px; line-height:
   .brand { gap: 12px; }
   .brand-name { font-size: 24px; }
   .brand-subtitle { font-size: 13px; }
-  .mode-tabs { grid-template-columns: repeat(4, 160px); margin-bottom: 32px; }
+  .mode-tabs { margin-bottom: 32px; }
   .mode-tabs a { font-size: 15px; }
   .layout { grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); }
   .tuner-layout { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
@@ -283,7 +283,7 @@ footer { padding: 24px 0 8px; color: var(--muted); font-size: 12px; line-height:
 <body>
 <main class="wrap">
 <header><div class="brand"><img src="./favicon.svg" width="40" height="40" alt=""><div class="brand-name">기타메이트<span class="brand-subtitle">기타 연습 도우미</span></div></div><div class="install-action"><a class="guide-launch" href="./guide.html">사용 가이드</a><button id="install-button" type="button" hidden>홈 화면에 추가</button><span class="badge">오프라인 지원</span></div></header>
-<nav class="mode-tabs" aria-label="연습 모드"><a id="tuner-tab" href="./">튜닝</a><a id="chords-tab" href="./chord-search.html" aria-current="page">코드 검색</a><a id="identify-tab" href="./chord-identifier.html">코드 판별</a><a id="score-tab" href="./score-key-transposer.html">악보 키 변환</a></nav>
+<nav class="mode-tabs" aria-label="연습 모드"><a id="tuner-tab" href="./">튜닝</a><a id="chords-tab" href="./chord-search.html" aria-current="page">코드 검색</a><a id="identify-tab" href="./chord-identifier.html">코드 판별</a><a id="metronome-tab" href="./metronome.html">메트로놈</a><a id="score-tab" href="./score-key-transposer.html">악보 키 변환</a></nav>
 <section id="chords-panel">
 <h1 class="sr-only">코드 검색</h1>
 <form id="search" class="search"><label class="sr-only" for="chord-input">코드 이름</label><input id="chord-input" value="C" placeholder="코드 이름, 예: F#m, Bb, Cmaj7" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="48"><button class="primary" type="submit">코드 찾기</button></form>

@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#245b47" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#131713" media="(prefers-color-scheme: dark)">
+<meta name="description" content="기타 연습을 위한 간단한 온라인 메트로놈입니다.">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="./favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png">
+<title>기타메이트 · 메트로놈</title>
+<link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"></noscript>
+<style>
+:root { color-scheme: light; --paper:#f6f4ec; --panel:#fffef9; --soft:#ecefe5; --ink:#203a33; --muted:#596b62; --line:#d9dfd3; --control:#7c8e7d; --green:#245b47; --on-green:#fffef9; --focus:#9a651b; --radius:16px; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--paper); color:var(--ink); font-family:"Pretendard Variable",system-ui,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif; font-size:15px; line-height:1.6; word-break:keep-all; }
+button,input { font:inherit; }
+:where(button,input,a):focus-visible { outline:3px solid var(--focus); outline-offset:3px; }
+.wrap { width:100%; max-width:1164px; margin:auto; padding:24px 16px 20px; }
+header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:24px; }
+.brand { display:flex; align-items:center; gap:10px; color:inherit; text-decoration:none; }
+.brand img { display:block; width:40px; height:40px; border-radius:12px; }
+.brand-name { white-space:nowrap; font-size:21px; font-weight:800; letter-spacing:-.8px; line-height:1.25; }
+.brand-subtitle { display:block; margin-top:3px; color:var(--muted); font-size:12px; font-weight:450; letter-spacing:0; }
+.badge { color:var(--muted); font-size:12px; white-space:nowrap; }
+.mode-tabs { display:flex; gap:4px; margin-bottom:28px; overflow-x:auto; overscroll-behavior-x:contain; scrollbar-width:thin; border-bottom:1px solid var(--line); }
+.mode-tabs a { display:flex; flex:1 0 max-content; align-items:center; justify-content:center; min-height:48px; padding:10px 14px 12px; border-bottom:3px solid transparent; color:var(--muted); text-decoration:none; font-size:14px; font-weight:550; white-space:nowrap; }
+.mode-tabs a[aria-current=page] { color:var(--ink); border-bottom-color:var(--green); font-weight:750; }
+main { max-width:620px; margin:auto; }
+h1 { margin:0 0 8px; font-size:clamp(24px,3vw,30px); font-weight:700; line-height:1.4; letter-spacing:-.9px; }
+.intro { margin:0 0 24px; color:var(--muted); font-size:14px; line-height:1.7; }
+.panel { padding:24px; border:1px solid var(--line); border-radius:var(--radius); background:var(--panel); }
+.tempo-row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.tempo-row label { font-weight:650; }
+.tempo-value { display:flex; align-items:center; gap:8px; color:var(--muted); }
+.tempo-value input { width:88px; min-height:44px; padding:6px 10px; border:1px solid var(--control); border-radius:10px; background:var(--panel); color:var(--ink); text-align:center; font-size:18px; font-variant-numeric:tabular-nums; }
+.tempo-slider { display:block; width:100%; margin:18px 0 4px; accent-color:var(--green); }
+.tempo-limits { display:flex; justify-content:space-between; color:var(--muted); font-size:12px; font-variant-numeric:tabular-nums; }
+.beats { display:flex; justify-content:center; gap:clamp(12px,5vw,28px); margin:32px 0; padding:0; list-style:none; }
+.beats li { display:grid; place-items:center; width:clamp(48px,14vw,64px); aspect-ratio:1; border:1px solid var(--line); border-radius:50%; color:var(--muted); background:var(--soft); font-size:20px; font-variant-numeric:tabular-nums; transition:transform .08s ease, background-color .08s ease, color .08s ease; }
+.beats li:first-child { font-weight:750; }
+.beats li.active { transform:scale(1.12); background:var(--green); border-color:var(--green); color:var(--on-green); }
+.start-button { width:100%; min-height:52px; border:1px solid var(--green); border-radius:10px; background:var(--green); color:var(--on-green); font-weight:700; cursor:pointer; }
+.start-button:active { transform:translateY(1px); }
+.status { min-height:24px; margin:12px 0 0; color:var(--muted); text-align:center; font-size:13px; }
+.ad-slot { min-height:58px; margin-top:24px; border:1px solid var(--line); border-radius:var(--radius); background:var(--panel); }
+footer { padding:18px 0 8px; color:var(--muted); font-size:12px; line-height:1.8; }
+@media (min-width:760px) { .wrap { padding:32px; } header { margin-bottom:28px; } .brand { gap:12px; } .brand-name { font-size:24px; } .brand-subtitle { font-size:13px; } .mode-tabs { margin-bottom:32px; } .mode-tabs a { font-size:15px; } .panel { padding:32px; } }
+@media (prefers-color-scheme:dark) { :root { color-scheme:dark; --paper:#131713; --panel:#1c221d; --soft:#29332b; --ink:#f0f1e6; --muted:#b2beb1; --line:#374438; --control:#7c907d; --green:#a2d2b5; --on-green:#172c21; --focus:#e8c879; } }
+@media (prefers-reduced-motion:reduce) { *,*::before,*::after { transition:none !important; animation:none !important; scroll-behavior:auto !important; } }
+</style>
+<script data-goatcounter="https://guitar-mate.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9717375299017347" crossorigin="anonymous"></script>
+</head>
+<body>
+<div class="wrap">
+<header><a class="brand" href="./"><img src="./favicon.svg" width="40" height="40" alt=""><span class="brand-name">기타메이트<span class="brand-subtitle">기타 연습 도우미</span></span></a><span class="badge">오프라인 지원</span></header>
+<nav class="mode-tabs" aria-label="연습 모드"><a href="./">튜닝</a><a href="./chord-search.html">코드 검색</a><a href="./chord-identifier.html">코드 판별</a><a href="./metronome.html" aria-current="page">메트로놈</a><a href="./score-key-transposer.html">악보 키 변환</a></nav>
+<main>
+<h1>메트로놈</h1>
+<p class="intro">박자에 맞춰 천천히, 정확하게 연습해 보세요.</p>
+<section class="panel" aria-label="메트로놈 설정">
+<div class="tempo-row"><label for="tempo-range">템포</label><div class="tempo-value"><input id="tempo-value" type="number" min="40" max="240" step="1" value="100" inputmode="numeric" aria-label="분당 박자 수"><span>BPM</span></div></div>
+<input class="tempo-slider" id="tempo-range" type="range" min="40" max="240" step="1" value="100" aria-label="템포 조절">
+<div class="tempo-limits" aria-hidden="true"><span>40</span><span>240</span></div>
+<ol class="beats" aria-label="4분의 4박자"><li data-beat="0">1</li><li data-beat="1">2</li><li data-beat="2">3</li><li data-beat="3">4</li></ol>
+<button class="start-button" id="start-stop" type="button" aria-pressed="false">시작</button>
+<p class="status" id="status" role="status" aria-live="polite">시작을 누르면 메트로놈이 재생됩니다.</p>
+</section>
+<div class="ad-slot" data-ad-slot aria-label="광고"></div>
+<footer>첫 박은 조금 더 강하게 들립니다. 기기 음량과 무음 설정을 확인해 주세요.</footer>
+</main>
+</div>
+<script>
+'use strict';
+const tempoRange=document.getElementById('tempo-range');
+const tempoValue=document.getElementById('tempo-value');
+const startStop=document.getElementById('start-stop');
+const status=document.getElementById('status');
+const beats=[...document.querySelectorAll('.beats li')];
+let audioContext=null,timer=null,running=false,nextBeat=0,nextBeatTime=0;
+const sources=new Set(),visualTimers=new Set();
+function setTempo(raw){const bpm=Math.max(40,Math.min(240,Math.round(Number(raw)||100)));tempoRange.value=tempoValue.value=bpm;}
+tempoRange.addEventListener('input',()=>setTempo(tempoRange.value));
+tempoValue.addEventListener('change',()=>setTempo(tempoValue.value));
+function playClick(time,beat){
+  const oscillator=audioContext.createOscillator(),gain=audioContext.createGain();
+  oscillator.type='square';oscillator.frequency.setValueAtTime(beat===0?1320:880,time);
+  gain.gain.setValueAtTime(.0001,time);gain.gain.exponentialRampToValueAtTime(beat===0?.2:.13,time+.002);gain.gain.exponentialRampToValueAtTime(.0001,time+.045);
+  oscillator.connect(gain);gain.connect(audioContext.destination);sources.add(oscillator);oscillator.onended=()=>sources.delete(oscillator);oscillator.start(time);oscillator.stop(time+.05);
+  const visualTimer=setTimeout(()=>{beats.forEach((item,index)=>{item.classList.toggle('active',index===beat);if(index===beat)item.setAttribute('aria-current','step');else item.removeAttribute('aria-current');});visualTimers.delete(visualTimer);},Math.max(0,(time-audioContext.currentTime)*1000));visualTimers.add(visualTimer);
+}
+function schedule(){if(!running)return;while(nextBeatTime<audioContext.currentTime+.12){playClick(nextBeatTime,nextBeat);nextBeatTime+=60/Number(tempoValue.value);nextBeat=(nextBeat+1)%4;}}
+function stop(){running=false;clearInterval(timer);timer=null;sources.forEach(source=>{try{source.stop();}catch(_){}});sources.clear();visualTimers.forEach(clearTimeout);visualTimers.clear();beats.forEach(item=>{item.classList.remove('active');item.removeAttribute('aria-current');});startStop.textContent='시작';startStop.setAttribute('aria-pressed','false');status.textContent='메트로놈을 멈췄습니다.';}
+startStop.addEventListener('click',async()=>{
+  if(running){stop();return;}
+  const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+  if(!AudioContextClass){status.textContent='이 브라우저에서는 오디오 재생을 지원하지 않습니다.';return;}
+  try{audioContext??=new AudioContextClass();if(audioContext.state==='suspended')await audioContext.resume();running=true;nextBeat=0;nextBeatTime=audioContext.currentTime+.05;startStop.textContent='멈추기';startStop.setAttribute('aria-pressed','true');status.textContent='메트로놈 재생 중';schedule();timer=setInterval(schedule,25);}catch(_){running=false;clearInterval(timer);timer=null;startStop.textContent='시작';startStop.setAttribute('aria-pressed','false');status.textContent='소리를 시작하지 못했어요. 브라우저 음량 설정을 확인해 주세요.';}
+});
+window.addEventListener('pagehide',()=>{if(running)stop();});
+if('serviceWorker' in navigator&&window.isSecureContext)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{}));
+</script>
+</body>
+</html>

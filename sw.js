@@ -1,11 +1,11 @@
 'use strict';
 // Increment when changing any app-shell file so installed copies refresh together.
-const VERSION='v59-guide-manual-code';
+const VERSION='v60-metronome';
 // Keep the storage namespace so activation also removes pre-rebrand caches.
 const CACHE_PREFIX=`six-strings:${self.registration.scope}:`;
 const CACHE_NAME=CACHE_PREFIX+VERSION;
 const scope=new URL(self.registration.scope);
-const pages=['chord-search','chord-identifier','score-key-transposer','guide','about','privacy'];
+const pages=['chord-search','chord-identifier','metronome','score-key-transposer','guide','about','privacy'];
 const menuRoutes=new Map([
   ['', './'],
   ...pages.flatMap(name=>[[name, `./${name}.html`], [`${name}.html`, `./${name}.html`]])
