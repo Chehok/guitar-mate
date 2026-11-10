@@ -102,8 +102,8 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .chord-results, .tuner-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start; }
 .panel { min-width: 0; padding: 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
 .voicing-panel #audio-status:empty { margin: 0; min-height: 0; }
-.diagram-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
-.diagram-head > div { min-width: 0; flex: 1; }
+.diagram-head { display: flex; align-items: center; gap: 8px; }
+.chord-heading { min-width: 0; overflow-wrap: anywhere; }
 .chord-title { font-size: 36px; font-weight: 500; line-height: 1.2; letter-spacing: -1px; margin: 0; overflow-wrap: anywhere; }
 .quality { color: var(--muted); font-size: 13px; margin-top: 6px; }
 .play { flex: none; padding: 8px 10px; font-size: 13px; }
@@ -113,11 +113,11 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .nav { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
 .nav button { padding-inline: 12px; }
 .counter { color: var(--muted); text-align: center; font-size: 13px; font-variant-numeric: tabular-nums; }
-.tones { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
-.tone { min-width: 46px; padding: 6px 10px; background: var(--soft); border-radius: 8px; text-align: center; }
+.tones { display: flex; flex: 1 0 min(104px, 43%); flex-wrap: wrap; gap: 4px; }
+.tone { display: grid; gap: 2px; min-width: 32px; padding: 5px; background: var(--soft); border-radius: 6px; text-align: center; line-height: 1.15; }
 .tone.root { background: var(--green); color: var(--on-green); }
-.tone strong { display: block; font-size: 18px; font-weight: 600; }
-.tone small { font-size: 12px; }
+.tone strong { font-size: 14px; font-weight: 600; }
+.tone small { font-size: 11px; }
 .fret-panel { padding: 20px 0 12px; overflow: hidden; }
 .fret-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 0 20px; }
 .fret-header h2, .tuner-controls h2 { font-size: 16px; font-weight: 650; margin: 0; }
@@ -286,8 +286,11 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 </section>
 <div class="chord-results">
 <section class="panel voicing-panel" aria-label="코드 운지법">
-<div class="diagram-head"><div><h2 id="chord-title" class="chord-title"></h2><p id="quality" class="quality"></p></div><button id="play" class="play" type="button">소리 듣기</button></div>
+<div class="diagram-head">
+<div class="chord-heading"><h2 id="chord-title" class="chord-title"></h2><p id="quality" class="quality"></p></div>
 <div id="tones" class="tones" role="group" aria-label="코드 구성음"></div>
+<button id="play" class="play" type="button">소리 듣기</button>
+</div>
 <div id="diagram"></div>
 <div class="nav"><button id="prev" type="button" aria-label="이전 보이싱">← 이전</button><span id="counter" class="counter" aria-live="polite"></span><button id="next" type="button" aria-label="다음 보이싱">다음 →</button></div>
 <p id="audio-status" role="status"></p>
