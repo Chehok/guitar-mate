@@ -1983,7 +1983,10 @@ updateInstallButton();
 if('serviceWorker' in navigator&&window.isSecureContext)window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{});});
 const migrationNotice=document.getElementById('migration-notice');
 document.getElementById('migration-continue').addEventListener('click',()=>migrationNotice.close());
-migrationNotice.showModal();
+const migrationNoticeKey='guitarMateMigrationNoticeShown';
+let migrationNoticeShown=false;
+try{migrationNoticeShown=sessionStorage.getItem(migrationNoticeKey)==='1';}catch(_){}
+if(!migrationNoticeShown){migrationNotice.showModal();try{sessionStorage.setItem(migrationNoticeKey,'1');}catch(_){}}
 
 </script>
 </body>
