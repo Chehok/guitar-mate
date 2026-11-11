@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#245b47" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#131713" media="(prefers-color-scheme: dark)">
 <meta name="color-scheme" content="light dark">
-<meta name="description" content="기타메이트와 함께 코드 추천, 마이크 튜닝, 코드 판별까지. 오프라인에서도 함께하는 기타 연습 도우미.">
+<meta name="description" content="마이크 튜닝, 코드 검색·판별, 메트로놈, 악보 키 변환까지. 오프라인에서도 쓸 수 있는 기타 연습 도우미.">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" type="image/svg+xml" href="./favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png">
@@ -256,9 +256,9 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <section class="panel" aria-label="판별할 운지 입력">
 <div class="identify-controls"><label for="identify-start">시작 프렛 <input id="identify-start" type="number" min="1" max="20" step="1" value="1" inputmode="numeric"></label><button id="identify-play" type="button">소리 듣기</button><button id="identify-reset" type="button">초기화</button></div><p id="identify-audio-status" role="status" aria-live="polite"></p>
 <div id="identify-diagram"></div><p id="identify-frets" class="counter"></p>
-<p class="hint">왼쪽부터 6번 → 1번 줄 · 5프렛씩 표시<br>칸을 클릭하면 점을 찍고, 같은 칸을 다시 클릭하면 해제합니다. 너트 위 표시를 클릭하면 O(개방현) / X(뮤트)로 전환합니다. 프렛을 옮겨도 입력한 음은 유지됩니다.</p>
+<p class="hint">왼쪽부터 6번 → 1번 줄 · 5프렛씩 표시<br>칸을 누르면 점을 찍고, 같은 칸을 다시 누르면 지웁니다. 너트 위 표시를 누르면 O(개방현) / X(뮤트)로 전환합니다. 프렛을 옮겨도 입력한 음은 유지됩니다.</p>
 </section>
-<section class="panel info-panel" aria-label="코드 판별 결과"><h2 class="overline">코드 후보</h2><p id="identify-status" role="status" aria-live="polite"></p><ol id="identify-candidates" class="identify-candidates"></ol><p class="hint">최저음이 근음인 해석을 우선하며, 생략음이 적은 후보를 앞에 표시합니다. 후보를 클릭하면 코드 검색에서 검색합니다.</p></section>
+<section class="panel info-panel" aria-label="코드 판별 결과"><h2 class="overline">코드 후보</h2><p id="identify-status" role="status" aria-live="polite"></p><ol id="identify-candidates" class="identify-candidates"></ol><p class="hint">최저음이 근음인 해석을 우선하며, 생략음이 적은 후보를 앞에 표시합니다. 후보를 누르면 코드 검색에서 볼 수 있습니다.</p></section>
 </div>
 </section>
 </main>
@@ -442,7 +442,7 @@ legacy.forEach(v=>add(v.frets,v.name,{fingers:v.fingers,barres:v.barres}));
 for(let base=1;base<=15;base++){
 const choices=tuning.map(n=>[-1,...Array.from({length:Math.min(15,base+maxFretSpan)-base+1},(_,j)=>base+j),0].filter(f=>f<0||allowed.has(mod(n+f))));
 const visit=(i,frets,count,gaps,ended)=>{
-if(i===6){if(count>=3)add(frets,'생성 운지');return;}
+if(i===6){if(count>=3)add(frets,'자동 생성 운지');return;}
 if(count+6-i<3)return;
 for(const f of choices[i]){
 if(f<0){visit(i+1,[...frets,f],count,gaps,count>0?true:ended);continue;}
@@ -1792,7 +1792,7 @@ if($('score-panel').hidden)return;
 const selected=selectScoreClipboardImage(event.clipboardData?.items);
 if(selected){
 event.preventDefault();
-if(scoreState.busy){scoreStatus('이미지를 처리 중이에요. 완료하거나 인식을 중지한 뒤 다시 붙여넣어 주세요.');return;}
+if(scoreState.busy){scoreStatus('이미지를 처리 중이에요. 끝날 때까지 기다리거나 인식을 중지한 뒤 다시 붙여넣어 주세요.');return;}
 const file=selected.item.getAsFile();
 if(file)await loadScoreImage(file);else scorePasteFallback();
 }else{

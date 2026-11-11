@@ -3,7 +3,7 @@
   "name": "기타메이트",
   "short_name": "기타메이트",
   "lang": "ko",
-  "description": "코드 추천·튜닝·코드 판별을 함께하는 기타 연습 도우미",
+  "description": "튜닝·코드 검색·코드 판별·메트로놈·악보 키 변환을 돕는 기타 연습 도우미",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
