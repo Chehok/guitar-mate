@@ -81,3 +81,7 @@ OCR 보정은 수동 코드 입력과 분리되어 있습니다. 원시 신뢰�
 taste-skill의 Editorial greeting 방향(seed `332781039`)을 바탕으로 크림 바탕과 단정한 패널을 사용했습니다. 4탭 구조와 기타 연습 흐름에 맞춰 사이드바 없이 구성했습니다. Node 회귀 테스트와 Chromium 모바일 viewport 검사를 실행했습니다. 실제 모바일 기기의 검증은 포함하지 않습니다.
 
 정적 디자인 린터가 이모지로 분류한 기존 음악 기호(♭/♯), 패널 제목 경고와 측정 대기 기호(—)는 음악 표기와 UI 의미를 위해 유지합니다.
+
+## 검색 노출
+
+서비스 주소는 `https://guitar-mate.pages.dev/`입니다. `robots.txt`와 `sitemap.xml`이 루트에 있으며, 페이지마다 절대 주소 `canonical`·Open Graph 태그를 넣었습니다(확장자 없는 주소 기준). `tuner`·`identify`·`score`는 이동용 페이지라 `noindex`이며 사이트맵에서 뺍니다. 페이지를 추가하면 `sitemap.xml`에도 넣고, 도메인을 바꾸면 이 주소들을 함께 바꾸세요. 검색 등록은 [네이버 서치어드바이저](https://searchadvisor.naver.com/)와 [Google Search Console](https://search.google.com/search-console)에서 사이트맵 `https://guitar-mate.pages.dev/sitemap.xml`을 제출합니다.

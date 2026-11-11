@@ -18,7 +18,7 @@ assert(manifest.icons.some(icon=>icon.purpose==='maskable'));
 const html=fs.readFileSync('index.html','utf8');
 assert(html.includes('href="./manifest.webmanifest"'));
 for(const file of ['favicon.svg','favicon-32.png','favicon-16.png'])assert(html.includes(`href="./${file}"`));
-assert(html.includes('<title>기타메이트 · 튜닝</title>'));
+assert(html.includes('<title>기타메이트 · 기타 튜너</title>'));
 assert(html.includes('name="apple-mobile-web-app-title" content="기타메이트"'));
 assert(fs.readFileSync('favicon.svg','utf8').includes('<title>기타메이트</title>'));
 assert(html.includes('src="./app-shell.js"'));

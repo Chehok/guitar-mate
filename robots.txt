@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://guitar-mate.pages.dev/sitemap.xml
