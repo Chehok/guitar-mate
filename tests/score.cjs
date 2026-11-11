@@ -48,6 +48,23 @@ assert.equal(detect(['G','C','D7','G']).name,'G');
 assert.equal(detect(['Am','Dm','E7','Am']).name,'Am');
 assert.equal(detect(['Bb','Eb','F7','Bb']).name,'Bb');
 assert.equal(detect(['C','G','Am','F','C']).name,'C');
+// Intro recommendations: no doubled chords, dominant pickups, optional chords and the closing phrase.
+{
+  const intros=chords=>{const r=context.recommendScoreIntros(detect(chords),chords);return [r.easy,r.basedOnOpening,r.basedOnEnding].map(x=>Array.from(x).join(' '));};
+  assert.deepEqual(intros(['C','G','Am','F','C']),['C Am Dm G7','C G Am G7','G Am F C']);
+  assert.deepEqual(intros(['G','G','C','D','G']).slice(1),['G C D D7','G C D G'],'Repeated chords are read once');
+  assert.deepEqual(intros(['Am','Dm','E7','Am']).slice(1),['Am Dm Am E7','Am Dm E7 Am'],'The lead chord is not played twice');
+  assert.deepEqual(intros(['D7','G','C','D7','G']),['G Em C Am7','G C G Am7','G C D7 G'],'A dominant pickup is approached from ii');
+  assert.deepEqual(intros(['C','(G)','C/B','Am(G)','F','C']).slice(1),['C C/B Am G7','C/B Am F C'],'Optional chords are skipped');
+  assert.deepEqual(intros(['G','D7','G']).slice(2),[''],'The closing phrase needs four chords');
+}
+// Added chords join their own line in reading order, even with different glyph tops.
+{
+  const box=(x,y,h=18)=>({x0:x,y0:y,x1:x+30,y1:y+h});
+  const codes=[{text:'Gm7/B',bbox:box(50,198,22)},{text:'C',bbox:box(200,201)},{text:'Dsus4',bbox:box(350,199)},{text:'Em',bbox:box(50,300)}];
+  for(const [text,bbox] of [['A',box(280,203,12)],['F',box(10,250,12)],['B',box(500,400,12)],['D',box(10,20,12)]])context.insertScoreCode(codes,{text,bbox});
+  assert.deepEqual(codes.map(c=>c.text),['D','Gm7/B','C','A','Dsus4','F','Em','B']);
+}
 const word=(text,x,y,h=18,confidence=95)=>({text,confidence,bbox:{x0:x,y0:y,x1:x+35,y1:y+h}});
 const words=[word('G',50,200),word('C/E',300,200),word('D7sus4',50,400),word('Am7',300,400),word('G',500,5,65),word('C',50,500,18,10),word('G',50,600),word('sing',100,600),word('along',180,600),word('A',50,20),word('Bm',50,720,1),word('Em',-1,800)];
 assert.deepEqual(Array.from(filter(words,1000,1000),w=>w.text),['G','C/E','D7sus4','Am7']);
@@ -116,7 +133,7 @@ assert.deepEqual(Array.from(merge([word('G/B',350,198),word('CM7',50,200)]),c=>c
 
 // No browser: execute actual UI wiring with small DOM/canvas doubles.
 class Element{
-constructor(){this.children=[];this.value='';this.style={};this.dataset={};this.handlers={};this.classList={toggle(){},remove(){}};this.hidden=false;}
+constructor(){this.children=[];this.value='';this.style={};this.dataset={};this.handlers={};this.classList={toggle(){},remove(){},add(){}};this.hidden=false;}
 append(...children){this.children.push(...children);}
 replaceChildren(...children){this.children=children;}
 setAttribute(name,value){this[name]=value;}
@@ -130,7 +147,7 @@ const elements=new Map(),$=id=>{if(!elements.has(id))elements.set(id,new Element
 const documentHandlers={};
 const head=new Element(),start=script.indexOf('// Score editor: images');
 const ui=script.slice(start,script.indexOf("if(ready(['chords']))",start));
-Object.assign(context,{painter,$,ready:modes=>modes.includes('score'),document:{addEventListener:(name,handler)=>{documentHandlers[name]=handler;},createElement:()=>new Element(),head,querySelectorAll:()=>[]},window:{},navigator:{onLine:true},setTimeout,clearTimeout,localStorage:{getItem:()=>null}});
+Object.assign(context,{painter,$,ready:modes=>modes.includes('score'),document:{addEventListener:(name,handler)=>{documentHandlers[name]=handler;},createElement:()=>new Element(),head,querySelectorAll:()=>[],activeElement:null},window:{},navigator:{onLine:true},setTimeout,clearTimeout,requestAnimationFrame:callback=>{callback();return 1;},cancelAnimationFrame(){},localStorage:{getItem:()=>null}});
 vm.runInContext(ui,context);
 context.loadScoreRecognizer=async()=>{throw Error('Exercise legacy fallback in DOM doubles');};
 assert.equal(head.children.length,0,'OCR must not download at app startup');
@@ -173,12 +190,14 @@ assert(paint.find(p=>p[0]==='text')[3]<200,'Above mode draws above original chor
   const bars=id=>$(id).children.map(item=>item.children[1].textContent);
   const easy='score-intro-easy',opening='score-intro-opening';
   vm.runInContext("scoreState.codes=[];scoreState.capo=0;",context);
-  context.renderScore();assert($('score-intro').hidden);
+  context.renderScore();assert($('score-intro-open').hidden,'No key, no intro button');
   vm.runInContext("scoreState.codes=['C','G','Am','F','C'].map((text,i)=>({text,bbox:{x0:50+i*90,y0:200,x1:85+i*90,y1:218}}));",context);
   context.renderScore();
-  assert(!$('score-intro').hidden);
+  assert(!$('score-intro-open').hidden,'Recommended intros open from a button beside manual add');
   assert.deepEqual(bars(easy),['C','Am','Dm','G7']);
   assert.deepEqual(bars(opening),['C','G','Am','G7']);
+  assert.deepEqual(bars('score-intro-ending'),['G','Am','F','C'],'The closing phrase is offered as an intro');
+  assert($('score-intro-more').hidden);
   $('score-frets').children[1].handlers.click();
   assert.deepEqual(bars(easy),['Bb','Gm','Cm','F7']);
   assert.deepEqual(bars(opening),['Bb','F','Gm','F7']);
@@ -187,17 +206,20 @@ assert(paint.find(p=>p[0]==='text')[3]<200,'Above mode draws above original chor
   assert.deepEqual(bars(opening),['B','F#','G#m','F#7']);
   vm.runInContext("scoreState.codes.length=2;scoreState.keyDown=0;",context);
   context.renderScore();assert.deepEqual(bars(opening),['C','G','Am','G7']);
+  assert($('score-intro-ending').hidden);assert($('score-intro-ending-title').hidden);assert(!$('score-intro-more').hidden);
   vm.runInContext("scoreState.codes.length=1;scoreState.capo=1;",context);
   context.renderScore();assert($(opening).hidden);assert(!$('score-intro-more').hidden);
 }
 async function checkIntroActions(){
   vm.runInContext(script.slice(script.indexOf('const mod='),script.indexOf('let current=null')),context);
   vm.runInContext("scoreState.codes=['C','G','Am','F','C'].map((text,i)=>({text,bbox:{x0:50+i*90,y0:200,x1:85+i*90,y1:218}}));",context);
-  const bars=[],stopped=[];
+  const bars=[],strums=[],stopped=[];
   context.prepareAudio=async()=>({currentTime:10});
   context.confirmPlayback=()=>{};
-  context.scheduleChordNotes=(_ctx,notes,at)=>{
-    bars.push({pitches:[...new Set(Array.from(notes,n=>n.midi%12))].sort((a,b)=>a-b),at});
+  // Every pulse is strummed; the full-volume downbeat stands for the bar.
+  context.scheduleChordNotes=(_ctx,notes,at,_decay,level=1)=>{
+    const strum={pitches:[...new Set(Array.from(notes,n=>n.midi%12))].sort((a,b)=>a-b),at,level,count:notes.length};
+    strums.push(strum);if(level===1)bars.push(strum);
     return [{voice:{stop:()=>stopped.push(at)},oscs:[{addEventListener(){}}]}];
   };
   const easy=$('score-intro-easy-play'),opening=$('score-intro-opening-play');
@@ -207,53 +229,146 @@ async function checkIntroActions(){
   assert.deepEqual(bars[0].pitches,[0,4,7],'Bb shapes with capo 2 sound in C');
   assert.equal(easy.textContent,'중지');
   await opening.onclick();
-  assert.equal(stopped.length,4,'Switching recommendations stops all scheduled bars');
+  assert.equal(stopped.length,16,'Switching recommendations stops all scheduled bars');
   assert.deepEqual(bars[5].pitches,[2,7,11],'Opening progression plays its own second bar');
   for(let i=0;i<3;i++)$('score-capo-minus').handlers.click();
-  assert.equal(stopped.length,8,'Changing key or capo stops playback');
+  assert.equal(stopped.length,32,'Changing key or capo stops playback');
   await easy.onclick();
   assert.deepEqual(bars[8].pitches,[3,6,11],'Lowering the key one semitone sounds in B');
+  assert.deepEqual(strums.slice(-16,-12).map(s=>[Number((s.at-10.04).toFixed(3)),s.level]),[[0,1],[.5,.45],[1,.7],[1.5,.45]],'4/4 strums every quarter note');
+  assert(strums.at(-15).count<=3,'Weak beats brush the top strings');
+  // Tempo: 4/4 bars, changing it stops playback, typing a partial number waits for a valid value.
+  $('score-intro-tempo-range').value='90';$('score-intro-tempo-range').handlers.input();
+  assert.equal(stopped.length,48,'Changing the tempo stops playback');
+  assert.equal($('score-intro-tempo-value').value,'90');
+  assert.match($('score-intro-tempo-note').textContent,/2\.7초/);
+  await easy.onclick();
+  assert.deepEqual(bars.slice(12).map(bar=>Number(bar.at.toFixed(3))),[10.04,12.707,15.373,18.04],'90 BPM spaces bars 2.67 seconds apart');
+  await easy.onclick();
+  $('score-intro-tempo-value').value='9';$('score-intro-tempo-value').handlers.input();
+  assert.equal(vm.runInContext('scoreState.introTempo',context),90,'A partial number does not change the tempo');
+  $('score-intro-tempo-value').value='500';$('score-intro-tempo-value').handlers.change();
+  assert.equal($('score-intro-tempo-value').value,'180');
+  $('score-intro-tempo-value').value='';$('score-intro-tempo-value').handlers.change();
+  assert.equal($('score-intro-tempo-value').value,'180','An empty field restores the tempo');
+  $('score-intro-tempo-range').value='120';$('score-intro-tempo-range').handlers.input();
+  // Meter: 3/4 and 6/8 (BPM counts dotted quarters) change bar length and strum pulses.
+  await easy.onclick();const beforeMeter=stopped.length;
+  context.setScoreIntroMeter('3/4');
+  assert(stopped.length>beforeMeter,'Changing the meter stops playback');
+  assert.equal($('score-intro-tempo-note').textContent,'3/4박자 · 한 마디 1.5초');
+  let first=strums.length;await easy.onclick();
+  assert.deepEqual(strums.slice(first,first+6).map(s=>Number((s.at-10.04).toFixed(3))),[0,.5,1,1.5,2,2.5]);
+  assert.equal(strums.length-first,12,'3 pulses x 4 bars');
+  await easy.onclick();context.setScoreIntroMeter('6/8');
+  assert.match($('score-intro-tempo-note').textContent,/6\/8박자 · 점4분음표 기준 · 한 마디 1\.0초/);
+  first=strums.length;await easy.onclick();
+  assert.deepEqual(strums.slice(first,first+6).map(s=>[Number((s.at-10.04).toFixed(3)),s.level]),[[0,1],[.167,.35],[.333,.35],[.5,.7],[.667,.35],[.833,.35]]);
+  await easy.onclick();context.setScoreIntroMeter('bogus');
+  assert.equal(vm.runInContext('scoreState.introMeter',context),'6/8');
+  context.setScoreIntroMeter('4/4');
+  let opened=0;$('score-intro-dialog').showModal=()=>{opened++;};
+  $('score-intro-open').handlers.click();assert.equal(opened,1);
   $('score-intro-opening-place').onclick();
-  assert(!$('score-manual-position').hidden);
-  $('score-pos-x').value='90';$('score-pos-y').value='90';
-  $('score-position-add').handlers.click();
+  assert($('score-manual-position').hidden,'Placing an intro needs no position step');
   assert.equal(vm.runInContext('scoreState.codes.length',context),5,'An inserted intro stays separate from recognized chords');
-  assert(paint.some(call=>call[0]==='text'&&call[1]==='전주  |  B  |  F#  |  G#m  |  F#7  |'));
+  const introAt=()=>JSON.parse(vm.runInContext('JSON.stringify([scoreState.intro.x,scoreState.intro.y])',context));
+  assert.deepEqual(introAt(),[20,59],'A new intro starts near the top-left corner, just below the key stamp');
+  // Key stamp: top-left corner, follows capo/key changes, can be turned off, never in original view.
+  {
+    const stampOf=()=>{paint.length=0;context.drawScore(new Element(),false);return paint.filter(c=>c[0]==='text').map(c=>c[1]).find(t=>t.match(/(폼|키)/));};
+    const capo=vm.runInContext('scoreState.capo',context),keyDown=vm.runInContext('scoreState.keyDown',context);
+    vm.runInContext('scoreState.capo=0;scoreState.keyDown=0;',context);
+    assert.equal(stampOf(),'C키','Stamp shows the detected key');
+    const call=paint.find(c=>c[0]==='text'&&c[1]==='C키');assert.deepEqual([call[2],call[3]],[22,22],'Stamp sits in the top-left corner');
+    vm.runInContext('scoreState.capo=2;',context);
+    assert.equal(stampOf(),'Bb폼 (Capo 2) / C키','Capo stamp keeps the sounding key and names the chord shapes');
+    vm.runInContext('scoreState.capo=0;scoreState.keyDown=2;',context);
+    assert.equal(stampOf(),'Bb키','Lowering the key stamps the new key');
+    vm.runInContext('scoreState.keyDown=0;',context);
+    $('score-key-stamp').checked=false;$('score-key-stamp').handlers.change();
+    assert.equal(stampOf(),undefined,'Stamp can be turned off');
+    $('score-key-stamp').checked=true;$('score-key-stamp').handlers.change();
+    paint.length=0;context.drawScore(new Element(),true);assert.deepEqual(paint.map(p=>p[0]),['image'],'Original view stays untouched');
+    vm.runInContext(`scoreState.capo=${capo};scoreState.keyDown=${keyDown};`,context);paint.length=0;context.drawScore(new Element(),false);
+  }
+  assert(paint.some(call=>call[0]==='text'&&call[1]==='|  B  |  F#  |  G#m  |  F#7  |'),'Intro is drawn without a label');
+  assert(!paint.some(call=>call[0]==='text'&&String(call[1]).includes('전주')));
   $('score-frets').children[1].handlers.click();
   paint.length=0;context.drawScore(new Element(),false);
-  const intro=paint.find(call=>call[0]==='text'&&call[1].startsWith('전주'));
-  assert.equal(intro[1],'전주  |  Bb  |  F  |  Gm  |  F7  |','PNG drawing uses current capo shapes');
+  const intro=paint.find(call=>call[0]==='text'&&call[1].startsWith('|  '));
+  assert.equal(intro[1],'|  Bb  |  F  |  Gm  |  F7  |','PNG drawing uses current capo shapes');
   assert(intro[2]+intro[4]<=1000,'Placed intro stays inside the image');
   paint.length=0;context.drawScore(new Element(),true);assert.deepEqual(paint.map(p=>p[0]),['image']);
+  context.renderScore();
+  // Pointer drag: the preview is shown at half size, so 1 CSS px moves 2 image px.
+  $('score-canvas').getBoundingClientRect=()=>({left:0,top:0,width:500,height:500});
+  const drag=(button,dx,dy)=>{
+    button.handlers.pointerdown({pointerId:7,button:0,clientX:10,clientY:10});
+    button.handlers.pointermove({pointerId:7,clientX:10+dx,clientY:10+dy,preventDefault(){}});
+    button.handlers.pointerup({pointerId:7});
+  };
+  const introHit=()=>$('score-hit-layer').children.at(-1);
+  let hit=introHit();drag(hit,100,150);
+  assert.deepEqual(introAt(),[220,359],'Dragging moves the intro');
+  hit.handlers.click();assert.equal(opened,1,'The click that ends a drag does not open the dialog');
+  hit=introHit();hit.handlers.pointerdown({pointerId:8,button:0,clientX:5,clientY:5});hit.handlers.pointerup({pointerId:8});hit.handlers.click();
+  assert.equal(opened,2,'A plain tap on the intro opens recommendations');
+  drag(introHit(),5000,5000);
+  const [farX,farY]=introAt();assert(farX>0&&farX<1000&&farY>0&&farY<1000,'Dragging stays inside the image');
+  introHit().handlers.keydown({key:'ArrowLeft',preventDefault(){}});
+  assert.equal(introAt()[0],farX-10,'Arrow keys nudge the intro by 1%');
+  assert(!$('score-intro-remove').hidden);
+  // Intro size: −/+ in the dialog (and +/− keys on the score) scale the drawn label, within 50–200%.
+  {
+    const introFont=()=>{paint.length=0;context.drawScore(new Element(),false);return vm.runInContext('scoreState.intro.scale',context);};
+    const widthAt=()=>context.drawScore(new Element(),false).intro.width;
+    assert(!$('score-intro-size').hidden,'Size control appears once an intro is placed');
+    assert.equal($('score-intro-size-value').textContent,'100%');
+    const base=widthAt();
+    $('score-intro-bigger').handlers.click();
+    assert.equal(introFont(),1.2);assert.equal($('score-intro-size-value').textContent,'120%');
+    assert(widthAt()>base,'A bigger intro is drawn wider');
+    for(let i=0;i<20;i++)$('score-intro-smaller').handlers.click();
+    assert.equal(introFont(),.5,'Size stops at 50%');assert($('score-intro-smaller').disabled);
+    assert(widthAt()<base,'A smaller intro is drawn narrower');
+    introHit().handlers.keydown({key:'+',preventDefault(){}});
+    assert.equal(introFont(),.6,'The + key enlarges the focused intro');
+    for(let i=0;i<20;i++)introHit().handlers.keydown({key:'=',preventDefault(){}});
+    assert.equal(introFont(),2,'Size stops at 200%');assert($('score-intro-bigger').disabled);
+    introHit().handlers.keydown({key:'-',preventDefault(){}});
+    assert.equal(introFont(),1.8,'The − key shrinks the focused intro');
+    const hit=context.drawScore(new Element(),false).intro;assert(hit.x+hit.width<=1000,'A large intro stays inside the image');
+    $('score-intro-opening-place').onclick();
+    assert.equal(vm.runInContext('scoreState.intro.scale',context),1.8,'Placing another intro keeps the chosen size');
+  }
+  $('score-intro-remove').handlers.click();
+  assert.equal(vm.runInContext('scoreState.intro',context),null);
+  assert($('score-intro-size').hidden,'Size control hides when the intro is removed');
   const submit=()=>$('score-edit-form').handlers.submit({preventDefault(){}});
   const position=(x,y)=>{
     $('score-pos-x').value=String(x);$('score-pos-y').value=String(y);
     $('score-position-add').handlers.click();
   };
-  $('score-hit-layer').children.at(-1).handlers.click();
-  assert.equal($('score-intro-edit-2').value,'G');
-  $('score-intro-edit-2').value='invalid';submit();
-  assert.match($('score-edit-error').textContent,/코드 형식/);
-  $('score-intro-edit-2').value='Dm7';submit();
-  assert.equal(vm.runInContext('scoreState.intro.chords[1]',context),'Dm7');
-  $('score-intro-edit').handlers.click();
-  $('score-edit-move').handlers.click();position(12,14);
-  assert.equal(vm.runInContext('scoreState.intro.x',context),120);
-  $('score-intro-edit').handlers.click();
-  $('score-delete').handlers.click();
-  assert.equal(vm.runInContext('scoreState.intro',context),null);
   vm.runInContext("scoreState.overlay='above';",context);
   $('score-add').handlers.click();position(25,40);
+  $('score-edit-text').value='invalid';submit();
+  assert.match($('score-edit-error').textContent,/코드 형식/);
   $('score-edit-text').value='Am';submit();
-  const added=$('score-hit-layer').children.at(-1);
+  let added=$('score-hit-layer').children.at(-1);
   assert.equal(added.style.top,'40%','Manually added chord stays at the chosen position in above mode');
+  assert.match(added.className,/draggable/,'Manually added chords can be dragged');
+  assert.doesNotMatch($('score-hit-layer').children[0].className,/draggable/,'Recognized chords stay tap-to-edit');
+  assert.equal($('score-hit-layer').children[0].handlers.pointerdown,undefined);
   added.handlers.click();assert.equal($('score-edit-text').value,'Am');
   $('score-edit-text').value='G7';submit();
   $('score-code-list').children.at(-1).handlers.click();
   assert.equal($('score-edit-text').value,'G7');
-  $('score-edit-move').handlers.click();position(35,45);
-  assert.equal($('score-hit-layer').children.at(-1).style.top,'45%');
-  $('score-hit-layer').children.at(-1).handlers.click();
+  drag($('score-hit-layer').children.at(-1),50,25);
+  added=$('score-hit-layer').children.at(-1);
+  assert.equal(added.style.left,'35%');assert.equal(added.style.top,'45%');
+  assert.match($('score-status').textContent,/옮겼어요/);
+  added.handlers.click();
   $('score-delete').handlers.click();
   assert.equal(vm.runInContext('scoreState.codes.length',context),5);
 }
