@@ -147,7 +147,7 @@ const elements=new Map(),$=id=>{if(!elements.has(id))elements.set(id,new Element
 const documentHandlers={};
 const head=new Element(),start=script.indexOf('// Score editor: images');
 const ui=script.slice(start,script.indexOf("if(ready(['chords']))",start));
-Object.assign(context,{painter,$,ready:modes=>modes.includes('score'),document:{addEventListener:(name,handler)=>{documentHandlers[name]=handler;},createElement:()=>new Element(),head,querySelectorAll:()=>[]},window:{},navigator:{onLine:true},setTimeout,clearTimeout,requestAnimationFrame:callback=>{callback();return 1;},cancelAnimationFrame(){},localStorage:{getItem:()=>null}});
+Object.assign(context,{painter,$,ready:modes=>modes.includes('score'),document:{addEventListener:(name,handler)=>{documentHandlers[name]=handler;},createElement:()=>new Element(),head,querySelectorAll:()=>[],activeElement:null},window:{},navigator:{onLine:true},setTimeout,clearTimeout,requestAnimationFrame:callback=>{callback();return 1;},cancelAnimationFrame(){},localStorage:{getItem:()=>null}});
 vm.runInContext(ui,context);
 context.loadScoreRecognizer=async()=>{throw Error('Exercise legacy fallback in DOM doubles');};
 assert.equal(head.children.length,0,'OCR must not download at app startup');
@@ -233,6 +233,21 @@ async function checkIntroActions(){
   assert.equal(stopped.length,8,'Changing key or capo stops playback');
   await easy.onclick();
   assert.deepEqual(bars[8].pitches,[3,6,11],'Lowering the key one semitone sounds in B');
+  // Tempo: 4/4 bars, changing it stops playback, typing a partial number waits for a valid value.
+  $('score-intro-tempo-range').value='90';$('score-intro-tempo-range').handlers.input();
+  assert.equal(stopped.length,12,'Changing the tempo stops playback');
+  assert.equal($('score-intro-tempo-value').value,'90');
+  assert.match($('score-intro-tempo-note').textContent,/2\.7초/);
+  await easy.onclick();
+  assert.deepEqual(bars.slice(12).map(bar=>Number(bar.at.toFixed(3))),[10.04,12.707,15.373,18.04],'90 BPM spaces bars 2.67 seconds apart');
+  await easy.onclick();
+  $('score-intro-tempo-value').value='9';$('score-intro-tempo-value').handlers.input();
+  assert.equal(vm.runInContext('scoreState.introTempo',context),90,'A partial number does not change the tempo');
+  $('score-intro-tempo-value').value='500';$('score-intro-tempo-value').handlers.change();
+  assert.equal($('score-intro-tempo-value').value,'180');
+  $('score-intro-tempo-value').value='';$('score-intro-tempo-value').handlers.change();
+  assert.equal($('score-intro-tempo-value').value,'180','An empty field restores the tempo');
+  $('score-intro-tempo-range').value='120';$('score-intro-tempo-range').handlers.input();
   let opened=0;$('score-intro-dialog').showModal=()=>{opened++;};
   $('score-intro-open').handlers.click();assert.equal(opened,1);
   $('score-intro-opening-place').onclick();
