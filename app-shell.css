@@ -67,3 +67,10 @@ gm-footer a { color: var(--green); text-underline-offset: 3px; }
   .install-action { gap: 4px; }
   .install-action button, .guide-launch { padding-inline: 7px; }
 }
+@media (max-width: 480px) {
+  /* Phones: show all five tabs without horizontal scrolling, and drop the
+     informational badge so the header never runs off the right edge. */
+  .mode-tabs { gap: 0; }
+  .mode-tabs a { flex: 1 1 auto; padding-inline: 4px; }
+  .install-action .badge { display: none; }
+}
