@@ -62,7 +62,8 @@
       if (override && /^wss?:\/\//.test(override)) return override.replace(/\/$/, '');
     }
     if (!config || !config.subdomain) return null;
-    const worker = host === config.productionHost ? config.productionWorker : config.stageWorker;
+    const production = config.productionHosts || [config.productionHost];
+    const worker = production.includes(host) ? config.productionWorker : config.stageWorker;
     return `wss://${worker}.${config.subdomain}.workers.dev`;
   }
 

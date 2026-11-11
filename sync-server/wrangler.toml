@@ -8,7 +8,7 @@ compatibility_date = "2025-10-01"
 workers_dev = true
 
 [vars]
-ALLOWED_ORIGINS = "https://guitar-mate.pages.dev"
+ALLOWED_ORIGINS = "https://guitar-mate.pages.dev,https://guitar-mate.dev-chehok.workers.dev"
 
 [[durable_objects.bindings]]
 name = "ROOMS"
@@ -24,7 +24,7 @@ name = "guitar-mate-sync-stage"
 workers_dev = true
 
 [env.stage.vars]
-ALLOWED_ORIGINS = "https://*.guitar-mate.pages.dev,https://guitar-mate.pages.dev,http://localhost:*,http://127.0.0.1:*"
+ALLOWED_ORIGINS = "https://*.guitar-mate.pages.dev,https://guitar-mate.pages.dev,https://*guitar-mate.dev-chehok.workers.dev,http://localhost:*,http://127.0.0.1:*"
 
 [[env.stage.durable_objects.bindings]]
 name = "ROOMS"

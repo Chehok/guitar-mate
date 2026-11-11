@@ -40,6 +40,13 @@ assert.equal(sync.serverUrl(at('https://stage.guitar-mate.pages.dev/metronome'),
 assert.equal(sync.serverUrl(at('http://localhost:8000/metronome.html?server=ws://127.0.0.1:8787/'), config), 'ws://127.0.0.1:8787');
 assert.equal(sync.serverUrl(at('https://guitar-mate.pages.dev/metronome?server=wss://evil.example'), config), 'wss://guitar-mate-sync.acct.workers.dev', 'no override in production');
 assert.equal(sync.serverUrl(at('https://guitar-mate.pages.dev/metronome'), { ...config, subdomain: '' }), null, 'not configured yet');
+const multi = { ...config, productionHost: undefined, productionHosts: ['guitar-mate.pages.dev', 'guitar-mate.acct.workers.dev'] };
+assert.equal(sync.serverUrl(at('https://guitar-mate.acct.workers.dev/metronome'), multi), 'wss://guitar-mate-sync.acct.workers.dev', 'every production host uses the production server');
+assert.equal(sync.serverUrl(at('https://stage.guitar-mate.pages.dev/metronome'), multi), 'wss://guitar-mate-sync-stage.acct.workers.dev');
+// The shipped config points at the real account
+const shipped = {}; vm.runInNewContext(read('sync-config.js'), { window: shipped });
+assert.equal(sync.serverUrl(at('https://guitar-mate.pages.dev/metronome'), shipped.GM_SYNC_CONFIG), 'wss://guitar-mate-sync.dev-chehok.workers.dev');
+assert.equal(sync.serverUrl(at('https://stage.guitar-mate.pages.dev/metronome'), shipped.GM_SYNC_CONFIG), 'wss://guitar-mate-sync-stage.dev-chehok.workers.dev');
 
 // Grid: every phone computes the same beat times and the same bar position from the link alone.
 const t0 = 1762870000123;
