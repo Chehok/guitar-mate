@@ -208,6 +208,27 @@ text: {
   '소리를 시작하지 못했어요. 브라우저 음량 설정을 확인해 주세요.': 'Could not start the sound. Check your browser volume settings.',
   '소리를 재생할 수 없습니다. 같은 버튼을 한 번 더 눌러 다시 시도하고, 계속되면 페이지를 새로고침해 주세요.': 'Cannot play sound. Press the same button again, and reload the page if it keeps happening.',
 
+  // Metronome sync
+  '함께 맞추기': 'Play together',
+  '리더로 QR 보여주기': 'Lead and show QR',
+  '이 QR을 다른 폰 카메라로 찍게 해 주세요.': 'Have the other phones scan this QR with their camera.',
+  '함께 맞추기 QR 코드': 'Play-together QR code',
+  '링크 복사': 'Copy link',
+  '공유': 'Share',
+  '리더 그만하기': 'Stop leading',
+  '템포를 바꾸면 QR도 바뀌어요. 다른 폰은 새 QR을 다시 찍어 주세요.': 'Changing the tempo changes the QR. Other phones need to scan the new one.',
+  '연동 끝내기': 'Stop syncing',
+  '내 소리 타이밍': 'My sound timing',
+  '← 앞당기기': '← Earlier',
+  '늦추기 →': 'Later →',
+  '다른 폰보다 내 소리가 늦게 들리면 왼쪽으로, 빠르면 오른쪽으로 옮기세요. 블루투스 이어폰은 많이 앞당겨야 할 수 있어요. 이 기기에 저장돼요.': 'If your clicks sound later than the other phones, move left; if earlier, move right. Bluetooth earphones may need a lot of “earlier”. Saved on this device.',
+  '리더 박자에 맞춰 재생 중': 'Playing in time with the leader',
+  '리더 박자로 재생 중': 'Leading · playing',
+  '리더 박자에 연결됐어요. 시작을 누르세요.': 'Connected to the leader’s beat. Press Start.',
+  '링크를 복사했어요.': 'Link copied.',
+  '링크를 복사하지 못했어요. 링크를 길게 눌러 복사해 주세요.': 'Couldn’t copy the link. Long-press the link to copy it.',
+  '기타메이트 메트로놈': 'Guitar Mate metronome',
+
   // Sheet transposer
   '파일 선택': 'Choose file',
   '클립보드에서 붙여넣기': 'Paste from clipboard',
@@ -344,6 +365,7 @@ text: {
   '첫 박이 켜지며 더 크게 울려요': 'Beat 1 lights up and sounds louder',
   '진자가 가운데를 지나며 클릭음이 날 때마다 기타 줄을 한 번씩 쳐보세요. 1–4 박 표시가 차례로 켜지고, 첫 박은 더 강하게 들려요.': 'Strum once each time the pendulum passes the middle and clicks. Beats 1–4 light up in turn, and the first beat is stronger.',
   '※ 소리가 나지 않으면 기기의 무음 모드와 브라우저 음량을 확인해 주세요.': '※ No sound? Check silent mode and your browser volume.',
+  '※ 여러 폰을 같은 박자로 맞추려면 아래 함께 맞추기에서 리더가 QR을 보여주고, 다른 폰은 카메라로 찍은 뒤 시작을 누르세요. 소리가 어긋나 들리면 내 소리 타이밍으로 맞춰요.': '※ To keep several phones on the same beat, the leader shows a QR under Play together; the others scan it with the camera and press Start. If the clicks sound off, adjust My sound timing.',
   '사용 예시 · 카포 2프렛으로 D키 곡 연주하기': 'Example · Playing a song in D with a capo on fret 2',
   '악보 키 변환 화면 예시': 'Sheet transposer screen examples',
   '1. 악보 이미지 불러오기': '1. Load a sheet image',
@@ -437,6 +459,7 @@ html: {
   '사이트 이용 현황을 파악하기 위해 GoatCounter를 사용합니다. 방문한 페이지, 유입 경로, 브라우저·기기 정보 등 방문 통계가 GoatCounter로 전달될 수 있습니다. GoatCounter는 방문 통계에 쿠키나 브라우저 저장소를 사용하지 않는다고 안내합니다. 자세한 내용은 <a href="https://www.goatcounter.com/help/privacy" target="_blank" rel="noopener noreferrer">GoatCounter 개인정보 안내</a>를 참고하세요.': 'We use GoatCounter to understand how the site is used. Visit statistics such as pages visited, referrer and browser/device information may be sent to GoatCounter. GoatCounter states that it does not use cookies or browser storage for statistics. See the <a href="https://www.goatcounter.com/help/privacy" target="_blank" rel="noopener noreferrer">GoatCounter privacy notice</a> for details.',
   'Google의 광고 쿠키를 사용하면 Google과 협력 업체가 사이트 방문 정보를 바탕으로 광고를 보여줄 수 있습니다. 맞춤 광고는 <a href="https://myadcenter.google.com/" target="_blank" rel="noopener noreferrer">Google 내 광고 센터</a>에서 끌 수 있으며, 브라우저 설정에서 쿠키를 관리할 수 있습니다. 자세한 내용은 <a href="https://policies.google.com/technologies/partner-sites?hl=ko" target="_blank" rel="noopener noreferrer">Google의 파트너 사이트 데이터 이용 안내</a>를 참고하세요.': 'Google’s advertising cookies let Google and its partners show ads based on site visits. You can turn off personalized ads in <a href="https://myadcenter.google.com/" target="_blank" rel="noopener noreferrer">My Ad Center</a> and manage cookies in your browser settings. See <a href="https://policies.google.com/technologies/partner-sites?hl=en" target="_blank" rel="noopener noreferrer">How Google uses information from partner sites</a> for details.',
   '이메일로 문의하면 보낸 사람의 이메일 주소와 문의 내용을 답변에 필요한 범위에서 처리합니다. 개인정보 관련 문의나 삭제 요청은 <a href="mailto:dev.chehok@gmail.com">dev.chehok@gmail.com</a>으로 보내 주세요.': 'If you email us, your email address and message are processed only as needed to reply. Send privacy questions or deletion requests to <a href="mailto:dev.chehok@gmail.com">dev.chehok@gmail.com</a>.',
+  '한 명이 리더가 되어 QR을 보여주면, 다른 폰은 기본 카메라로 찍어 같은 박자에 맞춰요. 인터넷 없이도 되지만, 모든 폰의 <strong>날짜 및 시간 자동 설정</strong>이 켜져 있어야 잘 맞아요.': 'One person leads and shows a QR code; the other phones scan it with their camera to play the same beat. It works without internet, but every phone needs <strong>automatic date &amp; time</strong> turned on to stay in sync.',
 },
 htmlPatterns: [
   ['기본음 {0} · 종류 {1} · 베이스 {2} → {3}개 · <strong>{4}</strong>', 'Root {0} · type {1} · bass {2} → {3} · <strong>{4}</strong>'],
@@ -479,6 +502,10 @@ patterns: [
   ['베이스 {0}', 'bass {0}'],
   ['생략: {0}', 'omitted: {0}'],
   ['표시 범위 밖에도 누른 음이 있습니다.', 'Some pressed notes are outside the shown range.'],
+
+  // Metronome sync
+  ['리더 템포 {0} BPM · 이 QR을 다른 폰 카메라로 찍게 해 주세요.', 'Leader tempo {0} BPM · Have the other phones scan this QR with their camera.'],
+  ['리더의 {0} BPM 박자에 맞춰요. 시작을 누르세요.', 'Following the leader’s {0} BPM beat. Press Start.'],
 
   // Sheet transposer
   ['감지 키: {0} (추정)', 'Detected key: {0} (estimated)'],
