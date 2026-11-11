@@ -263,6 +263,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 #score-code-list { margin-bottom:0; }
 .score-intro h2,.score-intro h3 { margin:0; font-size:16px; }
 .score-intro h3 { margin-top:14px; font-size:14px; }
+.score-intro-actions { margin-top:8px; }
 .score-intro-bars { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; list-style:none; margin:6px 0 0; padding:0; }
 .score-intro-bars li { padding:8px 4px; border:1px solid var(--line); border-radius:8px; background:var(--soft); text-align:center; overflow-wrap:anywhere; }
 .score-intro-bars span { display:block; color:var(--muted); font-size:12px; }
@@ -321,9 +322,9 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <div class="panel score-controls">
 <div class="score-preview-tools">
 <div class="score-row" role="group" aria-labelledby="score-overlay-label"><strong id="score-overlay-label">코드 표시</strong><label><input type="radio" name="score-overlay" value="replace" checked> 교체</label><label><input type="radio" name="score-overlay" value="above"> 위에</label><label><input id="score-original" type="checkbox"> 원본 보기</label></div>
-<div class="score-row score-preview-actions"><button id="score-add" type="button">코드 직접 추가</button><button id="score-download" type="button" class="primary">PNG 다운로드</button></div>
+<div class="score-row score-preview-actions"><button id="score-add" type="button">코드 직접 추가</button><button id="score-intro-remove" type="button" hidden>전주 제거</button><button id="score-download" type="button" class="primary">PNG 다운로드</button></div>
 </div>
-<div id="score-manual-position" hidden><p class="hint">키보드로 추가할 위치를 입력하세요. 왼쪽 위가 0%, 오른쪽 아래가 100%입니다.</p><div class="score-row"><label>가로 % <input id="score-pos-x" type="number" min="0" max="100" value="10" style="width:80px"></label><label>세로 % <input id="score-pos-y" type="number" min="0" max="100" value="10" style="width:80px"></label><button id="score-position-add" type="button">이 위치에 추가</button></div></div>
+<div id="score-manual-position" tabindex="-1" hidden><p id="score-position-hint" class="hint"></p><div class="score-row"><label>가로 % <input id="score-pos-x" type="number" min="0" max="100" value="10" style="width:80px"></label><label>세로 % <input id="score-pos-y" type="number" min="0" max="100" value="10" style="width:80px"></label><button id="score-position-add" type="button">이 위치에 추가</button></div></div>
 <p id="score-edit-hint" class="hint">악보의 코드를 눌러 수정·삭제하세요. 직접 추가를 누른 뒤 악보에서 위치를 선택하세요. 코드 목록으로도 편집할 수 있어요.<br><span id="score-size"></span></p>
 <div class="score-preview-scroll"><div id="score-stage" class="score-stage"><canvas id="score-canvas" aria-label="변환한 악보. 아래 코드 목록에서 인식 결과를 수정할 수 있습니다."></canvas><div id="score-hit-layer"></div></div></div>
 </div>
@@ -333,9 +334,12 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <p class="hint">한 마디에 코드 하나씩 연주한 뒤 곡의 첫 코드로 넘어가세요.</p>
 <h3 id="score-intro-easy-title">쉬운 전주</h3>
 <ol id="score-intro-easy" class="score-intro-bars" aria-labelledby="score-intro-easy-title" role="list"></ol>
+<div id="score-intro-easy-actions" class="score-row score-intro-actions" role="group" aria-labelledby="score-intro-easy-title"><button id="score-intro-easy-play" type="button">소리 듣기</button><button id="score-intro-easy-place" type="button">악보에 넣기</button></div>
 <h3 id="score-intro-opening-title">첫 코드 진행을 활용한 전주</h3>
 <ol id="score-intro-opening" class="score-intro-bars" aria-labelledby="score-intro-opening-title" role="list"></ol>
+<div id="score-intro-opening-actions" class="score-row score-intro-actions" role="group" aria-labelledby="score-intro-opening-title"><button id="score-intro-opening-play" type="button">소리 듣기</button><button id="score-intro-opening-place" type="button">악보에 넣기</button></div>
 <p id="score-intro-more" class="hint" hidden>코드를 2개 이상 인식하면 이 전주를 추천해요.</p>
+<p id="score-intro-audio-status" class="hint" role="status" hidden></p>
 </section>
 </div>
 </section>
@@ -833,11 +837,14 @@ for(const osc of oscs)osc.stop(stopAt);
 // Give low strings enough upper harmonics for their pitch to come through on phone speakers.
 const chordBassWeights=[1,.75,.52,.35,.24,.16],chordWeights=[1,.25,1/9,1/16];
 function scheduleChord(ctx,fretsList,at){
-const strings=fretsList.map((f,i)=>({f,i})).filter(s=>s.f>=0);
-return strings.map(({f,i},n)=>{
-const weights=i<2?chordBassWeights:chordWeights;
-const peak=chordLevel/(strings.length*weights.reduce((sum,weight)=>sum+weight,0));
-return scheduleTone(ctx,ctx.destination,440*Math.pow(2,(tuning[i]+f-69)/12),at+n*.032,peak,chordDecay,weights,.012);
+const notes=fretsList.flatMap((f,i)=>f<0?[]:[{midi:tuning[i]+f,low:i<2}]);
+return scheduleChordNotes(ctx,notes,at);
+}
+function scheduleChordNotes(ctx,notes,at,decay=chordDecay){
+return notes.map(({midi,low},n)=>{
+const weights=low?chordBassWeights:chordWeights;
+const peak=chordLevel/(notes.length*weights.reduce((sum,weight)=>sum+weight,0));
+return scheduleTone(ctx,ctx.destination,440*Math.pow(2,(midi-69)/12),at+n*.032,peak,decay,weights,.012);
 });
 }
 // Phone speakers barely reproduce the low-string fundamentals, so upper partials carry the pitch there.
@@ -1674,12 +1681,15 @@ return true;
 // End score music functions.
 
 // Score editor: images and OCR results stay in memory on this device.
-const scoreState={image:null,codes:[],capo:0,keyDown:0,overlay:'replace',original:false,busy:false,adding:false,editIndex:null,pending:null,run:0};
+const scoreState={image:null,codes:[],capo:0,keyDown:0,overlay:'replace',original:false,busy:false,adding:false,placingIntro:null,intro:null,editIndex:null,pending:null,run:0};
+let scoreIntroPlayback=null;
 let scoreLibraryPromise=null,scoreRuntimePromise=null;
 function scoreStatus(message){$('score-status').textContent=message;}
 function scoreBusy(value,allowManual=false){
 scoreState.busy=value;$('score-file').disabled=value;$('score-paste').disabled=value;
+if(value)stopScoreIntro();
 $('score-add').disabled=value&&!allowManual;$('score-stage').setAttribute('aria-busy',String(value));
+for(const id of ['easy-play','opening-play','easy-place','opening-place','remove'])$('score-intro-'+id).disabled=value;
 for(const button of [...$('score-hit-layer').children,...$('score-code-list').children])button.disabled=value;
 }
 function loadScoreLibrary(runtime=false){
@@ -1780,6 +1790,66 @@ if(run===scoreState.run)scoreBusy(false);
 }
 }
 function transformedScoreChord(text,key){if(scoreState.keyDown)return transposeScoreChord(text,-scoreState.keyDown,transposeScoreKey(key,-scoreState.keyDown));return capoScoreChord(text,scoreState.capo,key);}
+function scoreIntroNotes(text,capo){
+const {root,suffix,bass}=parseScoreChord(text);
+const quality=suffix.replace(/sus|add|maj|dim|aug/gi,word=>word.toLowerCase())
+  .replace(/^\+/,'aug').replace(/^2(?=\D|$)/,'add2').replace(/^5(?=\D|$)/,'no3')
+  .replace(/([,(])(2|4|6|9|11|13)(?=[,)])/g,'$1add$2').replace(/([,(])5(?=[,)])/g,'$1');
+const chord=parse(scoreSharps[root]+quality+(bass===null?'':'/'+scoreSharps[bass]));
+const voicing=makeVoicings(chord)[0];
+if(voicing)return voicing.frets.flatMap((fret,i)=>fret<0?[]:[{midi:tuning[i]+fret+capo,low:i<2}]);
+// Extended chords without a guitar grip can still sound all their notes.
+return [{midi:48+(bass??root)+capo,low:true},...chord.tones.map(t=>({midi:60+scoreMod(root+t[0])+capo,low:false}))];
+}
+function stopScoreIntro(){
+const playback=scoreIntroPlayback;
+if(!playback)return;
+scoreIntroPlayback=null;
+playback.button.textContent='소리 듣기';
+for(const voice of playback.voices)voice.stop();
+}
+async function playScoreIntro(button,chords){
+const wasPlaying=scoreIntroPlayback?.button===button;
+stopScoreIntro();
+const status=$('score-intro-audio-status');
+status.hidden=true;
+if(wasPlaying||scoreState.busy)return;
+const playback={button,voices:[]},capo=scoreState.capo;
+scoreIntroPlayback=playback;
+button.textContent='중지';
+const fail=()=>{
+if(scoreIntroPlayback!==playback)return;
+stopScoreIntro();
+status.textContent=audioFailure;
+status.hidden=false;
+};
+try{
+const ctx=await prepareAudio();
+if(scoreIntroPlayback!==playback)return;
+const bars=chords.map(chord=>scoreIntroNotes(chord,capo));
+const start=ctx.currentTime+.04,barLength=2;
+let lastTone;
+for(const [i,notes] of bars.entries()){
+const tones=scheduleChordNotes(ctx,notes,start+i*barLength,1.7);
+playback.voices.push(...tones.map(tone=>tone.voice));
+lastTone=tones.at(-1);
+}
+lastTone.oscs[0].addEventListener('ended',()=>{
+if(scoreIntroPlayback===playback){scoreIntroPlayback=null;button.textContent='소리 듣기';}
+});
+confirmPlayback(ctx,()=>scoreIntroPlayback===playback,fail);
+}catch(_){fail();}
+}
+function placeScoreIntro(chords){
+if(scoreState.busy||!scoreState.source)return;
+scoreState.placingIntro=chords;
+scoreState.adding=true;
+scoreState.original=false;
+$('score-original').checked=false;
+renderScore();
+const position=$('score-manual-position');
+position.focus();
+}
 function renderScoreIntros(key){
 $('score-intro').hidden=!key;
 if(!key)return;
@@ -1789,10 +1859,15 @@ $('score-intro-more').hidden=basedOnOpening.length>0;
 for(const [id,chords] of [['score-intro-easy',easy],['score-intro-opening',basedOnOpening]]){
 const list=$(id);
 list.hidden=!chords.length;
+$(id+'-actions').hidden=list.hidden;
+const shownChords=chords.map(chord=>transformedScoreChord(chord,key));
+const play=$(id+'-play');
+play.onclick=()=>playScoreIntro(play,shownChords);
+$(id+'-place').onclick=()=>placeScoreIntro(chords);
 list.replaceChildren(...chords.map((chord,index)=>{
 const item=document.createElement('li'),bar=document.createElement('span'),label=document.createElement('strong');
 bar.textContent=`${index+1}마디`;
-label.textContent=transformedScoreChord(chord,key);
+label.textContent=shownChords[index];
 item.append(bar,label);
 return item;
 }));
@@ -1829,8 +1904,20 @@ if(scoreState.overlay==='replace')ctx.fillRect(Math.max(0,b.x0-2),Math.max(0,b.y
 else ctx.fillRect(Math.max(0,b.x0-1),y,textWidth+2,fontSize*1.15);
 ctx.fillStyle=color.ink;ctx.fillText(text,b.x0,y,maxWidth);
 }
+if(scoreState.intro){
+const {chords,x,y}=scoreState.intro;
+const text='전주  |  '+chords.map(chord=>transformedScoreChord(chord,key)).join('  |  ')+'  |';
+const fontSize=Math.max(12,source.width*.026),pad=Math.min(fontSize*.45,source.width/4);
+ctx.font=`600 ${fontSize}px system-ui, sans-serif`;
+ctx.textBaseline='top';
+const width=Math.min(source.width,ctx.measureText(text).width+pad*2),height=Math.min(source.height,fontSize+pad*2);
+const left=Math.max(0,Math.min(x,source.width-width)),top=Math.max(0,Math.min(y,source.height-height));
+ctx.fillStyle='#fffdf6';ctx.fillRect(left,top,width,height);
+ctx.fillStyle='#15231d';ctx.fillText(text,left+pad,top+pad,width-pad*2);
+}
 }
 function renderScore(){
+stopScoreIntro();
 const key=detectScoreKey(scoreState.codes),destination=transposeScoreKey(key,-(scoreState.keyDown||scoreState.capo));
 renderScoreIntros(key);
 $('score-key').textContent=key?`감지 키: ${key.name} (추정)`:'감지 키: —';
@@ -1841,6 +1928,9 @@ for(const [i,button] of [...$('score-frets').children].entries())button.setAttri
 if(!scoreState.image)return;
 $('score-stage').classList.toggle('adding',scoreState.adding);
 $('score-add').textContent=scoreState.adding?'위치 선택 취소':'코드 직접 추가';
+$('score-intro-remove').hidden=!scoreState.intro||scoreState.original;
+$('score-manual-position').hidden=!scoreState.adding;
+$('score-position-hint').textContent=(scoreState.placingIntro?'전주를':'코드를')+' 넣을 위치를 악보에서 누르거나 좌표를 입력하세요. 왼쪽 위가 0%, 오른쪽 아래가 100%입니다.';
 drawScore($('score-canvas'));
 $('score-hit-layer').replaceChildren();$('score-code-list').replaceChildren();
 scoreState.codes.forEach((code,index)=>{
@@ -1874,7 +1964,7 @@ if(run!==scoreState.run)return;
 const size=scoreImageSize(image.naturalWidth,image.naturalHeight),scale=size.width/image.naturalWidth;
 const source=document.createElement('canvas');source.width=size.width;source.height=size.height;
 const ctx=source.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,source.width,source.height);ctx.drawImage(image,0,0,source.width,source.height);
-scoreState.image=image;scoreState.source=source;scoreState.codes=[];scoreState.adding=false;scoreState.original=false;$('score-original').checked=false;
+scoreState.image=image;scoreState.source=source;scoreState.codes=[];scoreState.adding=false;scoreState.placingIntro=null;scoreState.intro=null;scoreState.original=false;$('score-original').checked=false;
 $('score-work').hidden=false;$('score-manual-position').hidden=true;scoreBusy(false);renderScore();
 $('score-size').textContent=`처리·저장 크기: ${source.width} × ${source.height}px`+(scale<1?' · 기기 메모리를 위해 이미지를 축소했어요.':'');
 scoreStatus(scale<1?'큰 이미지는 기기 메모리를 위해 긴 변 4096px·최대 1200만 화소로 줄여 처리·저장합니다.':'이미지를 열었어요.');
@@ -1943,6 +2033,7 @@ $('score-add').addEventListener('click',()=>{
 const stopped=scoreState.busy;
 if(stopped)cancelScoreOCR();
 scoreState.adding=stopped||!scoreState.adding;
+scoreState.placingIntro=null;
 if(scoreState.adding){scoreState.original=false;$('score-original').checked=false;}
 renderScore();
 const prompt='코드를 넣을 위치를 악보에서 눌러 주세요. 키보드에서는 아래 위치 입력으로 추가할 수 있어요.';
@@ -1950,6 +2041,15 @@ scoreStatus(scoreState.adding?(stopped?'자동 인식을 중지했어요. ':'')+
 $('score-manual-position').hidden=!scoreState.adding;
 });
 function addScoreAt(x,y){
+if(!scoreState.adding||scoreState.busy||!scoreState.source)return;
+if(scoreState.placingIntro){
+scoreState.intro={chords:scoreState.placingIntro,x,y};
+scoreState.placingIntro=null;
+scoreState.adding=false;
+renderScore();
+scoreStatus('전주를 악보에 넣었어요. PNG로 저장할 수 있어요.');
+return;
+}
 const source=scoreState.source,height=Math.max(12,source.height*.013),width=Math.min(source.width,Math.max(30,height*2.4));
 x=Math.max(0,Math.min(source.width-width,x));y=Math.max(0,Math.min(source.height-height,y));
 editScoreCode(null,{x0:x,y0:y,x1:x+width,y1:y+height});
@@ -1975,6 +2075,7 @@ scoreState.adding=false;$('score-manual-position').hidden=true;$('score-editor')
 });
 $('score-delete').addEventListener('click',()=>{if(scoreState.editIndex!==null)scoreState.codes.splice(scoreState.editIndex,1);$('score-editor').close();renderScore();scoreStatus('코드를 삭제했어요.');});
 $('score-edit-cancel').addEventListener('click',()=>{$('score-editor').close();});
+$('score-intro-remove').addEventListener('click',()=>{scoreState.intro=null;renderScore();scoreStatus('전주를 제거했어요.');});
 $('score-download').addEventListener('click',()=>{
 if(!scoreState.source)return;
 try{
@@ -1995,6 +2096,7 @@ if(ready(['chords'])){
 }
 if(ready(['tuner'])){document.addEventListener('visibilitychange',()=>{if(document.hidden){stopMicrophone();stopPlayback();}});window.addEventListener('pagehide',()=>{stopMicrophone();stopPlayback();});}
 else if(ready(['chords','identify']))window.addEventListener('pagehide',stopPlayback);
+else if(ready(['score']))window.addEventListener('pagehide',stopScoreIntro);
 
 </script>
 </body>
