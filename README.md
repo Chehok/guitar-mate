@@ -25,6 +25,7 @@ node tests/score.cjs
 node tests/chord-filter.cjs
 node tests/i18n.cjs
 node tests/metronome-sync.cjs
+node tests/metronome-audio.cjs
 node tests/audio.cjs
 node tests/ocr-eval.cjs
 node tests/ocr-dataset.cjs
@@ -89,4 +90,4 @@ taste-skill의 Editorial greeting 방향(seed `332781039`)을 바탕으로 크�
 
 ## 메트로놈 함께 맞추기
 
-서버 없이 여러 폰의 메트로놈을 같은 박자에 맞춥니다. 리더가 **리더로 QR 보여주기**를 누르면 `metronome#sync=<BPM>.<첫 박 시각(ms)>` 링크가 QR로 표시되고, 다른 폰은 기본 카메라로 찍어 열고 **시작**을 누릅니다. 모든 폰이 이 링크의 "벽시계 기준 박자 격자"(박 k = 첫 박 시각 + k × 60000/BPM, 4박마다 강박)를 각자의 시계로 재생하므로 인터넷 없이도 동작하지만, 폰 시계가 정확해야 합니다(날짜 및 시간 자동 설정). 리더가 템포를 바꾸면 다음 박 위치를 유지한 채 새 격자와 QR이 만들어지며, 다른 폰은 새 QR을 다시 찍습니다. 블루투스 이어폰 등 기기별 출력 지연은 **내 소리 타이밍**(±300ms, 기기에 저장)으로 보정합니다. 계산은 `metronome-sync.js`, QR 생성은 직접 구현한 `qr.js`(바이트 모드·오류 정정 M·버전 1–10)가 맡습니다.
+서버 없이 여러 폰의 메트로놈을 같은 박자에 맞춥니다. 리더가 **리더로 QR 보여주기**를 누르면 `metronome#sync=<BPM>.<첫 박 시각(ms)>` 링크가 QR로 표시되고, 다른 폰은 기본 카메라로 찍어 열고 **시작**을 누릅니다. 모든 폰이 이 링크의 "벽시계 기준 박자 격자"(박 k = 첫 박 시각 + k × 60000/BPM, 4박마다 강박)를 각자의 시계로 재생하므로 인터넷 없이도 동작하지만, 폰 시계가 정확해야 합니다(날짜 및 시간 자동 설정). 리더가 템포를 바꾸면 다음 박 위치를 유지한 채 새 격자와 QR이 만들어지며, 다른 폰은 새 QR을 다시 찍습니다. 블루투스 이어폰 등 기기별 출력 지연은 **내 소리 타이밍**(±300ms, 기기에 저장)으로 보정합니다. 계산은 `metronome-sync.js`, QR 생성은 직접 구현한 `qr.js`(바이트 모드·오류 정정 M·버전 1–10)가 맡습니다. 오디오 준비와 시계 맞춤은 `metronome-audio.js`가 맡습니다. iPhone 무음 스위치가 켜져 있어도 들리도록 재생 전에 오디오 세션을 `playback`으로 바꾸고(iOS 16 이하는 무음 오디오를 한 번 재생), Safari의 `getOutputTimestamp()`는 시간 단위가 틀리는 버그(WebKit 264247)가 있어 쓰지 않고 `performance.now()`와 `AudioContext.currentTime`의 차이를 계속 측정해 박자를 예약합니다. 폰에서 확인할 때는 주소에 `?debug`를 붙이면(예: `/metronome?debug`) 오디오 상태·시계 차이·지연이 표시되고, 리더의 QR 링크에도 그대로 이어집니다.

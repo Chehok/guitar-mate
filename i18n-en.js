@@ -228,6 +228,8 @@ text: {
   '링크를 복사했어요.': 'Link copied.',
   '링크를 복사하지 못했어요. 링크를 길게 눌러 복사해 주세요.': 'Couldn’t copy the link. Long-press the link to copy it.',
   '기타메이트 메트로놈': 'Guitar Mate metronome',
+  '소리를 시작하지 못했어요. 시작을 다시 누르고, 계속되면 페이지를 새로고침해 주세요.': 'Couldn’t start the sound. Press Start again, and reload the page if it keeps happening.',
+  '소리가 멈췄어요. 시작을 다시 눌러 주세요.': 'The sound stopped. Press Start again.',
 
   // Sheet transposer
   '파일 선택': 'Choose file',

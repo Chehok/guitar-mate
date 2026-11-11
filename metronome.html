@@ -70,6 +70,7 @@ h1 { margin:0 0 8px; font-size:clamp(24px,3vw,30px); font-weight:700; line-heigh
 .offset-slider { display:block; width:100%; margin:8px 0 2px; accent-color:var(--green); }
 .offset-limits { display:flex; justify-content:space-between; color:var(--muted); font-size:12px; }
 .tempo-value input:disabled, .tempo-slider:disabled { opacity:.55; }
+.sync-debug { margin:16px 0 0; padding:10px; border-radius:8px; background:var(--soft); color:var(--muted); font-size:11px; line-height:1.5; white-space:pre-wrap; }
 @media (min-width: 760px) { .panel { padding: 32px; } }
 @media (prefers-color-scheme:dark) { :root { color-scheme:dark; --paper:#131713; --panel:#1c221d; --soft:#29332b; --ink:#f0f1e6; --muted:#b2beb1; --line:#374438; --control:#7c907d; --green:#a2d2b5; --on-green:#172c21; --focus:#e8c879; } }
 @media (prefers-reduced-motion:reduce) { *,*::before,*::after { transition:none !important; animation:none !important; scroll-behavior:auto !important; } .beats li.active { transform:none; } }
@@ -143,6 +144,7 @@ h1 { margin:0 0 8px; font-size:clamp(24px,3vw,30px); font-weight:700; line-heigh
 </div>
 <script src="./qr.js"></script>
 <script src="./metronome-sync.js"></script>
+<script src="./metronome-audio.js"></script>
 <script>
 'use strict';
 const tempoRange=document.getElementById('tempo-range');
@@ -171,21 +173,12 @@ function setTempo(raw){
 }
 tempoRange.addEventListener('input',()=>setTempo(tempoRange.value));
 tempoValue.addEventListener('change',()=>setTempo(tempoValue.value));
-function audibleTime(){
-  const timestamp=audioContext.getOutputTimestamp?.();
-  if(timestamp?.performanceTime>0){
-    return Math.min(audioContext.currentTime,timestamp.contextTime+(performance.now()-timestamp.performanceTime)/1000);
-  }
-  return audioContext.currentTime-(audioContext.baseLatency||0)-(audioContext.outputLatency||0);
-}
+// Audio clock ↔ performance clock, measured continuously (see metronome-audio.js for why not getOutputTimestamp).
+const clock=window.metronomeAudio.createClock(()=>audioContext);
+function audibleTime(){return Math.min(audioContext.currentTime,clock.audibleTime());}
 // Wall clock (ms) ↔ audio clock (s), aimed at when the click is heard, plus this device's offset.
 function epochToAudio(epochMs){
-  const perf=epochMs-(Date.now()-performance.now());
-  const timestamp=audioContext.getOutputTimestamp?.();
-  const base=timestamp?.performanceTime>0
-    ?timestamp.contextTime+(perf-timestamp.performanceTime)/1000
-    :audioContext.currentTime+(perf-performance.now())/1000-(audioContext.baseLatency||0)-(audioContext.outputLatency||0);
-  return base+offsetMs/1000;
+  return clock.audioTimeFor(epochMs-(Date.now()-performance.now()))+offsetMs/1000;
 }
 function audioToEpoch(time){
   const probe=Date.now();
@@ -229,8 +222,15 @@ function playClick(time,beat){
   gain.gain.setValueAtTime(.0001,time);gain.gain.exponentialRampToValueAtTime(beat===0?.2:.13,time+.002);gain.gain.exponentialRampToValueAtTime(.0001,time+.045);
   oscillator.connect(gain);gain.connect(audioContext.destination);sources.add(oscillator);oscillator.onended=()=>sources.delete(oscillator);oscillator.start(time);oscillator.stop(time+.05);
 }
+let lastResumeTry=0;
 function schedule(){
-  if(!running||audioContext.state!=='running')return;
+  if(!running)return;
+  if(audioContext.state!=='running'){
+    // iOS can suspend/interrupt audio (calls, Siri, leaving the app); keep trying quietly.
+    if(performance.now()-lastResumeTry>1000){lastResumeTry=performance.now();audioContext.resume().catch(()=>{});}
+    return;
+  }
+  clock.sample();
   if(document.hidden)discardOlderBeats(audibleTime());
   const now=audioContext.currentTime;
   if(grid){
@@ -271,8 +271,9 @@ startStop.addEventListener('click',async()=>{
   if(!AudioContextClass){status.textContent='이 브라우저에서는 오디오 재생을 지원하지 않습니다.';return;}
   startStop.disabled=true;
   try{
-    audioContext??=new AudioContextClass();
-    if(audioContext.state==='suspended')await audioContext.resume();
+    const prepared=await window.metronomeAudio.prepare(audioContext);
+    if(prepared!==audioContext){audioContext=prepared;clock.reset();}
+    clock.sample();
     running=true;
     nextBeat=0;
     nextBeatTime=audioContext.currentTime+.05;
@@ -285,12 +286,19 @@ startStop.addEventListener('click',async()=>{
     animationFrame=requestAnimationFrame(paintPendulum);
   }catch(_){
     stop();
-    status.textContent='소리를 시작하지 못했어요. 브라우저 음량 설정을 확인해 주세요.';
+    status.textContent='소리를 시작하지 못했어요. 시작을 다시 누르고, 계속되면 페이지를 새로고침해 주세요.';
   }finally{
     startStop.disabled=false;
   }
 });
 window.addEventListener('pagehide',()=>{if(running)stop();});
+// Coming back to the app: wake the audio, or say so instead of staying silent.
+document.addEventListener('visibilitychange',async()=>{
+  if(document.hidden||!running||!audioContext)return;
+  clock.reset();
+  if(await window.metronomeAudio.resume(audioContext))return;
+  if(running){stop();status.textContent='소리가 멈췄어요. 시작을 다시 눌러 주세요.';}
+});
 
 // ---- 함께 맞추기 ----
 const leadButton=document.getElementById('sync-lead');
@@ -362,6 +370,14 @@ function readSyncHash(){const parsed=sync.parseSync(location.hash);if(parsed)fol
 window.addEventListener('hashchange',readSyncHash);
 showOffset();
 readSyncHash();
+if(new URLSearchParams(location.search).has('debug')){
+  const debug=document.createElement('pre');debug.className='sync-debug';debug.setAttribute('translate','no');
+  document.querySelector('.sync-panel').append(debug);
+  setInterval(()=>{
+    const c=audioContext;
+    debug.textContent=c?[`state ${c.state} · rate ${c.sampleRate}`,`clock offset ${(clock.offset()*1000).toFixed(1)} ms · latency ${(clock.latency()*1000).toFixed(1)} ms`,`session ${navigator.audioSession?.type??'n/a'} · grid ${grid?sync.formatSync(grid):'—'} · next ${grid?nextK:'—'}`,`wall ${Date.now()} · my offset ${offsetMs} ms`].join('\n'):'audio not started';
+  },500);
+}
 </script>
 </body>
 </html>
