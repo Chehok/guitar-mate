@@ -213,11 +213,13 @@ assert(paint.find(p=>p[0]==='text')[3]<200,'Above mode draws above original chor
 async function checkIntroActions(){
   vm.runInContext(script.slice(script.indexOf('const mod='),script.indexOf('let current=null')),context);
   vm.runInContext("scoreState.codes=['C','G','Am','F','C'].map((text,i)=>({text,bbox:{x0:50+i*90,y0:200,x1:85+i*90,y1:218}}));",context);
-  const bars=[],stopped=[];
+  const bars=[],strums=[],stopped=[];
   context.prepareAudio=async()=>({currentTime:10});
   context.confirmPlayback=()=>{};
-  context.scheduleChordNotes=(_ctx,notes,at)=>{
-    bars.push({pitches:[...new Set(Array.from(notes,n=>n.midi%12))].sort((a,b)=>a-b),at});
+  // Every pulse is strummed; the full-volume downbeat stands for the bar.
+  context.scheduleChordNotes=(_ctx,notes,at,_decay,level=1)=>{
+    const strum={pitches:[...new Set(Array.from(notes,n=>n.midi%12))].sort((a,b)=>a-b),at,level,count:notes.length};
+    strums.push(strum);if(level===1)bars.push(strum);
     return [{voice:{stop:()=>stopped.push(at)},oscs:[{addEventListener(){}}]}];
   };
   const easy=$('score-intro-easy-play'),opening=$('score-intro-opening-play');
@@ -227,15 +229,17 @@ async function checkIntroActions(){
   assert.deepEqual(bars[0].pitches,[0,4,7],'Bb shapes with capo 2 sound in C');
   assert.equal(easy.textContent,'중지');
   await opening.onclick();
-  assert.equal(stopped.length,4,'Switching recommendations stops all scheduled bars');
+  assert.equal(stopped.length,16,'Switching recommendations stops all scheduled bars');
   assert.deepEqual(bars[5].pitches,[2,7,11],'Opening progression plays its own second bar');
   for(let i=0;i<3;i++)$('score-capo-minus').handlers.click();
-  assert.equal(stopped.length,8,'Changing key or capo stops playback');
+  assert.equal(stopped.length,32,'Changing key or capo stops playback');
   await easy.onclick();
   assert.deepEqual(bars[8].pitches,[3,6,11],'Lowering the key one semitone sounds in B');
+  assert.deepEqual(strums.slice(-16,-12).map(s=>[Number((s.at-10.04).toFixed(3)),s.level]),[[0,1],[.5,.45],[1,.7],[1.5,.45]],'4/4 strums every quarter note');
+  assert(strums.at(-15).count<=3,'Weak beats brush the top strings');
   // Tempo: 4/4 bars, changing it stops playback, typing a partial number waits for a valid value.
   $('score-intro-tempo-range').value='90';$('score-intro-tempo-range').handlers.input();
-  assert.equal(stopped.length,12,'Changing the tempo stops playback');
+  assert.equal(stopped.length,48,'Changing the tempo stops playback');
   assert.equal($('score-intro-tempo-value').value,'90');
   assert.match($('score-intro-tempo-note').textContent,/2\.7초/);
   await easy.onclick();
@@ -248,6 +252,21 @@ async function checkIntroActions(){
   $('score-intro-tempo-value').value='';$('score-intro-tempo-value').handlers.change();
   assert.equal($('score-intro-tempo-value').value,'180','An empty field restores the tempo');
   $('score-intro-tempo-range').value='120';$('score-intro-tempo-range').handlers.input();
+  // Meter: 3/4 and 6/8 (BPM counts dotted quarters) change bar length and strum pulses.
+  await easy.onclick();const beforeMeter=stopped.length;
+  context.setScoreIntroMeter('3/4');
+  assert(stopped.length>beforeMeter,'Changing the meter stops playback');
+  assert.equal($('score-intro-tempo-note').textContent,'3/4박자 · 한 마디 1.5초');
+  let first=strums.length;await easy.onclick();
+  assert.deepEqual(strums.slice(first,first+6).map(s=>Number((s.at-10.04).toFixed(3))),[0,.5,1,1.5,2,2.5]);
+  assert.equal(strums.length-first,12,'3 pulses x 4 bars');
+  await easy.onclick();context.setScoreIntroMeter('6/8');
+  assert.match($('score-intro-tempo-note').textContent,/6\/8박자 · 점4분음표 기준 · 한 마디 1\.0초/);
+  first=strums.length;await easy.onclick();
+  assert.deepEqual(strums.slice(first,first+6).map(s=>[Number((s.at-10.04).toFixed(3)),s.level]),[[0,1],[.167,.35],[.333,.35],[.5,.7],[.667,.35],[.833,.35]]);
+  await easy.onclick();context.setScoreIntroMeter('bogus');
+  assert.equal(vm.runInContext('scoreState.introMeter',context),'6/8');
+  context.setScoreIntroMeter('4/4');
   let opened=0;$('score-intro-dialog').showModal=()=>{opened++;};
   $('score-intro-open').handlers.click();assert.equal(opened,1);
   $('score-intro-opening-place').onclick();
