@@ -475,6 +475,25 @@ await $('score-paste').handlers.click();assert.match($('score-status').textConte
 // clipboard.read() starts before the button is disabled (iOS cancels its paste bubble otherwise).
 let disabledAtRead=null;context.navigator.clipboard.read=async()=>{disabledAtRead=$('score-paste').disabled;return [];};
 $('score-paste').disabled=false;await $('score-paste').handlers.click();assert.equal(disabledAtRead,false);
+// iPhone/iPad: the button pastes into an invisible editable spot so iOS fires a real paste event.
+{
+  const pasteCalls=[];let sinks=0;
+  context.navigator.userAgent='Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)';
+  context.navigator.clipboard.read=async()=>{throw Error('clipboard.read must not be used on iOS');};
+  const realCreate=context.document.createElement,realBody=context.document.body;
+  context.document.createElement=()=>{const el=new Element();el.focus=()=>{};el.remove=()=>{sinks--;};return el;};
+  context.document.body={append(){sinks++;}};
+  context.document.execCommand=command=>{pasteCalls.push(command);return false;};
+  await $('score-paste').handlers.click();
+  assert.deepEqual(pasteCalls,['paste']);assert.equal(sinks,0,'The invisible paste spot is removed');
+  assert.match($('score-status').textContent,/붙여넣지 못했어요/);
+  context.document.execCommand=()=>{documentHandlers.paste(pasteEvent);return true;};
+  const loaded=[];const realLoad=context.loadScoreImage;context.loadScoreImage=async file=>{loaded.push(file);};
+  await $('score-paste').handlers.click();
+  assert.equal(loaded.length,1,'The pasted image is loaded through the paste event');
+  context.loadScoreImage=realLoad;context.document.createElement=realCreate;context.document.body=realBody;
+  delete context.document.execCommand;context.navigator.userAgent='';
+}
 context.navigator.clipboard.read=async()=>[{types:['text/plain']}];
 await $('score-paste').handlers.click();assert.equal(revoked,2);assert.match($('score-status').textContent,/텍스트/);
 context.File=class {constructor(parts,name,options){this.parts=parts;this.name=name;this.type=options.type;this.size=100;}};

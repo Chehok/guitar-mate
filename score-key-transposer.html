@@ -2292,8 +2292,34 @@ if(file)await loadScoreImage(scoreClipboardFile(file,selected.type));else scoreP
 scoreStatus('클립보드에 이미지가 없어요. 텍스트는 악보로 불러오지 않아요. 이미지를 복사한 뒤 붙여넣어 주세요.');
 }
 });
+// iPhone/iPad: clipboard.read() does not hand over pasted images reliably, but the system
+// "붙여넣기" action on an editable element does (as a normal paste event). So the button focuses
+// an invisible editable spot on itself and asks for a paste; iOS shows its "붙여넣기" bubble there,
+// and the document paste handler above loads the image.
+function scoreIsAppleTouch(){
+return /iPad|iPhone|iPod/.test(navigator.userAgent||'')||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+}
+function scorePasteViaEditable(){
+const rect=$('score-paste').getBoundingClientRect?.()||{left:0,top:0};
+const sink=document.createElement('div');
+sink.contentEditable='true';
+sink.setAttribute('inputmode','none');sink.setAttribute('aria-hidden','true');sink.tabIndex=-1;
+sink.style.cssText=`position:fixed;left:${Math.round(rect.left)}px;top:${Math.round(rect.top)}px;width:1px;height:1px;opacity:0;overflow:hidden;z-index:-1;`;
+let pasted=false;
+sink.addEventListener('paste',()=>{pasted=true;});
+document.body.append(sink);
+sink.focus({preventScroll:true});
+let accepted=false;
+try{accepted=document.execCommand('paste');}catch(_){}
+sink.remove();
+return accepted||pasted;
+}
 if(ready(['score']))$('score-paste').addEventListener('click',async()=>{
 if(scoreState.busy)return;
+if(scoreIsAppleTouch()){
+if(!scorePasteViaEditable())scoreStatus('붙여넣지 못했어요. 버튼을 다시 누른 뒤 나타나는 ‘붙여넣기’를 누르거나, 파일 선택으로 올려 주세요.');
+return;
+}
 if(typeof navigator.clipboard?.read!=='function'){scorePasteFallback();return;}
 // iOS Safari shows its "붙여넣기" bubble for this call; read() must start before any DOM change
 // (disabling the tapped button first can blur it and cancel the bubble).

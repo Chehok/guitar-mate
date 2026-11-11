@@ -282,6 +282,7 @@ text: {
   '이미지를 처리 중이에요. 끝날 때까지 기다리거나 인식을 중지한 뒤 다시 붙여넣어 주세요.': 'Still processing an image. Wait for it to finish or stop recognition, then paste again.',
   '클립보드를 읽을 수 없어요. 파일 선택으로 악보 이미지를 올려 주세요.': 'Can’t read the clipboard. Use Choose file to upload the sheet image.',
   '붙여넣기가 허용되지 않았어요. 버튼을 다시 누른 뒤 나타나는 ‘붙여넣기’를 눌러 주세요.': 'Paste wasn’t allowed. Tap the button again, then tap “Paste”.',
+  '붙여넣지 못했어요. 버튼을 다시 누른 뒤 나타나는 ‘붙여넣기’를 누르거나, 파일 선택으로 올려 주세요.': 'Couldn’t paste. Tap the button again and then tap “Paste”, or use Choose file.',
   '클립보드에 이미지가 없어요. 텍스트는 악보로 불러오지 않아요. 이미지를 복사한 뒤 붙여넣어 주세요.': 'There’s no image on the clipboard (text isn’t loaded as sheet music). Copy an image, then paste.',
   '큰 이미지는 기기 메모리를 위해 긴 변 4096px·최대 1200만 화소로 줄여 처리·저장합니다.': 'Large images are reduced to 4096px on the long side (max 12 MP) to save device memory.',
   '기기 메모리를 위해 이미지를 축소했어요.': 'Image reduced to save device memory.',
