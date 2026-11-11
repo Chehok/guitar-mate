@@ -205,6 +205,11 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .score-preview-tools { display:flex; flex-wrap:wrap; align-items:center; gap:8px 16px; }
 .score-preview-tools .score-row { margin-top:0; }
 .score-preview-actions { margin-left:auto; justify-content:flex-end; }
+@media (max-width: 759px) {
+  /* Keep the three preview actions on one line on phones (e.g. 393px iPhone). */
+  .score-preview-actions { width:100%; flex-wrap:nowrap; gap:6px; }
+  .score-preview-actions button { flex:1 1 0; min-width:0; padding-inline:4px; font-size:14px; white-space:nowrap; }
+}
 #score-panel label { display:inline-flex; align-items:center; gap:6px; }
 .score-drop { display:grid; justify-items:center; gap:8px; padding:28px 12px; border:2px dashed var(--control); border-radius:12px; background:var(--soft); text-align:center; }
 .score-upload-actions { display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:8px; }
