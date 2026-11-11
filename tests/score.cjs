@@ -464,11 +464,23 @@ assert.equal(revoked,2);assert.equal(prevented,2);assert.match($('score-status')
 // Ordinary text fields still receive native text paste; no image load is attempted.
 await documentHandlers.paste({...pasteEvent,target:$('score-edit-text'),clipboardData:{items:[textItem]}});
 assert.equal(prevented,2);assert.equal(revoked,2);
-await $('score-paste').handlers.click();assert.match($('score-status').textContent,/파일 선택/);
-context.navigator.clipboard={read:async()=>{throw Error('NotAllowedError');}};
-await $('score-paste').handlers.click();assert.match($('score-status').textContent,/파일 선택/);assert.equal($('score-paste').disabled,false);
+// Without clipboard.read (or when it fails) a long-press paste box appears, as iPhone needs.
+$('score-paste-fallback').hidden=true;
+await $('score-paste').handlers.click();assert.match($('score-status').textContent,/길게 눌러/);assert.equal($('score-paste-fallback').hidden,false);
+context.navigator.clipboard={read:async()=>{throw Error('read failed');}};
+await $('score-paste').handlers.click();assert.match($('score-status').textContent,/직접 읽을 수 없어요/);assert.equal($('score-paste').disabled,false);
+context.navigator.clipboard.read=async()=>{throw Object.assign(Error('denied'),{name:'NotAllowedError'});};
+await $('score-paste').handlers.click();assert.match($('score-status').textContent,/허용되지 않았어요/);
+await documentHandlers.paste({...pasteEvent,target:$('score-paste-area')});
+assert.equal($('score-paste-fallback').hidden,true,'A successful paste hides the box');assert.equal(revoked,3);
+revoked=2;
 context.navigator.clipboard.read=async()=>[{types:['text/plain']}];
 await $('score-paste').handlers.click();assert.equal(revoked,2);assert.match($('score-status').textContent,/텍스트/);
+context.File=class {constructor(parts,name,options){this.parts=parts;this.name=name;this.type=options.type;this.size=100;}};
+context.navigator.clipboard.read=async()=>[{types:['image/png'],getType:async()=>({size:100,type:''})}];
+const loaded=[];const realLoad=context.loadScoreImage;context.loadScoreImage=async file=>{loaded.push(file);};
+await $('score-paste').handlers.click();assert.equal(loaded[0].type,'image/png','A clipboard Blob without a MIME type is still loaded as an image');
+context.loadScoreImage=realLoad;
 context.navigator.clipboard.read=async()=>[{types:['text/html','image/webp'],getType:async type=>{assert.equal(type,'image/webp');return pasted;}}];
 let automaticOCR=0;context.recognizeScore=async()=>{automaticOCR++;};
 await $('score-paste').handlers.click();assert.equal(revoked,3);assert.equal(automaticOCR,1);

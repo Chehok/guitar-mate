@@ -223,6 +223,10 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 #score-file:focus-visible + .score-file-button { outline:3px solid var(--focus); outline-offset:3px; }
 #score-file:disabled + .score-file-button { opacity:.6; cursor:default; }
 .score-drop-message { color:var(--muted); font-size:14px; }
+#score-paste-fallback { width:100%; margin-top:8px; }
+#score-paste-area { min-height:64px; padding:12px; border:1px dashed var(--control); border-radius:10px; background:var(--panel); color:var(--muted); font-size:14px; text-align:center; }
+#score-paste-area:empty::before { content:attr(data-placeholder); }
+#score-paste-area:focus-visible { outline:3px solid var(--focus); outline-offset:3px; }
 #score-panel input[type=radio],#score-panel input[type=checkbox] { width:18px; min-height:18px; height:18px; accent-color:var(--green); }
 #score-panel fieldset { border:0; margin:16px 0; padding:0; min-width:0; }
 #score-panel legend { font-weight:650; font-size:14px; }
@@ -324,6 +328,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 </div>
 <p class="score-drop-message">또는 이미지를 여기에 끌어 놓으세요</p>
 <p id="score-file-hint" class="score-drop-message">이미지 한 장 · 최대 20MB</p>
+<div id="score-paste-fallback" hidden><p id="score-paste-hint" class="score-drop-message">아래 칸을 길게 누른 뒤 <strong>붙여넣기</strong>를 고르세요.</p><div id="score-paste-area" contenteditable="true" role="textbox" inputmode="none" spellcheck="false" aria-label="악보 이미지 붙여넣기 칸" aria-describedby="score-paste-hint" data-placeholder="여기를 길게 눌러 붙여넣기"></div></div>
 </div>
 <p id="score-status" class="hint" role="status" aria-live="polite">첫 자동 인식에는 인터넷 연결이 필요해요.</p>
 </div>
@@ -2259,8 +2264,18 @@ if(files?.length>1){scoreStatus('악보 이미지는 한 장씩 올려 주세요
 return loadScoreImage(files?.[0]);
 });
 }
-function scorePasteFallback(){
-scoreStatus('클립보드를 읽을 수 없어요. 파일 선택으로 악보 이미지를 올려 주세요.');
+// iPhone/iPad: clipboard.read() needs the system "붙여넣기" bubble to be tapped, and the page-level
+// paste event only fires inside an editable element, so a long-press paste box is the fallback.
+function scorePasteFallback(denied=false){
+$('score-paste-fallback').hidden=false;
+$('score-paste-area').replaceChildren?.();
+scoreStatus(denied?'붙여넣기가 허용되지 않았어요. 버튼을 다시 누른 뒤 나타나는 ‘붙여넣기’를 누르거나, 아래 칸을 길게 눌러 붙여넣어 주세요.':'클립보드를 직접 읽을 수 없어요. 아래 칸을 길게 눌러 붙여넣거나 이미지 파일을 선택해 주세요.');
+}
+function hideScorePasteFallback(){$('score-paste-fallback').hidden=true;$('score-paste-area').replaceChildren?.();}
+// Some browsers hand back a clipboard Blob without its MIME type.
+function scoreClipboardFile(blob,type){
+if(blob&&typeof blob.type==='string'&&blob.type.startsWith('image/'))return blob;
+return new File([blob],'clipboard-image',{type});
 }
 if(ready(['score']))document.addEventListener('paste',async event=>{
 if($('score-panel').hidden)return;
@@ -2269,11 +2284,12 @@ if(selected){
 event.preventDefault();
 if(scoreState.busy){scoreStatus('이미지를 처리 중이에요. 끝날 때까지 기다리거나 인식을 중지한 뒤 다시 붙여넣어 주세요.');return;}
 const file=selected.item.getAsFile();
-if(file)await loadScoreImage(file);else scorePasteFallback();
+if(file){hideScorePasteFallback();await loadScoreImage(scoreClipboardFile(file,selected.type));}else scorePasteFallback();
 }else{
 scoreStatus('클립보드에 이미지가 없어요. 텍스트는 악보로 불러오지 않아요. 이미지를 복사한 뒤 붙여넣어 주세요.');
 }
 });
+if(ready(['score']))$('score-paste-area').addEventListener('input',()=>$('score-paste-area').replaceChildren());
 if(ready(['score']))$('score-paste').addEventListener('click',async()=>{
 if(scoreState.busy)return;
 if(typeof navigator.clipboard?.read!=='function'){scorePasteFallback();return;}
@@ -2282,9 +2298,9 @@ try{
 const selected=selectScoreClipboardImage(await navigator.clipboard.read());
 if($('score-panel').hidden)return;
 if(!selected){scoreStatus('클립보드에 이미지가 없어요. 텍스트는 악보로 불러오지 않아요. 이미지를 복사한 뒤 붙여넣어 주세요.');return;}
-const file=await selected.item.getType(selected.type);
-if(!$('score-panel').hidden)await loadScoreImage(file);
-}catch(_){if(!$('score-panel').hidden)scorePasteFallback();}
+const file=scoreClipboardFile(await selected.item.getType(selected.type),selected.type);
+if(!$('score-panel').hidden){hideScorePasteFallback();await loadScoreImage(file);}
+}catch(error){if(!$('score-panel').hidden)scorePasteFallback(error?.name==='NotAllowedError');}
 finally{$('score-paste').disabled=scoreState.busy;}
 });
 if(ready(['score'])){
