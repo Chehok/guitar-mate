@@ -2012,9 +2012,8 @@ return {background:`rgb(${rgb.join(',')})`,ink:rgb.reduce((s,v)=>s+v,0)>390?'#15
 function scoreKeyStampText(key=detectScoreKey(scoreState.codes)){
 if(!key)return '';
 const shown=transposeScoreKey(key,-(scoreState.keyDown||scoreState.capo));
-if(scoreState.capo&&!scoreState.keyDown)return `현재키 ${shown.name} (Capo ${scoreState.capo} · 원키 ${key.name})`;
-if(scoreState.keyDown)return `현재키 ${shown.name} (원키 ${key.name})`;
-return `원키 ${key.name}`;
+if(scoreState.capo&&!scoreState.keyDown)return `${shown.name}폼 (Capo ${scoreState.capo}) / ${key.name}키`;
+return `${shown.name}키`;
 }
 function scoreKeyStampBox(source=scoreState.source,text=scoreKeyStampText()){
 if(!source||!scoreState.showKey||!text)return null;

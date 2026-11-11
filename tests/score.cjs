@@ -276,15 +276,15 @@ async function checkIntroActions(){
   assert.deepEqual(introAt(),[20,59],'A new intro starts near the top-left corner, just below the key stamp');
   // Key stamp: top-left corner, follows capo/key changes, can be turned off, never in original view.
   {
-    const stampOf=()=>{paint.length=0;context.drawScore(new Element(),false);return paint.filter(c=>c[0]==='text').map(c=>c[1]).find(t=>t.match(/^(원키|현재키) /));};
+    const stampOf=()=>{paint.length=0;context.drawScore(new Element(),false);return paint.filter(c=>c[0]==='text').map(c=>c[1]).find(t=>t.match(/(폼|키)/));};
     const capo=vm.runInContext('scoreState.capo',context),keyDown=vm.runInContext('scoreState.keyDown',context);
     vm.runInContext('scoreState.capo=0;scoreState.keyDown=0;',context);
-    assert.equal(stampOf(),'원키 C','Stamp shows the detected key');
-    const call=paint.find(c=>c[0]==='text'&&c[1]==='원키 C');assert.deepEqual([call[2],call[3]],[22,22],'Stamp sits in the top-left corner');
+    assert.equal(stampOf(),'C키','Stamp shows the detected key');
+    const call=paint.find(c=>c[0]==='text'&&c[1]==='C키');assert.deepEqual([call[2],call[3]],[22,22],'Stamp sits in the top-left corner');
     vm.runInContext('scoreState.capo=2;',context);
-    assert.equal(stampOf(),'현재키 Bb (Capo 2 · 원키 C)','Capo stamp keeps the sounding key and names the chord shapes');
+    assert.equal(stampOf(),'Bb폼 (Capo 2) / C키','Capo stamp keeps the sounding key and names the chord shapes');
     vm.runInContext('scoreState.capo=0;scoreState.keyDown=2;',context);
-    assert.equal(stampOf(),'현재키 Bb (원키 C)','Lowering the key stamps the new key');
+    assert.equal(stampOf(),'Bb키','Lowering the key stamps the new key');
     vm.runInContext('scoreState.keyDown=0;',context);
     $('score-key-stamp').checked=false;$('score-key-stamp').handlers.change();
     assert.equal(stampOf(),undefined,'Stamp can be turned off');
