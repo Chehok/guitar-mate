@@ -47,6 +47,7 @@ assert.equal(sync.serverUrl(at('https://stage.guitar-mate.pages.dev/metronome'),
 const shipped = {}; vm.runInNewContext(read('sync-config.js'), { window: shipped });
 assert.equal(sync.serverUrl(at('https://guitar-mate.pages.dev/metronome'), shipped.GM_SYNC_CONFIG), 'wss://guitar-mate-sync.dev-chehok.workers.dev');
 assert.equal(sync.serverUrl(at('https://stage.guitar-mate.pages.dev/metronome'), shipped.GM_SYNC_CONFIG), 'wss://guitar-mate-sync-stage.dev-chehok.workers.dev');
+assert.equal(sync.serverUrl(at('https://guitar-mate.dev-chehok.workers.dev/metronome'), shipped.GM_SYNC_CONFIG), 'wss://guitar-mate-sync-stage.dev-chehok.workers.dev', 'the workers.dev site serves stage, so it uses the stage server');
 
 // Grid: every phone computes the same beat times and the same bar position from the link alone.
 const t0 = 1762870000123;

@@ -5,8 +5,9 @@
 // Leave it empty and "Play together" says the server isn't set up yet.
 window.GM_SYNC_CONFIG = {
   subdomain: 'dev-chehok',
-  // Sites that use the production server; any other host (stage and previews) uses the stage server.
-  productionHosts: ['guitar-mate.pages.dev', 'guitar-mate.dev-chehok.workers.dev'],
+  // Sites that use the production server; any other host uses the stage server. That includes
+  // stage.guitar-mate.pages.dev and guitar-mate.dev-chehok.workers.dev, which serves the stage branch.
+  productionHosts: ['guitar-mate.pages.dev'],
   productionWorker: 'guitar-mate-sync',
   stageWorker: 'guitar-mate-sync-stage',
 };
