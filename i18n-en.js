@@ -237,7 +237,7 @@ text: {
   '나가기': 'Leave',
   '다시 듣기': 'Listen again',
   '리더를 따라가요': 'Following the leader',
-  '서버와 시간을 맞추는 중이에요. 잠시 후 다시 눌러 주세요.': 'Syncing time with the server. Press again in a moment.',
+  '서버와 시간을 맞추는 중이에요. 맞춰지면 바로 시작해요.': 'Syncing time with the server. It starts as soon as that’s done.',
   '서버에 연결하는 중…': 'Connecting to the server…',
   '연결이 끊겨 다시 연결하는 중…': 'Connection lost, reconnecting…',
   '연결됐어요': 'Connected',

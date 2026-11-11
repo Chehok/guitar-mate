@@ -272,7 +272,7 @@ async function ensureAudio(){
 function renderButtons(){
   const following=role==='follower';
   startStop.disabled=following;
-  startStop.textContent=following?'리더를 따라가요':running?'멈추기':role==='leader'&&roomState?.playing?'다시 듣기':'시작';
+  startStop.textContent=following?'리더를 따라가요':running||startWhenSynced?'멈추기':role==='leader'&&roomState?.playing?'다시 듣기':'시작';
   startStop.setAttribute('aria-pressed',String(running));
   tempoRange.disabled=tempoValue.disabled=following;
 }
@@ -299,10 +299,24 @@ function changeRoomTempo(bpm){
   publish({bpm,t0:next.grid.t0,playing:true,from:next.from});
 }
 function publish(state){roomState=state;room.publish(state);renderButtons();}
+let startWhenSynced=false;
+function beginLeading(){
+  startWhenSynced=false;
+  if(roomState?.playing){grid={bpm:roomState.bpm,t0:roomState.t0};}
+  else{
+    grid={bpm:tempoRange.valueAsNumber,t0:Math.round(room.serverNow()+400)};
+    publish({...grid,playing:true});
+  }
+  pending=null;
+  nextK=sync.nextBeatIndex(grid,room.serverNow()+80);
+  status.textContent='리더 박자로 재생 중';
+  startLoop();
+}
 
 // ---- Start / stop ----
 startStop.addEventListener('click',async()=>{
   if(role==='follower')return;
+  if(startWhenSynced){startWhenSynced=false;status.textContent='메트로놈을 멈췄습니다.';renderButtons();return;}
   if(running){
     if(role==='leader'&&grid)publish({...grid,playing:false});
     stopLoop();
@@ -314,16 +328,10 @@ startStop.addEventListener('click',async()=>{
   try{
     await ensureAudio();
     if(role==='leader'){
-      if(!room.synced){status.textContent='서버와 시간을 맞추는 중이에요. 잠시 후 다시 눌러 주세요.';return;}
-      if(roomState?.playing){grid={bpm:roomState.bpm,t0:roomState.t0};}
-      else{
-        const bpm=tempoRange.valueAsNumber;
-        grid={bpm,t0:Math.round(room.serverNow()+400)};
-        publish({...grid,playing:true});
-      }
-      pending=null;
-      nextK=sync.nextBeatIndex(grid,room.serverNow()+80);
-      status.textContent='리더 박자로 재생 중';
+      // Audio is ready (it had to start inside this tap); the beat itself can wait for the clock.
+      if(!room.synced){startWhenSynced=true;status.textContent='서버와 시간을 맞추는 중이에요. 맞춰지면 바로 시작해요.';renderButtons();return;}
+      beginLeading();
+      return;
     }else{
       grid=null;nextBeat=0;nextBeatTime=audioContext.currentTime+.05;
       status.textContent='메트로놈 재생 중';
@@ -364,7 +372,7 @@ function openRoom(code,token){
   renderConn();
 }
 function closeRoom(){
-  clearTimeout(publishTimer);
+  clearTimeout(publishTimer);startWhenSynced=false;
   room?.close();room=null;role=null;roomState=null;roomCode=null;peers=0;joined=false;
   if(grid){grid=null;pending=null;if(running){stopLoop();status.textContent='메트로놈을 멈췄습니다.';}}
   idleBox.hidden=!serverUrl;leaderBox.hidden=followerBox.hidden=true;
@@ -373,6 +381,7 @@ function closeRoom(){
   renderConn();renderButtons();
 }
 function onSynced(){
+  if(role==='leader'&&startWhenSynced&&audioContext&&audioContext.state==='running'){beginLeading();return;}
   // A leader who was already playing solo moves its beat into the room without a hiccup.
   if(role==='leader'&&running&&!grid&&scheduledBeats.length){
     const last=scheduledBeats.at(-1),bpm=tempoRange.valueAsNumber;
