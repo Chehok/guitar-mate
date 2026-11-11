@@ -275,6 +275,9 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .score-intro-tempo-value { display:flex; align-items:center; gap:6px; color:var(--muted); font-size:13px; }
 #score-intro-tempo-value { width:72px; min-height:44px; padding:6px 8px; border:1px solid var(--control); border-radius:10px; background:var(--panel); color:var(--ink); text-align:center; font:inherit; font-size:16px; font-variant-numeric:tabular-nums; }
 #score-intro-tempo-range { display:block; width:100%; margin:8px 0 0; accent-color:var(--green); }
+.score-intro-meter { display:flex; flex-wrap:wrap; align-items:center; gap:4px 12px; margin:10px 0 0; padding:0; border:0; }
+.score-intro-meter legend { float:left; margin-right:4px; padding:0; font-size:14px; font-weight:650; }
+.score-intro-meter label { display:inline-flex; align-items:center; gap:4px; min-height:44px; font-size:14px; }
 .score-intro-bars { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; list-style:none; margin:6px 0 0; padding:0; }
 .score-intro-bars li { padding:8px 4px; border:1px solid var(--line); border-radius:8px; background:var(--soft); text-align:center; overflow-wrap:anywhere; }
 .score-intro-bars span { display:block; color:var(--muted); font-size:12px; }
@@ -347,7 +350,8 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <p class="hint">한 마디에 코드 하나씩 연주한 뒤 곡의 첫 코드로 넘어가세요.</p>
 <div class="score-intro-tempo"><div class="score-intro-tempo-row"><label for="score-intro-tempo-value">재생 템포</label><div class="score-intro-tempo-value"><input id="score-intro-tempo-value" type="number" min="50" max="180" step="1" value="120" inputmode="numeric" aria-describedby="score-intro-tempo-note"><span>BPM</span></div></div>
 <input id="score-intro-tempo-range" type="range" min="50" max="180" step="1" value="120" aria-label="재생 템포 조절">
-<p id="score-intro-tempo-note" class="hint">4/4박자 기준 · 한 마디 2.0초</p></div>
+<fieldset class="score-intro-meter"><legend>박자</legend><label><input type="radio" name="score-intro-meter" value="4/4" checked> 4/4</label><label><input type="radio" name="score-intro-meter" value="3/4"> 3/4</label><label><input type="radio" name="score-intro-meter" value="6/8"> 6/8</label></fieldset>
+<p id="score-intro-tempo-note" class="hint">4/4박자 · 한 마디 2.0초</p></div>
 <h3 id="score-intro-easy-title">쉬운 전주</h3>
 <ol id="score-intro-easy" class="score-intro-bars" aria-labelledby="score-intro-easy-title" role="list"></ol>
 <div id="score-intro-easy-actions" class="score-row score-intro-actions" role="group" aria-labelledby="score-intro-easy-title"><button id="score-intro-easy-play" type="button">소리 듣기</button><button id="score-intro-easy-place" type="button">악보에 넣기</button></div>
@@ -866,10 +870,10 @@ function scheduleChord(ctx,fretsList,at){
 const notes=fretsList.flatMap((f,i)=>f<0?[]:[{midi:tuning[i]+f,low:i<2}]);
 return scheduleChordNotes(ctx,notes,at);
 }
-function scheduleChordNotes(ctx,notes,at,decay=chordDecay){
+function scheduleChordNotes(ctx,notes,at,decay=chordDecay,level=1){
 return notes.map(({midi,low},n)=>{
 const weights=low?chordBassWeights:chordWeights;
-const peak=chordLevel/(notes.length*weights.reduce((sum,weight)=>sum+weight,0));
+const peak=level*chordLevel/(notes.length*weights.reduce((sum,weight)=>sum+weight,0));
 return scheduleTone(ctx,ctx.destination,440*Math.pow(2,(midi-69)/12),at+n*.032,peak,decay,weights,.012);
 });
 }
@@ -1755,7 +1759,7 @@ return true;
 // End score music functions.
 
 // Score editor: images and OCR results stay in memory on this device.
-const scoreState={introTempo:120,image:null,codes:[],capo:0,keyDown:0,overlay:'replace',original:false,busy:false,adding:false,intro:null,drag:null,editIndex:null,pending:null,run:0};
+const scoreState={introTempo:120,introMeter:'4/4',image:null,codes:[],capo:0,keyDown:0,overlay:'replace',original:false,busy:false,adding:false,intro:null,drag:null,editIndex:null,pending:null,run:0};
 let scoreIntroPlayback=null;
 let scoreLibraryPromise=null,scoreRuntimePromise=null;
 function scoreStatus(message){$('score-status').textContent=message;}
@@ -1875,8 +1879,23 @@ if(voicing)return voicing.frets.flatMap((fret,i)=>fret<0?[]:[{midi:tuning[i]+fre
 // Extended chords without a guitar grip can still sound all their notes.
 return [{midi:48+(bass??root)+capo,low:true},...chord.tones.map(t=>({midi:60+scoreMod(root+t[0])+capo,low:false}))];
 }
-// One chord per 4/4 bar; 120 BPM keeps the previous 2-second bar.
-function scoreIntroBarLength(){return 240/scoreState.introTempo;}
+// One chord per bar, strummed on every pulse with the downbeat loudest.
+// BPM counts quarter notes in 4/4 and 3/4, and dotted quarters in 6/8.
+const scoreIntroMeters={
+'4/4':{beats:4,pulses:[[0,1],[1,.45],[2,.7],[3,.45]],label:'4/4박자'},
+'3/4':{beats:3,pulses:[[0,1],[1,.45],[2,.45]],label:'3/4박자'},
+'6/8':{beats:2,pulses:[[0,1],[1/3,.35],[2/3,.35],[1,.7],[4/3,.35],[5/3,.35]],label:'6/8박자 · 점4분음표 기준'}
+};
+function scoreIntroBarLength(){return scoreIntroMeters[scoreState.introMeter].beats*60/scoreState.introTempo;}
+function updateScoreIntroTempoNote(){
+$('score-intro-tempo-note').textContent=`${scoreIntroMeters[scoreState.introMeter].label} · 한 마디 ${scoreIntroBarLength().toFixed(1)}초`;
+}
+function setScoreIntroMeter(value){
+if(!scoreIntroMeters[value]||value===scoreState.introMeter)return;
+stopScoreIntro();
+scoreState.introMeter=value;
+updateScoreIntroTempoNote();
+}
 function setScoreIntroTempo(raw,commit=true){
 const value=String(raw).trim()===''?NaN:Math.round(Number(raw));
 if(!Number.isFinite(value)){if(commit)$('score-intro-tempo-value').value=String(scoreState.introTempo);return;}
@@ -1886,7 +1905,7 @@ if(bpm!==scoreState.introTempo)stopScoreIntro();
 scoreState.introTempo=bpm;
 $('score-intro-tempo-range').value=String(bpm);
 if(commit||document.activeElement!==$('score-intro-tempo-value'))$('score-intro-tempo-value').value=String(bpm);
-$('score-intro-tempo-note').textContent=`4/4박자 기준 · 한 마디 ${scoreIntroBarLength().toFixed(1)}초`;
+updateScoreIntroTempoNote();
 }
 function stopScoreIntro(){
 const playback=scoreIntroPlayback;
@@ -1914,10 +1933,13 @@ try{
 const ctx=await prepareAudio();
 if(scoreIntroPlayback!==playback)return;
 const bars=chords.map(chord=>scoreIntroNotes(chord,capo));
-const start=ctx.currentTime+.04,barLength=scoreIntroBarLength();
+const start=ctx.currentTime+.04,barLength=scoreIntroBarLength(),meter=scoreIntroMeters[scoreState.introMeter];
+const beat=barLength/meter.beats;
 let lastTone;
-for(const [i,notes] of bars.entries()){
-const tones=scheduleChordNotes(ctx,notes,start+i*barLength,barLength*.85);
+for(const [i,notes] of bars.entries())for(const [p,[offset,level]] of meter.pulses.entries()){
+const next=meter.pulses[p+1]?.[0]??meter.beats;
+// Weak pulses brush the top strings only, so fast tempos stay clear.
+const tones=scheduleChordNotes(ctx,level<1?notes.slice(-3):notes,start+i*barLength+offset*beat,Math.max(.25,(next-offset)*beat*.95),level);
 playback.voices.push(...tones.map(tone=>tone.voice));
 lastTone=tones.at(-1);
 }
@@ -2274,6 +2296,7 @@ scoreStatus('코드를 삭제했어요.');
 });
 $('score-edit-cancel').addEventListener('click',()=>{$('score-editor').close();});
 $('score-intro-open').addEventListener('click',openScoreIntros);
+for(const input of document.querySelectorAll('input[name="score-intro-meter"]'))input.addEventListener('change',()=>setScoreIntroMeter(input.value));
 $('score-intro-tempo-range').addEventListener('input',()=>setScoreIntroTempo($('score-intro-tempo-range').value));
 $('score-intro-tempo-value').addEventListener('input',()=>setScoreIntroTempo($('score-intro-tempo-value').value,false));
 $('score-intro-tempo-value').addEventListener('change',()=>setScoreIntroTempo($('score-intro-tempo-value').value));
