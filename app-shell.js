@@ -48,7 +48,7 @@ class GuitarMateFooter extends HTMLElement {
   connectedCallback() {
     if (this.firstElementChild) return;
     this.innerHTML = `<footer>
-      한 번 열어 두면, 오프라인에서도 연습을 이어가세요. 소리는 기기의 음량과 무음 설정을 확인해 주세요.<br>
+      한 번 열어 두면 오프라인에서도 연습할 수 있어요. 소리는 기기의 음량과 무음 설정을 확인해 주세요.<br>
       <a href="./about.html">소개 · 문의</a> · <a href="./privacy.html">개인정보처리방침</a>
     </footer>`;
   }
