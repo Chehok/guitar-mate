@@ -225,8 +225,37 @@ async function checkIntroActions(){
   assert.equal(intro[1],'전주  |  Bb  |  F  |  Gm  |  F7  |','PNG drawing uses current capo shapes');
   assert(intro[2]+intro[4]<=1000,'Placed intro stays inside the image');
   paint.length=0;context.drawScore(new Element(),true);assert.deepEqual(paint.map(p=>p[0]),['image']);
-  $('score-intro-remove').handlers.click();
+  const submit=()=>$('score-edit-form').handlers.submit({preventDefault(){}});
+  const position=(x,y)=>{
+    $('score-pos-x').value=String(x);$('score-pos-y').value=String(y);
+    $('score-position-add').handlers.click();
+  };
+  $('score-hit-layer').children.at(-1).handlers.click();
+  assert.equal($('score-intro-edit-2').value,'G');
+  $('score-intro-edit-2').value='invalid';submit();
+  assert.match($('score-edit-error').textContent,/코드 형식/);
+  $('score-intro-edit-2').value='Dm7';submit();
+  assert.equal(vm.runInContext('scoreState.intro.chords[1]',context),'Dm7');
+  $('score-intro-edit').handlers.click();
+  $('score-edit-move').handlers.click();position(12,14);
+  assert.equal(vm.runInContext('scoreState.intro.x',context),120);
+  $('score-intro-edit').handlers.click();
+  $('score-delete').handlers.click();
   assert.equal(vm.runInContext('scoreState.intro',context),null);
+  vm.runInContext("scoreState.overlay='above';",context);
+  $('score-add').handlers.click();position(25,40);
+  $('score-edit-text').value='Am';submit();
+  const added=$('score-hit-layer').children.at(-1);
+  assert.equal(added.style.top,'40%','Manually added chord stays at the chosen position in above mode');
+  added.handlers.click();assert.equal($('score-edit-text').value,'Am');
+  $('score-edit-text').value='G7';submit();
+  $('score-code-list').children.at(-1).handlers.click();
+  assert.equal($('score-edit-text').value,'G7');
+  $('score-edit-move').handlers.click();position(35,45);
+  assert.equal($('score-hit-layer').children.at(-1).style.top,'45%');
+  $('score-hit-layer').children.at(-1).handlers.click();
+  $('score-delete').handlers.click();
+  assert.equal(vm.runInContext('scoreState.codes.length',context),5);
 }
 async function checkOCR(){
 let regionPSM,regionCalls=0;
