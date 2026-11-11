@@ -48,6 +48,23 @@ assert.equal(detect(['G','C','D7','G']).name,'G');
 assert.equal(detect(['Am','Dm','E7','Am']).name,'Am');
 assert.equal(detect(['Bb','Eb','F7','Bb']).name,'Bb');
 assert.equal(detect(['C','G','Am','F','C']).name,'C');
+// Intro recommendations: no doubled chords, dominant pickups, optional chords and the closing phrase.
+{
+  const intros=chords=>{const r=context.recommendScoreIntros(detect(chords),chords);return [r.easy,r.basedOnOpening,r.basedOnEnding].map(x=>Array.from(x).join(' '));};
+  assert.deepEqual(intros(['C','G','Am','F','C']),['C Am Dm G7','C G Am G7','G Am F C']);
+  assert.deepEqual(intros(['G','G','C','D','G']).slice(1),['G C D D7','G C D G'],'Repeated chords are read once');
+  assert.deepEqual(intros(['Am','Dm','E7','Am']).slice(1),['Am Dm Am E7','Am Dm E7 Am'],'The lead chord is not played twice');
+  assert.deepEqual(intros(['D7','G','C','D7','G']),['G Em C Am7','G C G Am7','G C D7 G'],'A dominant pickup is approached from ii');
+  assert.deepEqual(intros(['C','(G)','C/B','Am(G)','F','C']).slice(1),['C C/B Am G7','C/B Am F C'],'Optional chords are skipped');
+  assert.deepEqual(intros(['G','D7','G']).slice(2),[''],'The closing phrase needs four chords');
+}
+// Added chords join their own line in reading order, even with different glyph tops.
+{
+  const box=(x,y,h=18)=>({x0:x,y0:y,x1:x+30,y1:y+h});
+  const codes=[{text:'Gm7/B',bbox:box(50,198,22)},{text:'C',bbox:box(200,201)},{text:'Dsus4',bbox:box(350,199)},{text:'Em',bbox:box(50,300)}];
+  for(const [text,bbox] of [['A',box(280,203,12)],['F',box(10,250,12)],['B',box(500,400,12)],['D',box(10,20,12)]])context.insertScoreCode(codes,{text,bbox});
+  assert.deepEqual(codes.map(c=>c.text),['D','Gm7/B','C','A','Dsus4','F','Em','B']);
+}
 const word=(text,x,y,h=18,confidence=95)=>({text,confidence,bbox:{x0:x,y0:y,x1:x+35,y1:y+h}});
 const words=[word('G',50,200),word('C/E',300,200),word('D7sus4',50,400),word('Am7',300,400),word('G',500,5,65),word('C',50,500,18,10),word('G',50,600),word('sing',100,600),word('along',180,600),word('A',50,20),word('Bm',50,720,1),word('Em',-1,800)];
 assert.deepEqual(Array.from(filter(words,1000,1000),w=>w.text),['G','C/E','D7sus4','Am7']);
@@ -179,6 +196,8 @@ assert(paint.find(p=>p[0]==='text')[3]<200,'Above mode draws above original chor
   assert(!$('score-intro-open').hidden,'Recommended intros open from a button beside manual add');
   assert.deepEqual(bars(easy),['C','Am','Dm','G7']);
   assert.deepEqual(bars(opening),['C','G','Am','G7']);
+  assert.deepEqual(bars('score-intro-ending'),['G','Am','F','C'],'The closing phrase is offered as an intro');
+  assert($('score-intro-more').hidden);
   $('score-frets').children[1].handlers.click();
   assert.deepEqual(bars(easy),['Bb','Gm','Cm','F7']);
   assert.deepEqual(bars(opening),['Bb','F','Gm','F7']);
@@ -187,6 +206,7 @@ assert(paint.find(p=>p[0]==='text')[3]<200,'Above mode draws above original chor
   assert.deepEqual(bars(opening),['B','F#','G#m','F#7']);
   vm.runInContext("scoreState.codes.length=2;scoreState.keyDown=0;",context);
   context.renderScore();assert.deepEqual(bars(opening),['C','G','Am','G7']);
+  assert($('score-intro-ending').hidden);assert($('score-intro-ending-title').hidden);assert(!$('score-intro-more').hidden);
   vm.runInContext("scoreState.codes.length=1;scoreState.capo=1;",context);
   context.renderScore();assert($(opening).hidden);assert(!$('score-intro-more').hidden);
 }

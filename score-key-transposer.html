@@ -266,6 +266,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 #score-intro-dialog { max-width:420px; text-align:left; }
 #score-intro-dialog h2 { margin:0 0 4px; }
 .score-intro h3 { margin:14px 0 0; font-size:14px; }
+.score-intro h3[hidden] { display:none; }
 .score-intro-actions { margin-top:8px; }
 .score-intro-close { justify-content:flex-end; margin-top:16px; }
 .score-intro-bars { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; list-style:none; margin:6px 0 0; padding:0; }
@@ -344,7 +345,10 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <h3 id="score-intro-opening-title">첫 코드 진행을 활용한 전주</h3>
 <ol id="score-intro-opening" class="score-intro-bars" aria-labelledby="score-intro-opening-title" role="list"></ol>
 <div id="score-intro-opening-actions" class="score-row score-intro-actions" role="group" aria-labelledby="score-intro-opening-title"><button id="score-intro-opening-play" type="button">소리 듣기</button><button id="score-intro-opening-place" type="button">악보에 넣기</button></div>
-<p id="score-intro-more" class="hint" hidden>코드를 2개 이상 인식하면 이 전주를 추천해요.</p>
+<h3 id="score-intro-ending-title">곡 끝 코드 진행을 활용한 전주</h3>
+<ol id="score-intro-ending" class="score-intro-bars" aria-labelledby="score-intro-ending-title" role="list"></ol>
+<div id="score-intro-ending-actions" class="score-row score-intro-actions" role="group" aria-labelledby="score-intro-ending-title"><button id="score-intro-ending-play" type="button">소리 듣기</button><button id="score-intro-ending-place" type="button">악보에 넣기</button></div>
+<p id="score-intro-more" class="hint" hidden>코드를 더 인식하면 곡의 첫·끝 코드 진행을 활용한 전주도 추천해요.</p>
 <p id="score-intro-audio-status" class="hint" role="status" hidden></p>
 <div class="score-row score-intro-close"><button id="score-intro-remove" type="button" hidden>악보에서 빼기</button><button id="score-intro-close" type="button">닫기</button></div>
 </dialog>
@@ -1070,15 +1074,63 @@ if(!best||weight>best.weight)best={pc,minor,weight};
 }
 return {...transposeScoreKey(best,0),weight:best.weight};
 }
-function recommendScoreIntros(key,opening){
+// Intro material: skip optional "(G)" chords, keep only the main chord of "C(G)",
+// and collapse repeats so "G G C" reads as the progression G → C.
+function scoreIntroProgression(values){
+const result=[];
+for(const value of values){
+const chord=parseScoreChord(value);
+if(!chord||chord.wrapped)continue;
+const text=chord.alternative?chord.text.replace(/\([^()]*\)$/,''):chord.text;
+const last=result.at(-1);
+if(last&&last.root===chord.root&&last.suffix===chord.suffix&&last.bass===chord.bass)continue;
+result.push({...parseScoreChord(text),text});
+}
+return result;
+}
+function recommendScoreIntros(key,values){
 const names=scorePreferFlats(key)?scoreFlats:scoreSharps;
 const tonic=(offset,suffix='')=>names[scoreMod(key.pc+offset)]+suffix;
-const first=parseScoreChord(opening[0]);
-const lead=names[scoreMod(first.root+7)]+'7';
-const easy=key.minor?[tonic(0,'m'),tonic(3),tonic(5,'m'),lead]:[tonic(0),tonic(9,'m'),tonic(2,'m'),lead];
-// shortcut: use chord order without reading measure boundaries, until OCR can identify barlines.
-const basedOnOpening=opening.length>=2?[opening[0],opening[1],opening[2]??easy[2],lead]:[];
-return {easy,basedOnOpening};
+const progression=scoreIntroProgression(values),first=progression[0];
+if(!first)return {easy:[],basedOnOpening:[],basedOnEnding:[]};
+// A song that opens on its own V (often a pickup) is approached from ii (major) or iv (minor).
+const startsOnDominant=first.root===scoreMod(key.pc+7)&&!first.minor&&!first.suffix.startsWith('dim');
+const lead=startsOnDominant?(key.minor?tonic(5,'m'):tonic(2,'m7')):names[scoreMod(first.root+7)]+'7';
+const {root:leadRoot,suffix:leadSuffix}=parseScoreChord(lead);
+const easy=key.minor
+?(startsOnDominant?[tonic(0,'m'),tonic(8),tonic(3),lead]:[tonic(0,'m'),tonic(3),tonic(5,'m'),lead])
+:(startsOnDominant?[tonic(0),tonic(9,'m'),tonic(5),lead]:[tonic(0),tonic(9,'m'),tonic(2,'m'),lead]);
+// Measures are not read yet, so the first distinct chords stand in for the first bars.
+// A dominant pickup is replayed by the song itself, so the intro uses the chords after it.
+const opening=progression.slice(startsOnDominant?1:0).slice(0,3);
+while(opening.length&&((opening.at(-1).root===leadRoot&&opening.at(-1).suffix===leadSuffix)||(startsOnDominant&&opening.at(-1).root===first.root)))opening.pop();
+let basedOnOpening=[];
+if(opening.length>=2){
+const bars=opening.map(chord=>chord.text);
+if(bars.length<3){
+const filler=[easy[2],bars[0]].find(text=>{const chord=parseScoreChord(text);return chord.root!==parseScoreChord(bars[1]).root&&chord.root!==leadRoot;});
+bars.push(filler??bars[0]);
+}
+basedOnOpening=[...bars,lead];
+}
+// The closing phrase usually ends at home, so it leads back into the first chord.
+const basedOnEnding=progression.length>=4?progression.slice(-4).map(chord=>chord.text):[];
+return {easy,basedOnOpening,basedOnEnding};
+}
+// Reading order for a chord the user adds or moves: next to its neighbours on the same line,
+// without re-sorting OCR output (which keeps two-page scores left page first).
+function scoreSameLine(a,b){
+const overlap=Math.min(a.y1,b.y1)-Math.max(a.y0,b.y0);
+return overlap>=Math.min(a.y1-a.y0,b.y1-b.y0)*.5;
+}
+function insertScoreCode(codes,code){
+const box=code.bbox,line=codes.map((other,index)=>({other,index})).filter(({other})=>scoreSameLine(other.bbox,box));
+const left=line.filter(({other})=>other.bbox.x0<=box.x0).sort((a,b)=>b.other.bbox.x0-a.other.bbox.x0)[0];
+const right=line.filter(({other})=>other.bbox.x0>box.x0).sort((a,b)=>a.other.bbox.x0-b.other.bbox.x0)[0];
+let index=left?left.index+1:right?right.index:codes.findIndex(other=>(other.bbox.y0+other.bbox.y1)/2>(box.y0+box.y1)/2);
+if(index<0)index=codes.length;
+codes.splice(index,0,code);
+return index;
 }
 // OCR helpers are shared verbatim with the Node evaluator; no browser pixel filters.
 function scoreImageSize(width,height,ocr=false){
@@ -1702,7 +1754,7 @@ function scoreBusy(value,allowManual=false){
 scoreState.busy=value;$('score-file').disabled=value;$('score-paste').disabled=value;
 if(value)stopScoreIntro();
 $('score-add').disabled=value&&!allowManual;$('score-stage').setAttribute('aria-busy',String(value));
-for(const id of ['easy-play','opening-play','easy-place','opening-place','remove','open'])$('score-intro-'+id).disabled=value;
+for(const id of ['easy-play','opening-play','ending-play','easy-place','opening-place','ending-place','remove','open'])$('score-intro-'+id).disabled=value;
 for(const button of [...$('score-hit-layer').children,...$('score-code-list').children])button.disabled=value;
 }
 function loadScoreLibrary(runtime=false){
@@ -1873,13 +1925,13 @@ function renderScoreIntros(key){
 $('score-intro-open').hidden=!key;
 $('score-intro-remove').hidden=!scoreState.intro;
 if(!key){$('score-intro-dialog').close();return;}
-const opening=scoreState.codes.slice(0,3).map(code=>code.text);
-const {easy,basedOnOpening}=recommendScoreIntros(key,opening);
-$('score-intro-more').hidden=basedOnOpening.length>0;
-for(const [id,chords] of [['score-intro-easy',easy],['score-intro-opening',basedOnOpening]]){
+const {easy,basedOnOpening,basedOnEnding}=recommendScoreIntros(key,scoreState.codes.map(code=>code.text));
+$('score-intro-more').hidden=basedOnOpening.length>0&&basedOnEnding.length>0;
+for(const [id,chords] of [['score-intro-easy',easy],['score-intro-opening',basedOnOpening],['score-intro-ending',basedOnEnding]]){
 const list=$(id);
 list.hidden=!chords.length;
 $(id+'-actions').hidden=list.hidden;
+$(id+'-title').hidden=list.hidden;
 const shownChords=chords.map(chord=>transformedScoreChord(chord,key));
 const play=$(id+'-play');
 play.onclick=()=>playScoreIntro(play,shownChords);
@@ -2040,7 +2092,7 @@ finishScoreMove(drag.index);
 }
 function finishScoreMove(index,focus=false){
 const intro=index==='intro',code=intro?null:scoreState.codes[index];
-if(!intro)scoreState.codes.sort((a,b)=>a.bbox.y0-b.bbox.y0||a.bbox.x0-b.bbox.x0);
+if(!intro){scoreState.codes.splice(index,1);insertScoreCode(scoreState.codes,code);}
 renderScore();
 if(focus){
 const target=intro?'intro':String(scoreState.codes.indexOf(code));
@@ -2185,8 +2237,7 @@ return;
 }
 const added=scoreState.editIndex===null;
 if(added){
-scoreState.codes.push({text:chord.text,bbox:scoreState.pending,confidence:100,manual:true});
-scoreState.codes.sort((a,b)=>a.bbox.y0-b.bbox.y0||a.bbox.x0-b.bbox.x0);
+insertScoreCode(scoreState.codes,{text:chord.text,bbox:scoreState.pending,confidence:100,manual:true});
 }else scoreState.codes[scoreState.editIndex].text=chord.text;
 if(added||scoreState.codes[scoreState.editIndex]?.manual){
 scoreState.original=false;$('score-original').checked=false;
