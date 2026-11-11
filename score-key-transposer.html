@@ -211,6 +211,9 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
   .score-preview-actions button { flex:1 1 0; min-width:0; padding-inline:4px; font-size:14px; white-space:nowrap; }
 }
 #score-panel label { display:inline-flex; align-items:center; gap:6px; }
+.score-key-row { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:4px 12px; }
+.score-key-row p { margin:0; }
+.score-key-row label { font-size:14px; color:var(--muted); }
 .score-drop { display:grid; justify-items:center; gap:8px; padding:28px 12px; border:2px dashed var(--control); border-radius:12px; background:var(--soft); text-align:center; }
 .score-upload-actions { display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:8px; }
 .score-drop.is-dragging { border-color:var(--green); background:var(--hit); }
@@ -317,7 +320,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <p id="score-status" class="hint" role="status" aria-live="polite">첫 자동 인식에는 인터넷 연결이 필요해요.</p>
 </div>
 <div class="panel score-controls">
-<p id="score-key" role="status">감지 키: —</p>
+<div class="score-key-row"><p id="score-key" role="status">감지 키: —</p><label><input id="score-key-stamp" type="checkbox" checked> 악보에 표시</label></div>
 <div id="score-capo-controls"><div class="score-row"><button id="score-capo-minus" type="button" aria-label="카포 한 프렛 내리기 (카포 없음에서는 키를 반음 내림)">−</button><output id="score-capo-value" aria-live="polite">카포 없음</output><button id="score-capo-plus" type="button" aria-label="카포 한 프렛 올리기">+</button></div>
 <div class="score-fret-scroll" tabindex="0" role="region" aria-label="카포 1부터 11프렛 선택, 좌우로 스크롤"><div class="score-neck">
 <svg class="score-headstock" viewBox="0 0 96 126" preserveAspectRatio="none" aria-hidden="true" focusable="false">
@@ -1764,7 +1767,7 @@ return true;
 // End score music functions.
 
 // Score editor: images and OCR results stay in memory on this device.
-const scoreState={introTempo:120,introMeter:'4/4',image:null,codes:[],capo:0,keyDown:0,overlay:'replace',original:false,busy:false,adding:false,intro:null,drag:null,editIndex:null,pending:null,run:0};
+const scoreState={showKey:true,introTempo:120,introMeter:'4/4',image:null,codes:[],capo:0,keyDown:0,overlay:'replace',original:false,busy:false,adding:false,intro:null,drag:null,editIndex:null,pending:null,run:0};
 let scoreIntroPlayback=null;
 let scoreLibraryPromise=null,scoreRuntimePromise=null;
 function scoreStatus(message){$('score-status').textContent=message;}
@@ -1958,7 +1961,8 @@ confirmPlayback(ctx,()=>scoreIntroPlayback===playback,fail);
 function placeScoreIntro(chords){
 if(scoreState.busy||!scoreState.source)return;
 const source=scoreState.source;
-scoreState.intro={chords:[...chords],x:Math.round(source.width*.02),y:Math.round(source.height*.02)};
+const stamp=scoreKeyStampBox(source);
+scoreState.intro={chords:[...chords],x:Math.round(source.width*.02),y:Math.round(stamp?stamp.y+stamp.height+source.height*.01:source.height*.02)};
 scoreState.adding=false;
 scoreState.original=false;
 $('score-original').checked=false;
@@ -2004,6 +2008,18 @@ for(const y of [bbox.y0-3,bbox.y1+3]){const p=ctx.getImageData(x,Math.max(0,Math
 const rgb=[0,1,2].map(channel=>colors.map(p=>p[channel]).sort((a,b)=>a-b)[Math.floor(colors.length/2)]);
 return {background:`rgb(${rgb.join(',')})`,ink:rgb.reduce((s,v)=>s+v,0)>390?'#15231d':'#fffef9'};
 }
+// Key stamp: a small, fixed label in the top-left corner describing the chords as shown.
+function scoreKeyStampText(key=detectScoreKey(scoreState.codes)){
+if(!key)return '';
+const shown=transposeScoreKey(key,-(scoreState.keyDown||scoreState.capo));
+if(scoreState.capo&&!scoreState.keyDown)return `Key ${key.name} (Capo ${scoreState.capo} · ${shown.name}폼)`;
+return `Key ${shown.name}`;
+}
+function scoreKeyStampBox(source=scoreState.source,text=scoreKeyStampText()){
+if(!source||!scoreState.showKey||!text)return null;
+const fontSize=Math.max(11,source.width*.02),pad=fontSize*.35;
+return {x:Math.round(source.width*.015),y:Math.round(source.height*.015),fontSize,pad,height:fontSize+pad*2};
+}
 function drawScore(canvas,original=scoreState.original){
 const hits={codes:[],intro:null},source=scoreState.source;if(!source)return hits;
 canvas.width=source.width;canvas.height=source.height;
@@ -2038,6 +2054,13 @@ const left=Math.max(0,Math.min(x,source.width-width)),top=Math.max(0,Math.min(y,
 ctx.fillStyle='#fffdf6';ctx.fillRect(left,top,width,height);
 ctx.fillStyle='#15231d';ctx.fillText(text,left+pad,top+pad,width-pad*2);
 hits.intro={x:left,y:top,width,height};
+}
+const stampText=scoreKeyStampText(key),stamp=scoreKeyStampBox(source,stampText);
+if(stamp){
+ctx.font=`600 ${stamp.fontSize}px system-ui, sans-serif`;ctx.textBaseline='top';
+const width=Math.min(source.width-stamp.x,ctx.measureText(stampText).width+stamp.pad*2);
+ctx.fillStyle='#fffdf6';ctx.fillRect(stamp.x,stamp.y,width,stamp.height);
+ctx.fillStyle='#3c513d';ctx.fillText(stampText,stamp.x+stamp.pad,stamp.y+stamp.pad,width-stamp.pad*2);
 }
 return hits;
 }
@@ -2249,6 +2272,7 @@ $('score-capo-minus').addEventListener('click',()=>{if(scoreState.capo>0&&!score
 $('score-capo-plus').addEventListener('click',()=>{if(scoreState.keyDown>0)scoreState.keyDown--;else scoreState.capo=Math.min(11,scoreState.capo+1);renderScore();});
 for(const input of document.querySelectorAll('input[name="score-overlay"]'))input.addEventListener('change',()=>{scoreState.overlay=input.value;renderScore();});
 $('score-original').addEventListener('change',()=>{scoreState.original=$('score-original').checked;renderScore();});
+$('score-key-stamp').addEventListener('change',()=>{scoreState.showKey=$('score-key-stamp').checked;renderScore();});
 $('score-add').addEventListener('click',()=>{
 const stopped=scoreState.busy;
 if(stopped)cancelScoreOCR();
