@@ -30,7 +30,7 @@ text: {
   '그림은 이해를 돕는 설명용이며 실제 화면과 다를 수 있어요. iOS 16.4 이상이 필요하고, 추가된 아이콘이 앱처럼 열릴지는 iOS 설정에 따라 달라요. 직접 따라 해야 추가됩니다.': 'Pictures are for illustration and may differ from your screen. iOS 16.4 or later is required, and whether the icon opens like an app depends on your iOS settings. You need to follow the steps yourself to add it.',
 
   // Page titles and descriptions
-  '설치 없이 브라우저에서 마이크로 기타를 튜닝하세요. 줄을 자동으로 인식하는 무료 기타 튜너에 코드 검색·판별, 메트로놈, 악보 키 변환까지 담은 기타 연습 도우미입니다.': 'Tune your guitar with your mic, right in the browser. A free tuner that detects each string, plus chord search and identification, a metronome and sheet transposing.',
+  '설치 없이 마이크로 바로 쓰는 무료 기타 튜너. 코드 검색·판별, 메트로놈, 악보 키 변환까지 담은 기타 연습 도우미입니다.': 'A free guitar tuner that works with your mic, no install needed — plus chord search and identification, a metronome and sheet transposing.',
   '기타메이트 · 기타 튜너': 'Guitar Mate · Guitar tuner',
   'Cm, F#m11, C7(b9,b13), C/G 같은 기타 코드를 이름이나 조건으로 검색해 운지와 구성음을 바로 확인하세요.': 'Search guitar chords such as Cm, F#m11, C7(b9,b13) or C/G by name or by filters and see fingerings and chord tones.',
   '기타메이트 · 기타 코드 검색': 'Guitar Mate · Guitar chord search',
@@ -47,7 +47,7 @@ text: {
   '기타 연습을 위한 간단한 온라인 메트로놈입니다.': 'A simple online metronome for guitar practice.',
   '기타메이트는 튜닝, 코드 검색, 코드 판별, 메트로놈, 악보 키 변환을 돕는 기타 연습 도구입니다. 서비스 소개와 문의 방법을 확인하세요.': 'Guitar Mate is a guitar practice tool for tuning, chord search, chord identification, a metronome and transposing sheet music. Learn about the service and how to contact us.',
   '기타메이트의 마이크, 악보 이미지, 방문 통계 및 광고 관련 개인정보 처리 내용을 안내합니다.': 'How Guitar Mate handles the microphone, sheet images, visit statistics and advertising data.',
-  '자동 줄 인식 튜닝, Cmaj7 운지 읽기, Em 코드 판별, 60 BPM 메트로놈 연습, 카포·키 표시·추천 전주를 쓰는 악보 키 변환을 기타메이트로 따라 해보세요.': 'Follow along with Guitar Mate: auto string detection tuning, reading a Cmaj7 shape, identifying Em, practicing at 60 BPM, and transposing sheet music with a capo, key label and suggested intros.',
+  '튜닝, 코드 운지 읽기·판별, 메트로놈, 카포와 추천 전주를 쓰는 악보 키 변환까지 기타메이트 사용법을 예시로 따라 해보세요.': 'Follow examples to learn Guitar Mate: tuning, reading and identifying chord shapes, the metronome, and sheet transposing with capo and suggested intros.',
 
   // Tuner
   '자동 줄 인식 · 소리를 기다립니다': 'Auto string detection · Waiting for sound',
