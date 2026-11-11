@@ -1,0 +1,2 @@
+# Keep text files LF on every OS so Windows tools do not rewrite line endings.
+* text=auto eol=lf
