@@ -116,7 +116,7 @@ assert.deepEqual(Array.from(merge([word('G/B',350,198),word('CM7',50,200)]),c=>c
 
 // No browser: execute actual UI wiring with small DOM/canvas doubles.
 class Element{
-constructor(){this.children=[];this.value='';this.style={};this.dataset={};this.handlers={};this.classList={toggle(){},remove(){}};this.hidden=false;}
+constructor(){this.children=[];this.value='';this.style={};this.dataset={};this.handlers={};this.classList={toggle(){},remove(){},add(){}};this.hidden=false;}
 append(...children){this.children.push(...children);}
 replaceChildren(...children){this.children=children;}
 setAttribute(name,value){this[name]=value;}
@@ -130,7 +130,7 @@ const elements=new Map(),$=id=>{if(!elements.has(id))elements.set(id,new Element
 const documentHandlers={};
 const head=new Element(),start=script.indexOf('// Score editor: images');
 const ui=script.slice(start,script.indexOf("if(ready(['chords']))",start));
-Object.assign(context,{painter,$,ready:modes=>modes.includes('score'),document:{addEventListener:(name,handler)=>{documentHandlers[name]=handler;},createElement:()=>new Element(),head,querySelectorAll:()=>[]},window:{},navigator:{onLine:true},setTimeout,clearTimeout,localStorage:{getItem:()=>null}});
+Object.assign(context,{painter,$,ready:modes=>modes.includes('score'),document:{addEventListener:(name,handler)=>{documentHandlers[name]=handler;},createElement:()=>new Element(),head,querySelectorAll:()=>[]},window:{},navigator:{onLine:true},setTimeout,clearTimeout,requestAnimationFrame:callback=>{callback();return 1;},cancelAnimationFrame(){},localStorage:{getItem:()=>null}});
 vm.runInContext(ui,context);
 context.loadScoreRecognizer=async()=>{throw Error('Exercise legacy fallback in DOM doubles');};
 assert.equal(head.children.length,0,'OCR must not download at app startup');
@@ -173,10 +173,10 @@ assert(paint.find(p=>p[0]==='text')[3]<200,'Above mode draws above original chor
   const bars=id=>$(id).children.map(item=>item.children[1].textContent);
   const easy='score-intro-easy',opening='score-intro-opening';
   vm.runInContext("scoreState.codes=[];scoreState.capo=0;",context);
-  context.renderScore();assert($('score-intro').hidden);
+  context.renderScore();assert($('score-intro-open').hidden,'No key, no intro button');
   vm.runInContext("scoreState.codes=['C','G','Am','F','C'].map((text,i)=>({text,bbox:{x0:50+i*90,y0:200,x1:85+i*90,y1:218}}));",context);
   context.renderScore();
-  assert(!$('score-intro').hidden);
+  assert(!$('score-intro-open').hidden,'Recommended intros open from a button beside manual add');
   assert.deepEqual(bars(easy),['C','Am','Dm','G7']);
   assert.deepEqual(bars(opening),['C','G','Am','G7']);
   $('score-frets').children[1].handlers.click();
@@ -213,47 +213,66 @@ async function checkIntroActions(){
   assert.equal(stopped.length,8,'Changing key or capo stops playback');
   await easy.onclick();
   assert.deepEqual(bars[8].pitches,[3,6,11],'Lowering the key one semitone sounds in B');
+  let opened=0;$('score-intro-dialog').showModal=()=>{opened++;};
+  $('score-intro-open').handlers.click();assert.equal(opened,1);
   $('score-intro-opening-place').onclick();
-  assert(!$('score-manual-position').hidden);
-  $('score-pos-x').value='90';$('score-pos-y').value='90';
-  $('score-position-add').handlers.click();
+  assert($('score-manual-position').hidden,'Placing an intro needs no position step');
   assert.equal(vm.runInContext('scoreState.codes.length',context),5,'An inserted intro stays separate from recognized chords');
-  assert(paint.some(call=>call[0]==='text'&&call[1]==='전주  |  B  |  F#  |  G#m  |  F#7  |'));
+  const introAt=()=>JSON.parse(vm.runInContext('JSON.stringify([scoreState.intro.x,scoreState.intro.y])',context));
+  assert.deepEqual(introAt(),[20,20],'A new intro starts near the top-left corner');
+  assert(paint.some(call=>call[0]==='text'&&call[1]==='|  B  |  F#  |  G#m  |  F#7  |'),'Intro is drawn without a label');
+  assert(!paint.some(call=>call[0]==='text'&&String(call[1]).includes('전주')));
   $('score-frets').children[1].handlers.click();
   paint.length=0;context.drawScore(new Element(),false);
-  const intro=paint.find(call=>call[0]==='text'&&call[1].startsWith('전주'));
-  assert.equal(intro[1],'전주  |  Bb  |  F  |  Gm  |  F7  |','PNG drawing uses current capo shapes');
+  const intro=paint.find(call=>call[0]==='text'&&call[1].startsWith('|  '));
+  assert.equal(intro[1],'|  Bb  |  F  |  Gm  |  F7  |','PNG drawing uses current capo shapes');
   assert(intro[2]+intro[4]<=1000,'Placed intro stays inside the image');
   paint.length=0;context.drawScore(new Element(),true);assert.deepEqual(paint.map(p=>p[0]),['image']);
+  context.renderScore();
+  // Pointer drag: the preview is shown at half size, so 1 CSS px moves 2 image px.
+  $('score-canvas').getBoundingClientRect=()=>({left:0,top:0,width:500,height:500});
+  const drag=(button,dx,dy)=>{
+    button.handlers.pointerdown({pointerId:7,button:0,clientX:10,clientY:10});
+    button.handlers.pointermove({pointerId:7,clientX:10+dx,clientY:10+dy,preventDefault(){}});
+    button.handlers.pointerup({pointerId:7});
+  };
+  const introHit=()=>$('score-hit-layer').children.at(-1);
+  let hit=introHit();drag(hit,100,150);
+  assert.deepEqual(introAt(),[220,320],'Dragging moves the intro');
+  hit.handlers.click();assert.equal(opened,1,'The click that ends a drag does not open the dialog');
+  hit=introHit();hit.handlers.pointerdown({pointerId:8,button:0,clientX:5,clientY:5});hit.handlers.pointerup({pointerId:8});hit.handlers.click();
+  assert.equal(opened,2,'A plain tap on the intro opens recommendations');
+  drag(introHit(),5000,5000);
+  const [farX,farY]=introAt();assert(farX>0&&farX<1000&&farY>0&&farY<1000,'Dragging stays inside the image');
+  introHit().handlers.keydown({key:'ArrowLeft',preventDefault(){}});
+  assert.equal(introAt()[0],farX-10,'Arrow keys nudge the intro by 1%');
+  assert(!$('score-intro-remove').hidden);
+  $('score-intro-remove').handlers.click();
+  assert.equal(vm.runInContext('scoreState.intro',context),null);
   const submit=()=>$('score-edit-form').handlers.submit({preventDefault(){}});
   const position=(x,y)=>{
     $('score-pos-x').value=String(x);$('score-pos-y').value=String(y);
     $('score-position-add').handlers.click();
   };
-  $('score-hit-layer').children.at(-1).handlers.click();
-  assert.equal($('score-intro-edit-2').value,'G');
-  $('score-intro-edit-2').value='invalid';submit();
-  assert.match($('score-edit-error').textContent,/코드 형식/);
-  $('score-intro-edit-2').value='Dm7';submit();
-  assert.equal(vm.runInContext('scoreState.intro.chords[1]',context),'Dm7');
-  $('score-intro-edit').handlers.click();
-  $('score-edit-move').handlers.click();position(12,14);
-  assert.equal(vm.runInContext('scoreState.intro.x',context),120);
-  $('score-intro-edit').handlers.click();
-  $('score-delete').handlers.click();
-  assert.equal(vm.runInContext('scoreState.intro',context),null);
   vm.runInContext("scoreState.overlay='above';",context);
   $('score-add').handlers.click();position(25,40);
+  $('score-edit-text').value='invalid';submit();
+  assert.match($('score-edit-error').textContent,/코드 형식/);
   $('score-edit-text').value='Am';submit();
-  const added=$('score-hit-layer').children.at(-1);
+  let added=$('score-hit-layer').children.at(-1);
   assert.equal(added.style.top,'40%','Manually added chord stays at the chosen position in above mode');
+  assert.match(added.className,/draggable/,'Manually added chords can be dragged');
+  assert.doesNotMatch($('score-hit-layer').children[0].className,/draggable/,'Recognized chords stay tap-to-edit');
+  assert.equal($('score-hit-layer').children[0].handlers.pointerdown,undefined);
   added.handlers.click();assert.equal($('score-edit-text').value,'Am');
   $('score-edit-text').value='G7';submit();
   $('score-code-list').children.at(-1).handlers.click();
   assert.equal($('score-edit-text').value,'G7');
-  $('score-edit-move').handlers.click();position(35,45);
-  assert.equal($('score-hit-layer').children.at(-1).style.top,'45%');
-  $('score-hit-layer').children.at(-1).handlers.click();
+  drag($('score-hit-layer').children.at(-1),50,25);
+  added=$('score-hit-layer').children.at(-1);
+  assert.equal(added.style.left,'35%');assert.equal(added.style.top,'45%');
+  assert.match($('score-status').textContent,/옮겼어요/);
+  added.handlers.click();
   $('score-delete').handlers.click();
   assert.equal(vm.runInContext('scoreState.codes.length',context),5);
 }
