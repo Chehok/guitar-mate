@@ -190,6 +190,73 @@ assert(paint.find(p=>p[0]==='text')[3]<200,'Above mode draws above original chor
   vm.runInContext("scoreState.codes.length=1;scoreState.capo=1;",context);
   context.renderScore();assert($(opening).hidden);assert(!$('score-intro-more').hidden);
 }
+async function checkIntroActions(){
+  vm.runInContext(script.slice(script.indexOf('const mod='),script.indexOf('let current=null')),context);
+  vm.runInContext("scoreState.codes=['C','G','Am','F','C'].map((text,i)=>({text,bbox:{x0:50+i*90,y0:200,x1:85+i*90,y1:218}}));",context);
+  const bars=[],stopped=[];
+  context.prepareAudio=async()=>({currentTime:10});
+  context.confirmPlayback=()=>{};
+  context.scheduleChordNotes=(_ctx,notes,at)=>{
+    bars.push({pitches:[...new Set(Array.from(notes,n=>n.midi%12))].sort((a,b)=>a-b),at});
+    return [{voice:{stop:()=>stopped.push(at)},oscs:[{addEventListener(){}}]}];
+  };
+  const easy=$('score-intro-easy-play'),opening=$('score-intro-opening-play');
+  $('score-frets').children[1].handlers.click();
+  await easy.onclick();
+  assert.deepEqual(bars.map(bar=>bar.at),[10.04,12.04,14.04,16.04]);
+  assert.deepEqual(bars[0].pitches,[0,4,7],'Bb shapes with capo 2 sound in C');
+  assert.equal(easy.textContent,'중지');
+  await opening.onclick();
+  assert.equal(stopped.length,4,'Switching recommendations stops all scheduled bars');
+  assert.deepEqual(bars[5].pitches,[2,7,11],'Opening progression plays its own second bar');
+  for(let i=0;i<3;i++)$('score-capo-minus').handlers.click();
+  assert.equal(stopped.length,8,'Changing key or capo stops playback');
+  await easy.onclick();
+  assert.deepEqual(bars[8].pitches,[3,6,11],'Lowering the key one semitone sounds in B');
+  $('score-intro-opening-place').onclick();
+  assert(!$('score-manual-position').hidden);
+  $('score-pos-x').value='90';$('score-pos-y').value='90';
+  $('score-position-add').handlers.click();
+  assert.equal(vm.runInContext('scoreState.codes.length',context),5,'An inserted intro stays separate from recognized chords');
+  assert(paint.some(call=>call[0]==='text'&&call[1]==='전주  |  B  |  F#  |  G#m  |  F#7  |'));
+  $('score-frets').children[1].handlers.click();
+  paint.length=0;context.drawScore(new Element(),false);
+  const intro=paint.find(call=>call[0]==='text'&&call[1].startsWith('전주'));
+  assert.equal(intro[1],'전주  |  Bb  |  F  |  Gm  |  F7  |','PNG drawing uses current capo shapes');
+  assert(intro[2]+intro[4]<=1000,'Placed intro stays inside the image');
+  paint.length=0;context.drawScore(new Element(),true);assert.deepEqual(paint.map(p=>p[0]),['image']);
+  const submit=()=>$('score-edit-form').handlers.submit({preventDefault(){}});
+  const position=(x,y)=>{
+    $('score-pos-x').value=String(x);$('score-pos-y').value=String(y);
+    $('score-position-add').handlers.click();
+  };
+  $('score-hit-layer').children.at(-1).handlers.click();
+  assert.equal($('score-intro-edit-2').value,'G');
+  $('score-intro-edit-2').value='invalid';submit();
+  assert.match($('score-edit-error').textContent,/코드 형식/);
+  $('score-intro-edit-2').value='Dm7';submit();
+  assert.equal(vm.runInContext('scoreState.intro.chords[1]',context),'Dm7');
+  $('score-intro-edit').handlers.click();
+  $('score-edit-move').handlers.click();position(12,14);
+  assert.equal(vm.runInContext('scoreState.intro.x',context),120);
+  $('score-intro-edit').handlers.click();
+  $('score-delete').handlers.click();
+  assert.equal(vm.runInContext('scoreState.intro',context),null);
+  vm.runInContext("scoreState.overlay='above';",context);
+  $('score-add').handlers.click();position(25,40);
+  $('score-edit-text').value='Am';submit();
+  const added=$('score-hit-layer').children.at(-1);
+  assert.equal(added.style.top,'40%','Manually added chord stays at the chosen position in above mode');
+  added.handlers.click();assert.equal($('score-edit-text').value,'Am');
+  $('score-edit-text').value='G7';submit();
+  $('score-code-list').children.at(-1).handlers.click();
+  assert.equal($('score-edit-text').value,'G7');
+  $('score-edit-move').handlers.click();position(35,45);
+  assert.equal($('score-hit-layer').children.at(-1).style.top,'45%');
+  $('score-hit-layer').children.at(-1).handlers.click();
+  $('score-delete').handlers.click();
+  assert.equal(vm.runInContext('scoreState.codes.length',context),5);
+}
 async function checkOCR(){
 let regionPSM,regionCalls=0;
 const regionResult=await context.runScoreOCRPasses({setParameters:async p=>{regionPSM=p.tessedit_pageseg_mode;},recognize:async()=>{
@@ -296,4 +363,4 @@ assert.equal($('score-paste').disabled,false);
 context.navigator.clipboard.read=async()=>{$('score-panel').hidden=true;return [{types:['image/png'],getType:async()=>pasted}];};
 await $('score-paste').handlers.click();assert.equal(revoked,4);
 }
-checkOCR().then(()=>console.log('Score transposition, capo, keys, OCR filters, rendering, lazy load, cancellation and manual fallback passed (no browser).')).catch(error=>{console.error(error);process.exitCode=1;});
+checkIntroActions().then(checkOCR).then(()=>console.log('Score transposition, intro playback and placement, rendering, and OCR passed (no browser).')).catch(error=>{console.error(error);process.exitCode=1;});
