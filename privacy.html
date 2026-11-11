@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="./i18n.js"></script>
+<script src="./i18n-en.js"></script>
 <meta name="color-scheme" content="light dark">
 <meta name="description" content="기타메이트의 마이크, 악보 이미지, 방문 통계 및 광고 관련 개인정보 처리 내용을 안내합니다.">
 <link rel="icon" type="image/svg+xml" href="./favicon.svg">
@@ -31,11 +33,12 @@ a { color:var(--green); text-underline-offset:3px; }
 footer { margin-top:28px; padding-top:16px; border-top:1px solid var(--line); }
 a:focus-visible { outline:3px solid var(--focus); outline-offset:3px; }
 @media (min-width:760px) { .wrap { padding:32px; } }
+.page-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 </style>
 </head>
 <body>
 <div class="wrap">
-<header><a class="brand" href="./"><img src="./favicon.svg" width="40" height="40" alt="">기타메이트</a></header>
+<header class="page-header"><a class="brand" href="./"><img src="./favicon.svg" width="40" height="40" alt="">기타메이트</a><button class="lang-toggle" type="button" translate="no" data-lang-toggle></button></header>
 <main>
 <h1>개인정보처리방침</h1>
 <p class="intro">이 방침은 서비스 이용 중 처리되는 정보와 외부 서비스의 사용을 설명합니다.<br>시행일: 2026년 11월 10일</p>

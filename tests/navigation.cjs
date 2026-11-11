@@ -27,7 +27,7 @@ for(const [file,mode,href] of pages){
   assert(header.innerHTML.includes(`class="guide-launch" href="${guide}"`));
   assert.match(header.innerHTML,/<header>[\s\S]*?id="install-button"[\s\S]*?<\/header>/);
   const nav=header.innerHTML.match(/<nav class="mode-tabs"[\s\S]*?<\/nav>/)[0];
-  const links=[...nav.matchAll(/<a id="([^"]+)-tab" href="([^"]+)"( aria-current="page")?>/g)];
+  const links=[...nav.matchAll(/<a id="([^"]+)-tab" href="([^"]+)"(?: data-i18n-en="[^"]+")?( aria-current="page")?>/g)];
   assert.deepEqual(links.map(link=>link.slice(1,3)),pages.map(([,name,url])=>[name,url]));
   assert.deepEqual(links.filter(link=>link[3]).map(link=>link.slice(1,3)),[[mode,href]]);
   assert(html.includes(`<section id="${mode}-panel"`),`${file} must show its main panel`);

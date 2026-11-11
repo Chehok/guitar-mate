@@ -3,10 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="./i18n.js"></script>
+<script src="./i18n-en.js"></script>
 <meta name="theme-color" content="#245b47" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#131713" media="(prefers-color-scheme: dark)">
 <meta name="color-scheme" content="light dark">
-<meta name="description" content="기타메이트와 함께 코드 추천, 마이크 튜닝, 코드 판별까지. 오프라인에서도 함께하는 기타 연습 도우미.">
+<meta name="description" content="마이크 튜닝, 코드 검색·판별, 메트로놈, 악보 키 변환까지. 오프라인에서도 쓸 수 있는 기타 연습 도우미.">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" type="image/svg+xml" href="./favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png">
@@ -457,7 +459,7 @@ legacy.forEach(v=>add(v.frets,v.name,{fingers:v.fingers,barres:v.barres}));
 for(let base=1;base<=15;base++){
 const choices=tuning.map(n=>[-1,...Array.from({length:Math.min(15,base+maxFretSpan)-base+1},(_,j)=>base+j),0].filter(f=>f<0||allowed.has(mod(n+f))));
 const visit=(i,frets,count,gaps,ended)=>{
-if(i===6){if(count>=3)add(frets,'생성 운지');return;}
+if(i===6){if(count>=3)add(frets,'자동 생성 운지');return;}
 if(count+6-i<3)return;
 for(const f of choices[i]){
 if(f<0){visit(i+1,[...frets,f],count,gaps,count>0?true:ended);continue;}
@@ -1807,7 +1809,7 @@ if($('score-panel').hidden)return;
 const selected=selectScoreClipboardImage(event.clipboardData?.items);
 if(selected){
 event.preventDefault();
-if(scoreState.busy){scoreStatus('이미지를 처리 중이에요. 완료하거나 인식을 중지한 뒤 다시 붙여넣어 주세요.');return;}
+if(scoreState.busy){scoreStatus('이미지를 처리 중이에요. 끝날 때까지 기다리거나 인식을 중지한 뒤 다시 붙여넣어 주세요.');return;}
 const file=selected.item.getAsFile();
 if(file)await loadScoreImage(file);else scorePasteFallback();
 }else{
