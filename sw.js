@@ -1,6 +1,6 @@
 'use strict';
 // Increment when changing any app-shell file so installed copies refresh together.
-const VERSION='v102-leader-start-waits';
+const VERSION='v103-workers-site-stage-sync';
 // Keep the storage namespace so activation also removes pre-rebrand caches.
 const CACHE_PREFIX=`six-strings:${self.registration.scope}:`;
 const CACHE_NAME=CACHE_PREFIX+VERSION;
