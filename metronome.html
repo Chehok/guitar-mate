@@ -51,6 +51,25 @@ h1 { margin:0 0 8px; font-size:clamp(24px,3vw,30px); font-weight:700; line-heigh
 .start-button { width:100%; min-height:52px; border:1px solid var(--green); border-radius:10px; background:var(--green); color:var(--on-green); font-weight:700; cursor:pointer; }
 .start-button:active { transform:translateY(1px); }
 .status { min-height:24px; margin:12px 0 0; color:var(--muted); text-align:center; font-size:13px; }
+.sync-panel { margin-top:16px; }
+.sync-panel h2 { margin:0 0 4px; font-size:18px; font-weight:700; letter-spacing:-.4px; }
+.sync-panel .hint { margin:0 0 16px; color:var(--muted); font-size:13px; line-height:1.7; }
+.sync-actions { display:flex; flex-wrap:wrap; gap:8px; }
+.sync-actions button, .sync-share button { min-height:44px; padding:8px 14px; border:1px solid var(--control); border-radius:10px; background:var(--panel); color:var(--ink); font-weight:650; cursor:pointer; }
+.sync-actions button.primary { border-color:var(--green); background:var(--green); color:var(--on-green); }
+.sync-box { margin-top:16px; padding:16px; border:1px solid var(--line); border-radius:12px; background:var(--soft); }
+.sync-box[hidden] { display:none; }
+.sync-box p { margin:0 0 8px; font-size:14px; }
+.sync-qr { width:min(240px,100%); margin:4px auto 12px; padding:0; border-radius:8px; background:#fff; line-height:0; }
+.sync-qr svg { display:block; width:100%; height:auto; }
+.sync-link { display:block; margin:0 0 12px; color:var(--muted); font-size:12px; word-break:break-all; text-align:center; }
+.sync-share { display:flex; justify-content:center; gap:8px; }
+.offset-row { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:18px; }
+.offset-row label { font-weight:650; }
+.offset-row output { min-width:72px; color:var(--muted); text-align:right; font-variant-numeric:tabular-nums; }
+.offset-slider { display:block; width:100%; margin:8px 0 2px; accent-color:var(--green); }
+.offset-limits { display:flex; justify-content:space-between; color:var(--muted); font-size:12px; }
+.tempo-value input:disabled, .tempo-slider:disabled { opacity:.55; }
 @media (min-width: 760px) { .panel { padding: 32px; } }
 @media (prefers-color-scheme:dark) { :root { color-scheme:dark; --paper:#131713; --panel:#1c221d; --soft:#29332b; --ink:#f0f1e6; --muted:#b2beb1; --line:#374438; --control:#7c907d; --green:#a2d2b5; --on-green:#172c21; --focus:#e8c879; } }
 @media (prefers-reduced-motion:reduce) { *,*::before,*::after { transition:none !important; animation:none !important; scroll-behavior:auto !important; } .beats li.active { transform:none; } }
@@ -99,9 +118,31 @@ h1 { margin:0 0 8px; font-size:clamp(24px,3vw,30px); font-weight:700; line-heigh
 </div>
 </div>
 </section>
+<section class="panel sync-panel" aria-labelledby="sync-title">
+<h2 id="sync-title">함께 맞추기</h2>
+<p class="hint">한 명이 리더가 되어 QR을 보여주면, 다른 폰은 기본 카메라로 찍어 같은 박자에 맞춰요. 인터넷 없이도 되지만, 모든 폰의 <strong>날짜 및 시간 자동 설정</strong>이 켜져 있어야 잘 맞아요.</p>
+<div class="sync-actions"><button id="sync-lead" class="primary" type="button">리더로 QR 보여주기</button></div>
+<div class="sync-box" id="sync-leader" hidden>
+<p id="sync-leader-text">이 QR을 다른 폰 카메라로 찍게 해 주세요.</p>
+<div class="sync-qr" id="sync-qr" role="img" aria-label="함께 맞추기 QR 코드"></div>
+<a class="sync-link" id="sync-link" href="#"></a>
+<div class="sync-share"><button id="sync-copy" type="button">링크 복사</button><button id="sync-share" type="button" hidden>공유</button><button id="sync-end-lead" type="button">리더 그만하기</button></div>
+<p class="hint" style="margin:12px 0 0">템포를 바꾸면 QR도 바뀌어요. 다른 폰은 새 QR을 다시 찍어 주세요.</p>
+</div>
+<div class="sync-box" id="sync-follower" hidden>
+<p id="sync-follower-text"></p>
+<div class="sync-actions"><button id="sync-leave" type="button">연동 끝내기</button></div>
+</div>
+<div class="offset-row"><label for="sync-offset">내 소리 타이밍</label><output id="sync-offset-value" for="sync-offset">0 ms</output></div>
+<input class="offset-slider" id="sync-offset" type="range" min="-300" max="300" step="5" value="0" aria-describedby="sync-offset-hint">
+<div class="offset-limits" aria-hidden="true"><span>← 앞당기기</span><span>늦추기 →</span></div>
+<p class="hint" id="sync-offset-hint" style="margin:8px 0 0">다른 폰보다 내 소리가 늦게 들리면 왼쪽으로, 빠르면 오른쪽으로 옮기세요. 블루투스 이어폰은 많이 앞당겨야 할 수 있어요. 이 기기에 저장돼요.</p>
+</section>
 </main>
 <gm-footer></gm-footer>
 </div>
+<script src="./qr.js"></script>
+<script src="./metronome-sync.js"></script>
 <script>
 'use strict';
 const tempoRange=document.getElementById('tempo-range');
@@ -113,8 +154,21 @@ const pendulum=document.getElementById('pendulum');
 const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
 let audioContext=null,timer=null,running=false,nextBeat=0,nextBeatTime=0;
 let displayedBeat=null,animationFrame=null;
+// Shared-beat sync: when `grid` is set, beats follow the wall-clock grid instead of free-running.
+const sync=window.metronomeSync;
+let grid=null,role=null,nextK=0,offsetMs=0;
+try{offsetMs=sync.clampOffset(localStorage.getItem(sync.OFFSET_KEY));}catch(_){}
 const sources=new Set(),scheduledBeats=[];
-function setTempo(raw){const bpm=Math.max(40,Math.min(240,Math.round(Number(raw)||100)));tempoRange.value=tempoValue.value=bpm;}
+function setTempo(raw){
+  const bpm=Math.max(40,Math.min(240,Math.round(Number(raw)||100)));
+  tempoRange.value=tempoValue.value=bpm;
+  if(role==='leader'&&grid&&grid.bpm!==bpm){
+    const at=running?nextK:sync.nextBeatIndex(grid,Date.now());
+    const next=sync.retime(grid,at,bpm);
+    grid={bpm,t0:Math.round(next.grid.t0)};nextK=next.k;
+    showLeaderQr();
+  }
+}
 tempoRange.addEventListener('input',()=>setTempo(tempoRange.value));
 tempoValue.addEventListener('change',()=>setTempo(tempoValue.value));
 function audibleTime(){
@@ -123,6 +177,19 @@ function audibleTime(){
     return Math.min(audioContext.currentTime,timestamp.contextTime+(performance.now()-timestamp.performanceTime)/1000);
   }
   return audioContext.currentTime-(audioContext.baseLatency||0)-(audioContext.outputLatency||0);
+}
+// Wall clock (ms) ↔ audio clock (s), aimed at when the click is heard, plus this device's offset.
+function epochToAudio(epochMs){
+  const perf=epochMs-(Date.now()-performance.now());
+  const timestamp=audioContext.getOutputTimestamp?.();
+  const base=timestamp?.performanceTime>0
+    ?timestamp.contextTime+(perf-timestamp.performanceTime)/1000
+    :audioContext.currentTime+(perf-performance.now())/1000-(audioContext.baseLatency||0)-(audioContext.outputLatency||0);
+  return base+offsetMs/1000;
+}
+function audioToEpoch(time){
+  const probe=Date.now();
+  return probe+(time-epochToAudio(probe))*1000;
 }
 function discardOlderBeats(time){
   // Keep the latest audible beat as the start of the current swing.
@@ -166,6 +233,15 @@ function schedule(){
   if(!running||audioContext.state!=='running')return;
   if(document.hidden)discardOlderBeats(audibleTime());
   const now=audioContext.currentTime;
+  if(grid){
+    const interval=sync.intervalMs(grid.bpm)/1000;
+    for(let time=epochToAudio(sync.beatEpoch(grid,nextK));time<now+.12;time=epochToAudio(sync.beatEpoch(grid,nextK))){
+      const beat=sync.beatInBar(nextK);
+      if(time>=now-.005){playClick(time,beat);scheduledBeats.push({time,beat,interval});}
+      nextK++;
+    }
+    return;
+  }
   nextBeatTime=Math.max(now,nextBeatTime);
   while(nextBeatTime<now+.12){
     const interval=60/tempoRange.valueAsNumber;
@@ -200,9 +276,10 @@ startStop.addEventListener('click',async()=>{
     running=true;
     nextBeat=0;
     nextBeatTime=audioContext.currentTime+.05;
+    if(grid)nextK=sync.nextBeatIndex(grid,Date.now()+80);
     startStop.textContent='멈추기';
     startStop.setAttribute('aria-pressed','true');
-    status.textContent='메트로놈 재생 중';
+    status.textContent=role==='follower'?'리더 박자에 맞춰 재생 중':role==='leader'?'리더 박자로 재생 중':'메트로놈 재생 중';
     schedule();
     timer=setInterval(schedule,25);
     animationFrame=requestAnimationFrame(paintPendulum);
@@ -214,6 +291,77 @@ startStop.addEventListener('click',async()=>{
   }
 });
 window.addEventListener('pagehide',()=>{if(running)stop();});
+
+// ---- 함께 맞추기 ----
+const leadButton=document.getElementById('sync-lead');
+const leaderBox=document.getElementById('sync-leader'),followerBox=document.getElementById('sync-follower');
+const qrBox=document.getElementById('sync-qr'),linkEl=document.getElementById('sync-link');
+const offsetInput=document.getElementById('sync-offset'),offsetValue=document.getElementById('sync-offset-value');
+const shareButton=document.getElementById('sync-share');
+function syncLink(){return location.href.split('#')[0]+'#'+sync.formatSync(grid);}
+function showOffset(){offsetInput.value=offsetMs;offsetValue.textContent=(offsetMs>0?'+':'')+offsetMs+' ms';}
+function lockTempo(locked){tempoRange.disabled=tempoValue.disabled=locked;}
+function showLeaderQr(){
+  const link=syncLink();
+  qrBox.innerHTML=window.gmQr.svg(link);
+  linkEl.href=link;linkEl.textContent=link;
+  document.getElementById('sync-leader-text').textContent=`리더 템포 ${grid.bpm} BPM · 이 QR을 다른 폰 카메라로 찍게 해 주세요.`;
+}
+// Leaving sync keeps the beat going: continue free-running from the last scheduled click.
+function leaveGrid(){
+  if(running&&scheduledBeats.length){
+    const last=scheduledBeats.at(-1);
+    nextBeatTime=last.time+60/tempoRange.valueAsNumber;nextBeat=(last.beat+1)%beats.length;
+  }
+  grid=null;role=null;
+}
+function startLeading(){
+  if(role==='follower')stopFollowing();
+  const bpm=tempoRange.valueAsNumber;
+  if(running&&scheduledBeats.length){
+    const last=scheduledBeats.at(-1);
+    grid=sync.gridFromBeat(bpm,audioToEpoch(last.time),last.beat);
+    grid.t0=Math.round(grid.t0);nextK=last.beat+1;
+  }else grid={bpm,t0:Date.now()};
+  role='leader';
+  showLeaderQr();
+  leaderBox.hidden=false;leadButton.hidden=true;
+  if(running)status.textContent='리더 박자로 재생 중';
+}
+function stopLeading(){leaveGrid();leaderBox.hidden=true;leadButton.hidden=false;if(running)status.textContent='메트로놈 재생 중';}
+function follow(parsed){
+  if(role==='leader')stopLeading();
+  if(running)stop();
+  grid=parsed;role='follower';
+  setTempo(parsed.bpm);lockTempo(true);
+  document.getElementById('sync-follower-text').textContent=`리더의 ${parsed.bpm} BPM 박자에 맞춰요. 시작을 누르세요.`;
+  followerBox.hidden=false;leadButton.hidden=true;
+  status.textContent='리더 박자에 연결됐어요. 시작을 누르세요.';
+}
+function stopFollowing(){
+  leaveGrid();lockTempo(false);followerBox.hidden=true;leadButton.hidden=false;
+  if(location.hash)history.replaceState(null,'',location.href.split('#')[0]);
+  status.textContent=running?'메트로놈 재생 중':'시작을 누르면 메트로놈이 재생됩니다.';
+}
+leadButton.addEventListener('click',startLeading);
+document.getElementById('sync-end-lead').addEventListener('click',stopLeading);
+document.getElementById('sync-leave').addEventListener('click',stopFollowing);
+document.getElementById('sync-copy').addEventListener('click',async()=>{
+  try{await navigator.clipboard.writeText(syncLink());status.textContent='링크를 복사했어요.';}
+  catch(_){status.textContent='링크를 복사하지 못했어요. 링크를 길게 눌러 복사해 주세요.';}
+});
+if(navigator.share){
+  shareButton.hidden=false;
+  shareButton.addEventListener('click',()=>navigator.share({title:'기타메이트 메트로놈',url:syncLink()}).catch(()=>{}));
+}
+offsetInput.addEventListener('input',()=>{
+  offsetMs=sync.clampOffset(offsetInput.value);showOffset();
+  try{localStorage.setItem(sync.OFFSET_KEY,String(offsetMs));}catch(_){}
+});
+function readSyncHash(){const parsed=sync.parseSync(location.hash);if(parsed)follow(parsed);}
+window.addEventListener('hashchange',readSyncHash);
+showOffset();
+readSyncHash();
 </script>
 </body>
 </html>
