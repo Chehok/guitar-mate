@@ -319,8 +319,32 @@ async function checkIntroActions(){
   introHit().handlers.keydown({key:'ArrowLeft',preventDefault(){}});
   assert.equal(introAt()[0],farX-10,'Arrow keys nudge the intro by 1%');
   assert(!$('score-intro-remove').hidden);
+  // Intro size: −/+ in the dialog (and +/− keys on the score) scale the drawn label, within 50–200%.
+  {
+    const introFont=()=>{paint.length=0;context.drawScore(new Element(),false);return vm.runInContext('scoreState.intro.scale',context);};
+    const widthAt=()=>context.drawScore(new Element(),false).intro.width;
+    assert(!$('score-intro-size').hidden,'Size control appears once an intro is placed');
+    assert.equal($('score-intro-size-value').textContent,'100%');
+    const base=widthAt();
+    $('score-intro-bigger').handlers.click();
+    assert.equal(introFont(),1.2);assert.equal($('score-intro-size-value').textContent,'120%');
+    assert(widthAt()>base,'A bigger intro is drawn wider');
+    for(let i=0;i<20;i++)$('score-intro-smaller').handlers.click();
+    assert.equal(introFont(),.5,'Size stops at 50%');assert($('score-intro-smaller').disabled);
+    assert(widthAt()<base,'A smaller intro is drawn narrower');
+    introHit().handlers.keydown({key:'+',preventDefault(){}});
+    assert.equal(introFont(),.6,'The + key enlarges the focused intro');
+    for(let i=0;i<20;i++)introHit().handlers.keydown({key:'=',preventDefault(){}});
+    assert.equal(introFont(),2,'Size stops at 200%');assert($('score-intro-bigger').disabled);
+    introHit().handlers.keydown({key:'-',preventDefault(){}});
+    assert.equal(introFont(),1.8,'The − key shrinks the focused intro');
+    const hit=context.drawScore(new Element(),false).intro;assert(hit.x+hit.width<=1000,'A large intro stays inside the image');
+    $('score-intro-opening-place').onclick();
+    assert.equal(vm.runInContext('scoreState.intro.scale',context),1.8,'Placing another intro keeps the chosen size');
+  }
   $('score-intro-remove').handlers.click();
   assert.equal(vm.runInContext('scoreState.intro',context),null);
+  assert($('score-intro-size').hidden,'Size control hides when the intro is removed');
   const submit=()=>$('score-edit-form').handlers.submit({preventDefault(){}});
   const position=(x,y)=>{
     $('score-pos-x').value=String(x);$('score-pos-y').value=String(y);
