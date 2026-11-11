@@ -261,16 +261,17 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .score-stage.adding #score-hit-layer { display:none; }
 .score-list summary { cursor:pointer; min-height:44px; padding:8px 0; }
 #score-code-list { margin-bottom:0; }
-.score-intro h2,.score-intro h3 { margin:0; font-size:16px; }
-.score-intro h3 { margin-top:14px; font-size:14px; }
+.score-code-hit.draggable { border-color:var(--orange); cursor:grab; touch-action:none; }
+.score-code-hit.dragging { cursor:grabbing; background:var(--hit); }
+#score-intro-dialog { max-width:420px; text-align:left; }
+#score-intro-dialog h2 { margin:0 0 4px; }
+.score-intro h3 { margin:14px 0 0; font-size:14px; }
 .score-intro-actions { margin-top:8px; }
+.score-intro-close { justify-content:flex-end; margin-top:16px; }
 .score-intro-bars { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; list-style:none; margin:6px 0 0; padding:0; }
 .score-intro-bars li { padding:8px 4px; border:1px solid var(--line); border-radius:8px; background:var(--soft); text-align:center; overflow-wrap:anywhere; }
 .score-intro-bars span { display:block; color:var(--muted); font-size:12px; }
 #score-edit-text { display:block; width:100%; padding:10px; margin:10px 0; }
-#score-intro-edit-fields { border:0; margin:0 0 10px; padding:0; text-align:left; }
-#score-intro-edit-fields label { display:block; margin-top:8px; }
-#score-intro-edit-fields input { display:block; width:100%; padding:6px 10px; }
 #score-editor .score-row { justify-content:center; }
 @media (min-width:760px) { .score-controls { max-width:none; } }
 
@@ -325,14 +326,16 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <div class="panel score-controls">
 <div class="score-preview-tools">
 <div class="score-row" role="group" aria-labelledby="score-overlay-label"><strong id="score-overlay-label">코드 표시</strong><label><input type="radio" name="score-overlay" value="replace" checked> 교체</label><label><input type="radio" name="score-overlay" value="above"> 위에</label><label><input id="score-original" type="checkbox"> 원본 보기</label></div>
-<div class="score-row score-preview-actions"><button id="score-add" type="button">코드 직접 추가</button><button id="score-intro-edit" type="button" hidden>전주 수정</button><button id="score-download" type="button" class="primary">PNG 다운로드</button></div>
+<div class="score-row score-preview-actions"><button id="score-add" type="button">코드 직접 추가</button><button id="score-intro-open" type="button" aria-haspopup="dialog" hidden>추천 전주</button><button id="score-download" type="button" class="primary">PNG 다운로드</button></div>
 </div>
 <div id="score-manual-position" tabindex="-1" hidden><p id="score-position-hint" class="hint"></p><div class="score-row"><label>가로 % <input id="score-pos-x" type="number" min="0" max="100" value="10" style="width:80px"></label><label>세로 % <input id="score-pos-y" type="number" min="0" max="100" value="10" style="width:80px"></label><button id="score-position-add" type="button">이 위치에 추가</button></div></div>
-<p id="score-edit-hint" class="hint">악보 위의 코드나 전주를 눌러 수정하세요. 아래 목록에서도 편집할 수 있어요.<br><span id="score-size"></span></p>
+<p id="score-edit-hint" class="hint">악보 위의 코드를 눌러 수정하세요. 직접 추가한 코드와 전주는 끌어서 옮길 수 있어요. 아래 목록에서도 편집할 수 있어요.<br><span id="score-size"></span></p>
 <div class="score-preview-scroll"><div id="score-stage" class="score-stage"><canvas id="score-canvas" aria-label="변환한 악보. 아래 코드 목록에서 인식 결과를 수정할 수 있습니다."></canvas><div id="score-hit-layer"></div></div></div>
 </div>
 <details class="panel score-list"><summary id="score-count">악보 코드 0개 · 확인 및 수정</summary><div id="score-code-list" class="quick"></div></details>
-<section id="score-intro" class="panel score-intro" aria-labelledby="score-intro-title" hidden>
+</div>
+</section>
+<dialog id="score-intro-dialog" class="install-guide score-intro" aria-labelledby="score-intro-title">
 <h2 id="score-intro-title">추천 전주</h2>
 <p class="hint">한 마디에 코드 하나씩 연주한 뒤 곡의 첫 코드로 넘어가세요.</p>
 <h3 id="score-intro-easy-title">쉬운 전주</h3>
@@ -343,23 +346,15 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <div id="score-intro-opening-actions" class="score-row score-intro-actions" role="group" aria-labelledby="score-intro-opening-title"><button id="score-intro-opening-play" type="button">소리 듣기</button><button id="score-intro-opening-place" type="button">악보에 넣기</button></div>
 <p id="score-intro-more" class="hint" hidden>코드를 2개 이상 인식하면 이 전주를 추천해요.</p>
 <p id="score-intro-audio-status" class="hint" role="status" hidden></p>
-</section>
-</div>
-</section>
+<div class="score-row score-intro-close"><button id="score-intro-remove" type="button" hidden>악보에서 빼기</button><button id="score-intro-close" type="button">닫기</button></div>
+</dialog>
 <dialog id="score-editor" class="install-guide" aria-labelledby="score-editor-title">
 <h2 id="score-editor-title">원래 코드 수정</h2>
 <form id="score-edit-form">
 <div id="score-edit-single"><label for="score-edit-text">원래 코드</label><input id="score-edit-text" placeholder="예: Gm/Bb, D7sus4" maxlength="40" autocomplete="off" spellcheck="false" required></div>
-<fieldset id="score-intro-edit-fields" hidden disabled>
-<legend>전주 코드</legend>
-<label>1마디 <input id="score-intro-edit-1" maxlength="40" autocomplete="off" spellcheck="false" required></label>
-<label>2마디 <input id="score-intro-edit-2" maxlength="40" autocomplete="off" spellcheck="false" required></label>
-<label>3마디 <input id="score-intro-edit-3" maxlength="40" autocomplete="off" spellcheck="false" required></label>
-<label>4마디 <input id="score-intro-edit-4" maxlength="40" autocomplete="off" spellcheck="false" required></label>
-</fieldset>
 <p class="hint">원래 키의 코드를 입력하면 현재 설정에 맞춰 변환합니다.</p>
 <p id="score-edit-error" class="error" role="alert"></p>
-<div class="score-row"><button type="submit" class="primary">저장</button><button id="score-edit-move" type="button" hidden>위치 옮기기</button><button id="score-delete" type="button">삭제</button><button id="score-edit-cancel" type="button">취소</button></div>
+<div class="score-row"><button type="submit" class="primary">저장</button><button id="score-delete" type="button">삭제</button><button id="score-edit-cancel" type="button">취소</button></div>
 </form>
 </dialog>
 </main>
@@ -1699,7 +1694,7 @@ return true;
 // End score music functions.
 
 // Score editor: images and OCR results stay in memory on this device.
-const scoreState={image:null,codes:[],capo:0,keyDown:0,overlay:'replace',original:false,busy:false,adding:false,placingIntro:null,movingCode:null,intro:null,editIndex:null,pending:null,run:0};
+const scoreState={image:null,codes:[],capo:0,keyDown:0,overlay:'replace',original:false,busy:false,adding:false,intro:null,drag:null,editIndex:null,pending:null,run:0};
 let scoreIntroPlayback=null;
 let scoreLibraryPromise=null,scoreRuntimePromise=null;
 function scoreStatus(message){$('score-status').textContent=message;}
@@ -1707,7 +1702,7 @@ function scoreBusy(value,allowManual=false){
 scoreState.busy=value;$('score-file').disabled=value;$('score-paste').disabled=value;
 if(value)stopScoreIntro();
 $('score-add').disabled=value&&!allowManual;$('score-stage').setAttribute('aria-busy',String(value));
-for(const id of ['easy-play','opening-play','easy-place','opening-place','edit'])$('score-intro-'+id).disabled=value;
+for(const id of ['easy-play','opening-play','easy-place','opening-place','remove','open'])$('score-intro-'+id).disabled=value;
 for(const button of [...$('score-hit-layer').children,...$('score-code-list').children])button.disabled=value;
 }
 function loadScoreLibrary(runtime=false){
@@ -1858,22 +1853,26 @@ if(scoreIntroPlayback===playback){scoreIntroPlayback=null;button.textContent='�
 confirmPlayback(ctx,()=>scoreIntroPlayback===playback,fail);
 }catch(_){fail();}
 }
+// New intros start near the top-left corner; the user drags them into place.
 function placeScoreIntro(chords){
 if(scoreState.busy||!scoreState.source)return;
-scoreState.placingIntro=chords;
-scoreState.movingCode=null;
-chooseScorePosition();
-}
-function chooseScorePosition(){
-scoreState.adding=true;
+const source=scoreState.source;
+scoreState.intro={chords:[...chords],x:Math.round(source.width*.02),y:Math.round(source.height*.02)};
+scoreState.adding=false;
 scoreState.original=false;
 $('score-original').checked=false;
+$('score-intro-dialog').close();
 renderScore();
-$('score-manual-position').focus();
+scoreStatus('전주를 악보 왼쪽 위에 넣었어요. 끌어서 원하는 위치로 옮기세요.');
+}
+function openScoreIntros(){
+if(scoreState.busy||$('score-intro-open').hidden)return;
+$('score-intro-dialog').showModal();
 }
 function renderScoreIntros(key){
-$('score-intro').hidden=!key;
-if(!key)return;
+$('score-intro-open').hidden=!key;
+$('score-intro-remove').hidden=!scoreState.intro;
+if(!key){$('score-intro-dialog').close();return;}
 const opening=scoreState.codes.slice(0,3).map(code=>code.text);
 const {easy,basedOnOpening}=recommendScoreIntros(key,opening);
 $('score-intro-more').hidden=basedOnOpening.length>0;
@@ -1929,7 +1928,7 @@ hits.codes[index]={x:b.x0,y,width:Math.max(textWidth,b.x1-b.x0),height:Math.max(
 }
 if(scoreState.intro){
 const {chords,x,y}=scoreState.intro;
-const text='전주  |  '+chords.map(chord=>transformedScoreChord(chord,key)).join('  |  ')+'  |';
+const text='|  '+chords.map(chord=>transformedScoreChord(chord,key)).join('  |  ')+'  |';
 const fontSize=Math.max(12,source.width*.026),pad=Math.min(fontSize*.45,source.width/4);
 ctx.font=`600 ${fontSize}px system-ui, sans-serif`;
 ctx.textBaseline='top';
@@ -1953,51 +1952,124 @@ for(const [i,button] of [...$('score-frets').children].entries())button.setAttri
 if(!scoreState.image)return;
 $('score-stage').classList.toggle('adding',scoreState.adding);
 $('score-add').textContent=scoreState.adding?'위치 선택 취소':'코드 직접 추가';
-$('score-intro-edit').hidden=!scoreState.intro;
 $('score-manual-position').hidden=!scoreState.adding;
-const moving=scoreState.movingCode||scoreState.placingIntro===scoreState.intro?.chords;
-$('score-position-add').textContent=moving?'이 위치로 옮기기':'이 위치에 추가';
-$('score-position-hint').textContent=(scoreState.placingIntro?'전주를':'코드를')+' 넣을 위치를 악보에서 누르거나 좌표를 입력하세요. 왼쪽 위가 0%, 오른쪽 아래가 100%입니다.';
+$('score-position-hint').textContent='코드를 넣을 위치를 악보에서 누르거나 좌표를 입력하세요. 왼쪽 위가 0%, 오른쪽 아래가 100%입니다.';
 const hits=drawScore($('score-canvas'));
 $('score-hit-layer').replaceChildren();$('score-code-list').replaceChildren();
-scoreState.codes.forEach((code,index)=>addScoreEditTarget(index,hits.codes[index],`${code.manual?'직접 추가 · ':''}${code.text} → ${transformedScoreChord(code.text,key)} · 수정`));
-if(scoreState.intro)addScoreEditTarget('intro',hits.intro,'삽입한 전주 수정');
+scoreState.codes.forEach((code,index)=>addScoreEditTarget(index,hits.codes[index],`${code.manual?'직접 추가 · ':''}${code.text} → ${transformedScoreChord(code.text,key)} · 수정${code.manual?' · 끌어서 옮기기':''}`));
+if(scoreState.intro)addScoreEditTarget('intro',hits.intro,'삽입한 전주 · 끌어서 옮기기');
 $('score-count').textContent=`악보 코드 ${scoreState.codes.length}개${scoreState.intro?' · 전주 1개':''} · 확인 및 수정`;
 }
 function addScoreEditTarget(index,bounds,label){
-const list=document.createElement('button'),open=()=>editScoreCode(index);
+const intro=index==='intro',open=()=>intro?openScoreIntros():editScoreCode(index);
+const list=document.createElement('button');
 list.type='button';list.disabled=scoreState.busy;list.textContent=label;
 list.addEventListener('click',open);
 $('score-code-list').append(list);
 if(!bounds)return;
-const button=document.createElement('button'),source=scoreState.source;
-button.type='button';button.disabled=scoreState.busy;button.className='score-code-hit';button.setAttribute('aria-label',label);
-button.style.left=`${bounds.x/source.width*100}%`;button.style.top=`${bounds.y/source.height*100}%`;
-button.style.width=`${bounds.width/source.width*100}%`;button.style.height=`${bounds.height/source.height*100}%`;
-button.addEventListener('click',open);
+const button=document.createElement('button'),draggable=intro||scoreState.codes[index]?.manual;
+button.type='button';button.disabled=scoreState.busy;button.className='score-code-hit'+(draggable?' draggable':'');button.setAttribute('aria-label',label+(draggable?' · 방향키로도 옮길 수 있어요':''));
+button.dataset.target=String(index);
+placeScoreHit(button,bounds);
+button.addEventListener('click',()=>{
+if(button.dataset.dragged){delete button.dataset.dragged;return;}
+open();
+});
+if(draggable){
+button.addEventListener('pointerdown',event=>startScoreDrag(event,index,button,bounds));
+button.addEventListener('pointermove',moveScoreDrag);
+button.addEventListener('pointerup',endScoreDrag);
+button.addEventListener('pointercancel',endScoreDrag);
+button.addEventListener('keydown',event=>nudgeScoreItem(event,index));
+}
 $('score-hit-layer').append(button);
 }
-function scoreIntroEditInputs(){
-return [1,2,3,4].map(bar=>$('score-intro-edit-'+bar));
+function placeScoreHit(button,bounds){
+const source=scoreState.source;
+button.style.left=`${bounds.x/source.width*100}%`;button.style.top=`${bounds.y/source.height*100}%`;
+button.style.width=`${bounds.width/source.width*100}%`;button.style.height=`${bounds.height/source.height*100}%`;
+}
+// Drag and drop for manual chords and the intro: pointer (mouse/touch/pen) or arrow keys.
+function setScoreItemPosition(index,origin,dx,dy,size){
+const source=scoreState.source,clamp=(value,max)=>Math.round(Math.max(0,Math.min(Math.max(0,max),value)));
+if(index==='intro'){
+scoreState.intro.x=clamp(origin.x+dx,source.width-size.width);
+scoreState.intro.y=clamp(origin.y+dy,source.height-size.height);
+return;
+}
+const code=scoreState.codes[index],width=origin.x1-origin.x0,height=origin.y1-origin.y0;
+const x=clamp(origin.x0+dx,source.width-width),y=clamp(origin.y0+dy,source.height-height);
+code.bbox={x0:x,y0:y,x1:x+width,y1:y+height};
+}
+function startScoreDrag(event,index,button,bounds){
+if(scoreState.busy||scoreState.adding||event.button>0)return;
+const item=index==='intro'?scoreState.intro:scoreState.codes[index];
+if(!item)return;
+const rect=$('score-canvas').getBoundingClientRect(),source=scoreState.source;
+if(!rect.width||!rect.height)return;
+scoreState.drag={index,button,pointer:event.pointerId,startX:event.clientX,startY:event.clientY,
+scaleX:source.width/rect.width,scaleY:source.height/rect.height,
+origin:index==='intro'?{x:bounds.x,y:bounds.y}:{...item.bbox},size:{width:bounds.width,height:bounds.height},moved:false,frame:0};
+button.setPointerCapture?.(event.pointerId);
+}
+function moveScoreDrag(event){
+const drag=scoreState.drag;
+if(!drag||event.pointerId!==drag.pointer)return;
+const dx=event.clientX-drag.startX,dy=event.clientY-drag.startY;
+// A small threshold keeps a plain tap working as "open".
+if(!drag.moved&&Math.hypot(dx,dy)<6)return;
+if(!drag.moved){drag.moved=true;drag.button.classList.add('dragging');stopScoreIntro();}
+event.preventDefault?.();
+setScoreItemPosition(drag.index,drag.origin,dx*drag.scaleX,dy*drag.scaleY,drag.size);
+if(!drag.frame)drag.frame=requestAnimationFrame(()=>{
+drag.frame=0;
+if(scoreState.drag!==drag)return;
+const hits=drawScore($('score-canvas')),bounds=drag.index==='intro'?hits.intro:hits.codes[drag.index];
+if(bounds)placeScoreHit(drag.button,bounds);
+});
+}
+function endScoreDrag(event){
+const drag=scoreState.drag;
+if(!drag||event.pointerId!==drag.pointer)return;
+scoreState.drag=null;
+if(drag.frame)cancelAnimationFrame(drag.frame);
+drag.button.releasePointerCapture?.(event.pointerId);
+if(!drag.moved)return;
+drag.button.dataset.dragged='1';
+finishScoreMove(drag.index);
+}
+function finishScoreMove(index,focus=false){
+const intro=index==='intro',code=intro?null:scoreState.codes[index];
+if(!intro)scoreState.codes.sort((a,b)=>a.bbox.y0-b.bbox.y0||a.bbox.x0-b.bbox.x0);
+renderScore();
+if(focus){
+const target=intro?'intro':String(scoreState.codes.indexOf(code));
+$('score-hit-layer').children.find?.(button=>button.dataset.target===target)?.focus();
+}
+scoreStatus(intro?'전주 위치를 옮겼어요.':'코드 위치를 옮겼어요.');
+}
+function nudgeScoreItem(event,index){
+const step={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[event.key];
+if(!step||scoreState.busy)return;
+event.preventDefault();
+const source=scoreState.source,amount=event.shiftKey?.05:.01,intro=index==='intro';
+const hit=intro?drawScore(document.createElement('canvas')).intro:null;
+const origin=intro?{x:hit.x,y:hit.y}:{...scoreState.codes[index].bbox};
+setScoreItemPosition(index,origin,step[0]*source.width*amount,step[1]*source.height*amount,intro?{width:hit.width,height:hit.height}:null);
+finishScoreMove(index,true);
 }
 function editScoreCode(index,bbox=null){
 if(scoreState.busy)return;
 if(index!==null&&scoreState.adding){
 scoreState.adding=false;
-scoreState.placingIntro=null;
-scoreState.movingCode=null;
 renderScore();
 }
-const intro=index==='intro',code=scoreState.codes[index],input=$('score-edit-text');
+const code=scoreState.codes[index],input=$('score-edit-text');
 scoreState.editIndex=index;scoreState.pending=bbox;
-$('score-edit-single').hidden=input.disabled=intro;
-$('score-intro-edit-fields').hidden=$('score-intro-edit-fields').disabled=!intro;
-if(intro)scoreIntroEditInputs().forEach((field,i)=>{field.value=scoreState.intro.chords[i];});
-else input.value=code?.text??'';
-$('score-editor-title').textContent=intro?'전주 수정':index===null?'코드 직접 추가':code.manual?'추가한 코드 수정':'원래 코드 수정';
-$('score-edit-move').hidden=!(intro||code?.manual);
+input.value=code?.text??'';
+$('score-editor-title').textContent=index===null?'코드 직접 추가':code.manual?'추가한 코드 수정':'원래 코드 수정';
 $('score-delete').hidden=index===null;$('score-edit-error').textContent='';
-$('score-editor').showModal();(intro?$('score-intro-edit-1'):input).focus();
+$('score-editor').showModal();input.focus();
 }
 async function loadScoreImage(file){
 if(!file||scoreState.busy)return;
@@ -2011,7 +2083,7 @@ if(run!==scoreState.run)return;
 const size=scoreImageSize(image.naturalWidth,image.naturalHeight),scale=size.width/image.naturalWidth;
 const source=document.createElement('canvas');source.width=size.width;source.height=size.height;
 const ctx=source.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,source.width,source.height);ctx.drawImage(image,0,0,source.width,source.height);
-scoreState.image=image;scoreState.source=source;scoreState.codes=[];scoreState.adding=false;scoreState.placingIntro=null;scoreState.movingCode=null;scoreState.intro=null;scoreState.original=false;$('score-original').checked=false;
+scoreState.image=image;scoreState.source=source;scoreState.codes=[];scoreState.adding=false;scoreState.drag=null;scoreState.intro=null;scoreState.original=false;$('score-original').checked=false;
 $('score-work').hidden=false;$('score-manual-position').hidden=true;scoreBusy(false);renderScore();
 $('score-size').textContent=`처리·저장 크기: ${source.width} × ${source.height}px`+(scale<1?' · 기기 메모리를 위해 이미지를 축소했어요.':'');
 scoreStatus(scale<1?'큰 이미지는 기기 메모리를 위해 긴 변 4096px·최대 1200만 화소로 줄여 처리·저장합니다.':'이미지를 열었어요.');
@@ -2080,8 +2152,6 @@ $('score-add').addEventListener('click',()=>{
 const stopped=scoreState.busy;
 if(stopped)cancelScoreOCR();
 scoreState.adding=stopped||!scoreState.adding;
-scoreState.placingIntro=null;
-scoreState.movingCode=null;
 if(scoreState.adding){scoreState.original=false;$('score-original').checked=false;}
 renderScore();
 const prompt='코드를 넣을 위치를 악보에서 눌러 주세요. 키보드에서는 아래 위치 입력으로 추가할 수 있어요.';
@@ -2090,26 +2160,9 @@ $('score-manual-position').hidden=!scoreState.adding;
 });
 function addScoreAt(x,y){
 if(!scoreState.adding||scoreState.busy||!scoreState.source)return;
-if(scoreState.placingIntro){
-scoreState.intro={chords:scoreState.placingIntro,x,y};
-scoreState.placingIntro=null;
-scoreState.adding=false;
-renderScore();
-scoreStatus('전주를 악보에 넣었어요. PNG로 저장할 수 있어요.');
-return;
-}
 const source=scoreState.source,height=Math.max(12,source.height*.013),width=Math.min(source.width,Math.max(30,height*2.4));
 x=Math.max(0,Math.min(source.width-width,x));y=Math.max(0,Math.min(source.height-height,y));
 const bbox={x0:x,y0:y,x1:x+width,y1:y+height};
-if(scoreState.movingCode){
-scoreState.movingCode.bbox=bbox;
-scoreState.codes.sort((a,b)=>a.bbox.y0-b.bbox.y0||a.bbox.x0-b.bbox.x0);
-scoreState.movingCode=null;
-scoreState.adding=false;
-renderScore();
-scoreStatus('코드 위치를 옮겼어요.');
-return;
-}
 editScoreCode(null,bbox);
 }
 $('score-stage').addEventListener('click',event=>{
@@ -2124,44 +2177,37 @@ addScoreAt(scoreState.source.width*x/100,scoreState.source.height*y/100);
 });
 $('score-edit-form').addEventListener('submit',event=>{
 event.preventDefault();
-const intro=scoreState.editIndex==='intro';
-const fields=intro?scoreIntroEditInputs():[$('score-edit-text')];
-const chords=fields.map(field=>parseScoreChord(field.value));
-const invalid=chords.findIndex(chord=>!chord);
-if(invalid!==-1){
+const chord=parseScoreChord($('score-edit-text').value);
+if(!chord){
 $('score-edit-error').textContent='코드 형식을 확인해 주세요. 예: G, F#m, C/E, Gm/Bb, D7sus4, Am7';
-fields[invalid].focus();
+$('score-edit-text').focus();
 return;
 }
-if(intro)scoreState.intro.chords=chords.map(chord=>chord.text);
-else if(scoreState.editIndex===null){
-scoreState.codes.push({text:chords[0].text,bbox:scoreState.pending,confidence:100,manual:true});
+const added=scoreState.editIndex===null;
+if(added){
+scoreState.codes.push({text:chord.text,bbox:scoreState.pending,confidence:100,manual:true});
 scoreState.codes.sort((a,b)=>a.bbox.y0-b.bbox.y0||a.bbox.x0-b.bbox.x0);
-}else scoreState.codes[scoreState.editIndex].text=chords[0].text;
-if(intro||scoreState.codes[scoreState.editIndex]?.manual){
+}else scoreState.codes[scoreState.editIndex].text=chord.text;
+if(added||scoreState.codes[scoreState.editIndex]?.manual){
 scoreState.original=false;$('score-original').checked=false;
 }
 scoreState.adding=false;$('score-editor').close();renderScore();
-scoreStatus(intro?'전주를 수정했어요.':'코드를 저장했어요. 변환 결과를 확인해 주세요.');
-});
-$('score-edit-move').addEventListener('click',()=>{
-$('score-editor').close();
-if(scoreState.editIndex==='intro')placeScoreIntro(scoreState.intro.chords);
-else{
-scoreState.movingCode=scoreState.codes[scoreState.editIndex];
-scoreState.placingIntro=null;
-chooseScorePosition();
-}
+scoreStatus(added?'코드를 추가했어요. 끌어서 위치를 옮길 수 있어요.':'코드를 저장했어요. 변환 결과를 확인해 주세요.');
 });
 $('score-delete').addEventListener('click',()=>{
-const intro=scoreState.editIndex==='intro';
-if(intro)scoreState.intro=null;
-else if(scoreState.editIndex!==null)scoreState.codes.splice(scoreState.editIndex,1);
+if(scoreState.editIndex!==null)scoreState.codes.splice(scoreState.editIndex,1);
 $('score-editor').close();renderScore();
-scoreStatus(intro?'전주를 제거했어요.':'코드를 삭제했어요.');
+scoreStatus('코드를 삭제했어요.');
 });
 $('score-edit-cancel').addEventListener('click',()=>{$('score-editor').close();});
-$('score-intro-edit').addEventListener('click',()=>editScoreCode('intro'));
+$('score-intro-open').addEventListener('click',openScoreIntros);
+$('score-intro-close').addEventListener('click',()=>$('score-intro-dialog').close());
+$('score-intro-dialog').addEventListener('close',stopScoreIntro);
+$('score-intro-remove').addEventListener('click',()=>{
+scoreState.intro=null;
+$('score-intro-dialog').close();renderScore();
+scoreStatus('전주를 악보에서 뺐어요.');
+});
 $('score-download').addEventListener('click',()=>{
 if(!scoreState.source)return;
 try{
