@@ -273,7 +273,25 @@ async function checkIntroActions(){
   assert($('score-manual-position').hidden,'Placing an intro needs no position step');
   assert.equal(vm.runInContext('scoreState.codes.length',context),5,'An inserted intro stays separate from recognized chords');
   const introAt=()=>JSON.parse(vm.runInContext('JSON.stringify([scoreState.intro.x,scoreState.intro.y])',context));
-  assert.deepEqual(introAt(),[20,20],'A new intro starts near the top-left corner');
+  assert.deepEqual(introAt(),[20,59],'A new intro starts near the top-left corner, just below the key stamp');
+  // Key stamp: top-left corner, follows capo/key changes, can be turned off, never in original view.
+  {
+    const stampOf=()=>{paint.length=0;context.drawScore(new Element(),false);return paint.filter(c=>c[0]==='text').map(c=>c[1]).find(t=>t.startsWith('Key '));};
+    const capo=vm.runInContext('scoreState.capo',context),keyDown=vm.runInContext('scoreState.keyDown',context);
+    vm.runInContext('scoreState.capo=0;scoreState.keyDown=0;',context);
+    assert.equal(stampOf(),'Key C','Stamp shows the detected key');
+    const call=paint.find(c=>c[0]==='text'&&c[1]==='Key C');assert.deepEqual([call[2],call[3]],[22,22],'Stamp sits in the top-left corner');
+    vm.runInContext('scoreState.capo=2;',context);
+    assert.equal(stampOf(),'Key C (Capo 2 · Bb폼)','Capo stamp keeps the sounding key and names the chord shapes');
+    vm.runInContext('scoreState.capo=0;scoreState.keyDown=2;',context);
+    assert.equal(stampOf(),'Key Bb','Lowering the key stamps the new key');
+    vm.runInContext('scoreState.keyDown=0;',context);
+    $('score-key-stamp').checked=false;$('score-key-stamp').handlers.change();
+    assert.equal(stampOf(),undefined,'Stamp can be turned off');
+    $('score-key-stamp').checked=true;$('score-key-stamp').handlers.change();
+    paint.length=0;context.drawScore(new Element(),true);assert.deepEqual(paint.map(p=>p[0]),['image'],'Original view stays untouched');
+    vm.runInContext(`scoreState.capo=${capo};scoreState.keyDown=${keyDown};`,context);paint.length=0;context.drawScore(new Element(),false);
+  }
   assert(paint.some(call=>call[0]==='text'&&call[1]==='|  B  |  F#  |  G#m  |  F#7  |'),'Intro is drawn without a label');
   assert(!paint.some(call=>call[0]==='text'&&String(call[1]).includes('전주')));
   $('score-frets').children[1].handlers.click();
@@ -292,7 +310,7 @@ async function checkIntroActions(){
   };
   const introHit=()=>$('score-hit-layer').children.at(-1);
   let hit=introHit();drag(hit,100,150);
-  assert.deepEqual(introAt(),[220,320],'Dragging moves the intro');
+  assert.deepEqual(introAt(),[220,359],'Dragging moves the intro');
   hit.handlers.click();assert.equal(opened,1,'The click that ends a drag does not open the dialog');
   hit=introHit();hit.handlers.pointerdown({pointerId:8,button:0,clientX:5,clientY:5});hit.handlers.pointerup({pointerId:8});hit.handlers.click();
   assert.equal(opened,2,'A plain tap on the intro opens recommendations');
