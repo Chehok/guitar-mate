@@ -9,7 +9,7 @@
   try { const saved = localStorage.getItem(STORAGE_KEY); if (LANGS.includes(saved)) lang = saved; } catch (_) {}
 
   const HANGUL = /[가-힣]/;
-  const ATTRS = ['aria-label', 'title', 'placeholder', 'alt', 'content', 'aria-roledescription', 'aria-valuetext'];
+  const ATTRS = ['aria-label', 'title', 'placeholder', 'data-placeholder', 'alt', 'content', 'aria-roledescription', 'aria-valuetext'];
   const INLINE = new Set(['STRONG', 'B', 'EM', 'BR', 'CODE', 'A', 'SPAN', 'SMALL', 'SUP', 'SUB', 'KBD', 'I', 'MARK', 'ABBR']);
   const SKIP = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEXTAREA']);
   const norm = s => s.replace(/\s+/g, ' ').trim();
