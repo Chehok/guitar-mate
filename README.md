@@ -2,6 +2,8 @@
 
 코드 추천·튜닝·코드 판별·악보 변환을 페이지별로 제공하는 한국어 기타 연습 도우미입니다. 메뉴 이동은 각 페이지를 새로 열어 방문 통계를 따로 집계할 수 있습니다. [Pretendard Variable 동적 서브셋](https://github.com/orioncactus/pretendard/blob/main/packages/pretendard/docs/en/README.md#variable-dynamic-subset)을 사용하며, 글꼴을 불러오는 동안 시스템 글꼴로 표시합니다. 외부 OCR 도구는 자동 악보 인식 때만 불러옵니다.
 
+화면 언어는 한국어가 기본이며 헤더의 **EN** 버튼으로 영어로 바꿀 수 있습니다(다시 **KO**로 돌아가며, 고른 언어는 기기에 기억됩니다). 번역은 `i18n.js`(전환·적용)와 `i18n-en.js`(한국어 원문 → 영어 사전)가 화면에 표시되는 글자만 바꾸므로 앱 동작 코드는 그대로입니다. 새 문구를 추가하면 `i18n-en.js`에도 영어를 넣어 주세요. 탭처럼 좁은 곳은 요소에 `data-i18n-en`으로 짧은 영어를 따로 지정합니다.
+
 첫 화면은 튜닝(`index.html`)입니다. 코드 검색은 `chord-search.html`, 코드 판별은 `chord-identifier.html`, 악보 키 변환은 `score-key-transposer.html`에서 엽니다. Cloudflare Workers 기본 설정에서는 개별 HTML 주소가 확장자 없는 주소로 리디렉션됩니다.
 
 튜너는 70–1000 Hz를 분석하며, 마이크 감도는 기본 8배(1–16배 조절)입니다. 마이크는 HTTPS 또는 localhost에서 사용할 수 있습니다.
@@ -21,6 +23,7 @@ node tests/install.cjs
 node tests/navigation.cjs
 node tests/score.cjs
 node tests/chord-filter.cjs
+node tests/i18n.cjs
 node tests/audio.cjs
 node tests/ocr-eval.cjs
 node tests/ocr-dataset.cjs

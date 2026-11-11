@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="./i18n.js"></script>
+<script src="./i18n-en.js"></script>
 <meta name="theme-color" content="#245b47" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#131713" media="(prefers-color-scheme: dark)">
 <meta name="color-scheme" content="light dark">
@@ -2075,7 +2077,7 @@ ctx.fillStyle='#fffdf6';ctx.fillRect(left,top,width,height);
 ctx.fillStyle='#15231d';ctx.fillText(text,left+pad,top+pad,width-pad*2);
 hits.intro={x:left,y:top,width,height};
 }
-const stampText=scoreKeyStampText(key),stamp=scoreKeyStampBox(source,stampText);
+const stampText=(window.gmI18n?.text||String)(scoreKeyStampText(key)),stamp=scoreKeyStampBox(source,stampText);
 if(stamp){
 ctx.font=`600 ${stamp.fontSize}px system-ui, sans-serif`;ctx.textBaseline='top';
 const width=Math.min(source.width-stamp.x,ctx.measureText(stampText).width+stamp.pad*2);

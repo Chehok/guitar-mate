@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="./i18n.js"></script>
+<script src="./i18n-en.js"></script>
 <meta name="color-scheme" content="light dark">
 <meta name="description" content="자동 줄 인식 튜닝, Cmaj7 운지 읽기, Em 코드 판별, 60 BPM 메트로놈 연습, 카포·키 표시·추천 전주를 쓰는 악보 키 변환을 기타메이트로 따라 해보세요.">
 <base target="_top">
@@ -32,6 +34,11 @@ header { margin-bottom: 24px; }
 .mode-tabs a { display: flex; align-items: center; justify-content: center; min-height: 48px; padding: 8px 2px; border-bottom: 3px solid transparent; color: var(--muted); font-size: 14px; line-height: 1.3; text-align: center; text-decoration: none; }
 .mode-tabs a[aria-current=page] { color: var(--ink); border-bottom-color: var(--green); font-weight: 750; }
 .mode-tabs a:hover, .mode-tabs a:active { background: var(--soft); }
+@media (max-width: 480px) {
+  .mode-tabs { grid-template-columns: repeat(6, auto); justify-content: space-between; gap: 0; }
+  .mode-tabs a { overflow-wrap: normal; padding-inline: 4px; }
+  html[lang=en] .mode-tabs a { font-size: 13px; }
+}
 a { color: var(--green); text-underline-offset: .2em; }
 a:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
 .skip { position: absolute; left: 16px; top: 8px; padding: 8px 12px; background: var(--panel); }
@@ -97,22 +104,23 @@ h2 { margin: 0; font-size: 19px; line-height: 1.4; }
 .embedded .wrap { padding: 0 clamp(12px, 4vw, 26px) 12px; }
 .embedded header, .embedded .mode-tabs, .embedded h1, .embedded .intro, .embedded .skip { display: none; }
 .embedded .panel { margin: 0; padding: 16px 0 0; border: 0; border-radius: 0; }
+.page-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 </style>
 </head>
 <body>
 <a class="skip" href="#guide">본문으로 건너뛰기</a>
 <div class="wrap">
-<header><a class="brand" href="./"><img src="./favicon.svg" width="40" height="40" alt="">기타메이트</a></header>
-<nav class="mode-tabs" aria-label="기타메이트 메뉴"><a href="./">튜닝</a><a href="./chord-search.html">코드 검색</a><a href="./chord-identifier.html">코드 판별</a><a href="./metronome.html">메트로놈</a><a href="./score-key-transposer.html">악보 키 변환</a><a href="./guide.html" aria-current="page">가이드</a></nav>
+<header class="page-header"><a class="brand" href="./"><img src="./favicon.svg" width="40" height="40" alt="">기타메이트</a><button class="lang-toggle" type="button" translate="no" data-lang-toggle></button></header>
+<nav class="mode-tabs" aria-label="기타메이트 메뉴"><a href="./" data-i18n-en="Tuner">튜닝</a><a href="./chord-search.html" data-i18n-en="Chords">코드 검색</a><a href="./chord-identifier.html" data-i18n-en="Identify">코드 판별</a><a href="./metronome.html" data-i18n-en="Metronome">메트로놈</a><a href="./score-key-transposer.html" data-i18n-en="Transpose">악보 키 변환</a><a href="./guide.html" aria-current="page">가이드</a></nav>
 <main id="guide" tabindex="-1">
 <h1>기타메이트 사용 가이드</h1>
 <p class="intro">기타 줄을 맞추는 것부터 악보의 코드를 바꾸는 것까지, 다섯 가지 예시로 따라 해보세요.</p>
 <div class="guide-tabs" role="tablist" aria-label="가이드 주제" hidden>
-<button type="button" id="guide-tab-tuner" role="tab" aria-controls="example-tuner">튜닝</button>
-<button type="button" id="guide-tab-search" role="tab" aria-controls="example-search">코드 검색</button>
-<button type="button" id="guide-tab-identify" role="tab" aria-controls="example-identify">코드 판별</button>
-<button type="button" id="guide-tab-metronome" role="tab" aria-controls="example-metronome">메트로놈</button>
-<button type="button" id="guide-tab-score" role="tab" aria-controls="example-score">악보 키 변환</button>
+<button type="button" id="guide-tab-tuner" role="tab" aria-controls="example-tuner" data-i18n-en="Tuner">튜닝</button>
+<button type="button" id="guide-tab-search" role="tab" aria-controls="example-search" data-i18n-en="Chords">코드 검색</button>
+<button type="button" id="guide-tab-identify" role="tab" aria-controls="example-identify" data-i18n-en="Identify">코드 판별</button>
+<button type="button" id="guide-tab-metronome" role="tab" aria-controls="example-metronome" data-i18n-en="Metronome">메트로놈</button>
+<button type="button" id="guide-tab-score" role="tab" aria-controls="example-score" data-i18n-en="Transpose">악보 키 변환</button>
 </div>
 
 <section class="panel" id="example-tuner" aria-labelledby="guide-tuner">

@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="./i18n.js"></script>
+<script src="./i18n-en.js"></script>
 <meta name="color-scheme" content="light dark">
 <meta name="description" content="기타메이트는 튜닝, 코드 검색, 코드 판별, 악보 키 변환을 돕는 기타 연습 도구입니다. 서비스 소개와 문의 방법을 확인하세요.">
 <link rel="icon" type="image/svg+xml" href="./favicon.svg">
@@ -35,11 +37,12 @@ footer { max-width:760px; margin-top:28px; padding-top:16px; border-top:1px soli
 footer a { color:var(--green); text-underline-offset:3px; }
 a:focus-visible { outline:3px solid var(--focus); outline-offset:3px; }
 @media (min-width:760px) { .wrap { padding:32px; } }
+.page-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 </style>
 </head>
 <body>
 <div class="wrap">
-<header><a class="brand" href="./"><img src="./favicon.svg" width="40" height="40" alt="">기타메이트</a></header>
+<header class="page-header"><a class="brand" href="./"><img src="./favicon.svg" width="40" height="40" alt="">기타메이트</a><button class="lang-toggle" type="button" translate="no" data-lang-toggle></button></header>
 <main>
 <h1>기타메이트 소개</h1>
 <p class="intro">기타를 연습하다 필요한 도구를 한곳에서 쓸 수 있도록 만든 웹 앱입니다.</p>
