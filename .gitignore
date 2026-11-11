@@ -1,2 +1,6 @@
 # Private OCR references; fixtures contain text/coordinates only.
 .ref/
+
+# Wrangler local state (sync server dev runs)
+.wrangler/
+sync-server/.wrangler/

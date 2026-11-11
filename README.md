@@ -26,6 +26,7 @@ node tests/chord-filter.cjs
 node tests/i18n.cjs
 node tests/metronome-sync.cjs
 node tests/metronome-audio.cjs
+node tests/metronome-room.cjs
 node tests/audio.cjs
 node tests/ocr-eval.cjs
 node tests/ocr-dataset.cjs
@@ -90,4 +91,32 @@ taste-skill의 Editorial greeting 방향(seed `332781039`)을 바탕으로 크�
 
 ## 메트로놈 함께 맞추기
 
-서버 없이 여러 폰의 메트로놈을 같은 박자에 맞춥니다. 리더가 **리더로 QR 보여주기**를 누르면 `metronome#sync=<BPM>.<첫 박 시각(ms)>` 링크가 QR로 표시되고, 다른 폰은 기본 카메라로 찍어 열고 **시작**을 누릅니다. 모든 폰이 이 링크의 "벽시계 기준 박자 격자"(박 k = 첫 박 시각 + k × 60000/BPM, 4박마다 강박)를 각자의 시계로 재생하므로 인터넷 없이도 동작하지만, 폰 시계가 정확해야 합니다(날짜 및 시간 자동 설정). 리더가 템포를 바꾸면 다음 박 위치를 유지한 채 새 격자와 QR이 만들어지며, 다른 폰은 새 QR을 다시 찍습니다. 블루투스 이어폰 등 기기별 출력 지연은 **내 소리 타이밍**(±300ms, 기기에 저장)으로 보정합니다. 계산은 `metronome-sync.js`, QR 생성은 직접 구현한 `qr.js`(바이트 모드·오류 정정 M·버전 1–10)가 맡습니다. 오디오 준비와 시계 맞춤은 `metronome-audio.js`가 맡습니다. iPhone 무음 스위치가 켜져 있어도 들리도록 재생 전에 오디오 세션을 `playback`으로 바꾸고(iOS 16 이하는 무음 오디오를 한 번 재생), Safari의 `getOutputTimestamp()`는 시간 단위가 틀리는 버그(WebKit 264247)가 있어 쓰지 않고 `performance.now()`와 `AudioContext.currentTime`의 차이를 계속 측정해 박자를 예약합니다. 폰에서 확인할 때는 주소에 `?debug`를 붙이면(예: `/metronome?debug`) 오디오 상태·시계 차이·지연이 표시되고, 리더의 QR 링크에도 그대로 이어집니다.
+리더가 **리더로 방 만들기**를 누르면 6자리 방 코드와 QR(`metronome#room=CODE`)이 표시되고, 다른 폰은 기본 카메라로 찍어 열고 **참여하기**를 누릅니다(아이폰은 첫 소리에 탭이 필요해서). 그다음부터 리더가 시작·정지하거나 템포를 바꾸면 모든 폰이 같은 박에서 따라갑니다.
+
+- **서버**: `sync-server/` — Cloudflare Worker + Durable Object(방 하나당 객체 하나). WebSocket Hibernation API를 쓰고 타이머가 없어 메시지를 처리할 때만 깨어나므로 무료 플랜(일 10만 요청)으로 충분합니다. 연결 유지 `ping`은 런타임 자동 응답이라 객체를 깨우지 않습니다. 서버는 시간 응답(`time`), 리더 인증(`claim`, 토큰), 리더 박자 저장·전달(`state`), 참여 인원(`peers`)만 맡고, 모두 나가면 방 데이터를 지웁니다.
+- **박자 맞춤**: 박 k = `t0 + k × 60000/BPM`(서버 시각 ms, 4박마다 강박). 폰은 접속할 때 8번, 이후 5분마다 4번 왕복해 가장 빠른 왕복으로 서버 시계와의 차이를 재므로 **기기 시계가 틀려도** 맞습니다. 템포 변경은 약 0.6초 뒤의 박(`from`)부터 새 템포로 바뀌어 모든 폰이 같은 박에서 넘어갑니다. 계산은 `metronome-sync.js`, 연결은 `metronome-room.js`, 오디오는 `metronome-audio.js`(아이폰 무음 스위치 대응, Safari `getOutputTimestamp()` 버그 회피)가 맡습니다.
+- **앱을 벗어나면**: 화면이 가려지면 소리를 멈추고 오디오를 닫습니다(아이폰은 백그라운드에서 웹 오디오를 멈추고 고장 난 상태로 남기기 때문). 돌아오면 참여자는 **다시 듣기**, 리더는 **다시 듣기/시작**을 누르면 방 박자에 바로 다시 맞춥니다.
+- **내 소리 타이밍**(±300ms, 기기에 저장)으로 블루투스 이어폰 등 기기별 출력 지연을 보정합니다. QR 생성은 직접 구현한 `qr.js`입니다.
+
+### 서버 배포(GitHub 자동 배포)
+
+`.github/workflows/deploy-sync-server.yml`이 `sync-server/`가 바뀐 커밋을 `stage`에 푸시하면 `guitar-mate-sync-stage`, `main`에 푸시하면 `guitar-mate-sync` Worker로 배포합니다(Actions 탭에서 수동 실행도 가능).
+
+1. Cloudflare 대시보드 → 내 프로필 → API 토큰 → **토큰 생성** → 템플릿 **Cloudflare Workers 편집(Edit Cloudflare Workers)** → 계정 리소스를 내 계정으로 지정해 생성합니다.
+2. Cloudflare 대시보드 → **Workers 및 Pages** 오른쪽(또는 계정 홈)에서 **계정 ID**를 복사합니다.
+3. GitHub 저장소 → Settings → Secrets and variables → Actions → **New repository secret**으로 `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`를 추가합니다.
+4. Actions 탭에서 **Deploy sync server**를 `stage` 브랜치로 실행(Run workflow)하거나 `stage`에 푸시합니다. 처음 배포하면 Cloudflare가 계정의 `workers.dev` 하위 도메인을 정하라고 할 수 있는데, 대시보드 → Workers 및 Pages에서 확인·설정합니다.
+5. `sync-config.js`의 `subdomain`에 그 하위 도메인(`<이름>.workers.dev`의 `<이름>`)을 넣고 `sw.js`의 `VERSION`을 올려 배포합니다. 비어 있으면 함께 맞추기 화면에 "서버가 아직 준비되지 않았어요"가 표시됩니다.
+
+배포 확인: `https://guitar-mate-sync-stage.<이름>.workers.dev/health`가 `guitar-mate sync ok`를 돌려주면 됩니다. 허용 출처는 `wrangler.toml`의 `ALLOWED_ORIGINS`(운영: `guitar-mate.pages.dev`, stage: `*.guitar-mate.pages.dev`·localhost)입니다.
+
+### 로컬에서 시험하기
+
+```sh
+cd sync-server && npx wrangler dev --env stage --port 8787        # 서버
+python3 -m http.server 8000                                        # 저장소 루트에서 앱
+# http://localhost:8000/metronome.html?server=ws://127.0.0.1:8787&debug
+SYNC_URL=ws://127.0.0.1:8787 node sync-server/test/protocol.mjs   # 프로토콜 테스트(ws 패키지 필요)
+```
+
+`?debug`를 붙이면 오디오 상태, 서버 시계 차이·왕복 시간, 박자 격자가 화면 아래에 표시됩니다. `?server=`는 localhost에서만 적용됩니다.
