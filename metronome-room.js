@@ -4,8 +4,9 @@
 // measures the server clock offset with short bursts of round trips, and reports the leader's beat.
 (function (root) {
   const KEEPALIVE_MS = 25000;
-  const RESYNC_MS = 5 * 60 * 1000;
-  const BURST = 8, BURST_GAP_MS = 120;
+  // Time is re-measured a little every minute; the best round trips of the last 10 minutes are used.
+  const RESYNC_MS = 60 * 1000, RESYNC_COUNT = 3, SAMPLE_WINDOW_MS = 10 * 60 * 1000;
+  const BURST = 12, BURST_GAP_MS = 150;
   const RETRY_MS = [1000, 2000, 4000, 8000, 15000];
 
   function createRoom({ url, code, token = null, WebSocketImpl = root.WebSocket, now = () => root.performance.now(),
@@ -40,8 +41,9 @@
         const sent = pending.get(msg.c);
         if (sent === undefined) return;
         pending.delete(msg.c);
-        samples.push({ sent, received: now(), server: msg.s });
-        if (samples.length > 24) samples = samples.slice(-24);
+        const received = now();
+        samples.push({ sent, received, server: msg.s });
+        samples = samples.filter(s => s.received > received - SAMPLE_WINDOW_MS).slice(-120);
         const wasSynced = Boolean(best);
         best = pickOffset(samples);
         if (!wasSynced && best) onStatus('synced');
@@ -63,7 +65,7 @@
         if (token) send({ t: 'claim', token });
         burst();
         keepalive = setInterval(() => { if (socket.readyState === 1) socket.send('ping'); }, KEEPALIVE_MS);
-        resync = setInterval(() => burst(4), RESYNC_MS);
+        resync = setInterval(() => burst(RESYNC_COUNT), RESYNC_MS);
       };
       socket.onmessage = event => onMessage(typeof event.data === 'string' ? event.data : String(event.data));
       socket.onclose = () => {
@@ -93,7 +95,7 @@
       serverNow() { return best ? now() + best.offset : null; },
       offset() { return best ? best.offset : null; },
       publish(state) { if (token) send({ t: 'state', token, state }); },
-      resync() { burst(4); },
+      resync() { burst(RESYNC_COUNT + 3); },
       reconnectNow() { if (!closed && (!ws || ws.readyState > 1)) { clearTimer(retry); attempts = 0; open(); } },
       get connected() { return Boolean(ws && ws.readyState === 1); },
       close() {

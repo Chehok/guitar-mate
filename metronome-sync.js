@@ -8,8 +8,7 @@
   const MIN_BPM = 40, MAX_BPM = 240;
   const OFFSET_LIMIT = 300; // ms, for Bluetooth and other output delays
   const OFFSET_KEY = 'guitar-mate:metronome-offset';
-  const ROOM_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no 0/O, 1/I/L
-  const ROOM_CODE = /^[A-HJ-NP-Z2-9]{6}$/;
+  const ROOM_CODE = /^\d{4}$/; // 4 digits: easy to read out and type on a phone keypad
 
   const intervalMs = bpm => 60000 / bpm;
   const mod = (n, m) => ((n % m) + m) % m;
@@ -30,27 +29,29 @@
   const clampOffset = ms => Math.max(-OFFSET_LIMIT, Math.min(OFFSET_LIMIT, Math.round(Number(ms) || 0)));
 
   function makeRoomCode(random = Math.random) {
-    let code = '';
-    for (let i = 0; i < 6; i++) code += ROOM_ALPHABET[Math.floor(random() * ROOM_ALPHABET.length) % ROOM_ALPHABET.length];
-    return code;
+    return String(Math.min(9999, Math.floor(random() * 10000))).padStart(4, '0');
   }
-  // "#room=ABC234" → "ABC234" (or null)
+  // A typed code: digits only (spaces, dashes and full-width digits are tolerated). → "0427" or null
+  function normalizeCode(input) {
+    const digits = String(input || '').replace(/[０-９]/g, d => String.fromCharCode(d.charCodeAt(0) - 0xFEE0)).replace(/\D/g, '');
+    return ROOM_CODE.test(digits) ? digits : null;
+  }
+  // "#room=0427" → "0427" (or null)
   function parseRoom(hash) {
-    const match = /^#?room=([A-Za-z0-9]{6})$/.exec(String(hash || '').trim());
-    const code = match && match[1].toUpperCase();
-    return code && ROOM_CODE.test(code) ? code : null;
+    const match = /^#?room=(\d{4})$/.exec(String(hash || '').trim());
+    return match ? match[1] : null;
   }
 
-  // Clock offset (server − local, ms) from round trips; the fastest round trip is the most trustworthy.
-  // Each sample: {sent, received} local ms and `server` ms.
+  // Clock offset (server − local, ms) from round trips. Extra delay (queues, Wi-Fi/LTE bursts) almost
+  // always hits one direction, so only the fastest round trips are trusted: those within FAST_MS of the
+  // fastest one are averaged. Each sample: {sent, received} local ms and `server` ms.
+  const FAST_MS = 8;
   function pickOffset(samples) {
-    let best = null;
-    for (const s of samples) {
-      const rtt = s.received - s.sent;
-      if (!(rtt >= 0)) continue;
-      if (!best || rtt < best.rtt) best = { rtt, offset: s.server - (s.sent + s.received) / 2 };
-    }
-    return best;
+    const valid = samples.map(s => ({ rtt: s.received - s.sent, offset: s.server - (s.sent + s.received) / 2 })).filter(s => s.rtt >= 0);
+    if (!valid.length) return null;
+    const fastest = Math.min(...valid.map(s => s.rtt));
+    const fast = valid.filter(s => s.rtt <= fastest + FAST_MS);
+    return { rtt: fastest, offset: fast.reduce((sum, s) => sum + s.offset, 0) / fast.length, samples: fast.length };
   }
 
   // Where the sync server lives. Production and branch previews use separate workers;
@@ -70,6 +71,6 @@
   root.metronomeSync = {
     BEATS_PER_BAR, MIN_BPM, MAX_BPM, OFFSET_LIMIT, OFFSET_KEY, ROOM_CODE,
     intervalMs, nextBeatIndex, beatEpoch, beatInBar, retime, clampOffset,
-    makeRoomCode, parseRoom, pickOffset, serverUrl,
+    makeRoomCode, normalizeCode, parseRoom, pickOffset, serverUrl,
   };
 })(typeof window !== 'undefined' ? window : globalThis);

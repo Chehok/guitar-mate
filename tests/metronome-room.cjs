@@ -69,7 +69,7 @@ const first = sockets[0];
 assert.deepEqual(JSON.parse(first.sent[0]), { t: 'claim', token: 'tok-0123456789abcdef' }, 'leader claims on connect');
 assert.equal(events.leader, 1);
 const timeRequests = first.sent.filter(m => m !== 'ping' && JSON.parse(m).t === 'time');
-assert.equal(timeRequests.length, 8, 'a burst of 8 round trips');
+assert.equal(timeRequests.length, 12, 'a burst of 12 round trips');
 assert(room.synced);
 assert.equal(room.rtt, 40);
 assert(Math.abs(room.serverNow() - (nowMs + serverAhead)) < 1, `server clock estimate ${room.serverNow() - nowMs} ≈ ${serverAhead}`);
@@ -83,13 +83,13 @@ assert.equal(events.states[0].bpm, 96);
 room.publish({ bpm: 100, t0: 2, playing: true });
 assert.deepEqual(JSON.parse(first.sent.at(-1)), { t: 'state', token: 'tok-0123456789abcdef', state: { bpm: 100, t0: 2, playing: true } });
 
-// Keep-alive: a plain "ping" every 25 s (answered by the server runtime, no billing); re-measure every 5 min
+// Keep-alive: a plain "ping" every 25 s (answered by the server runtime, no billing); re-measure a little every minute
 const pingsBefore = first.sent.filter(m => m === 'ping').length;
 advance(60000);
 assert.equal(first.sent.filter(m => m === 'ping').length - pingsBefore, 2);
 const timesBefore = first.sent.filter(m => m !== 'ping' && JSON.parse(m).t === 'time').length;
 advance(5 * 60 * 1000);
-assert.equal(first.sent.filter(m => m !== 'ping' && JSON.parse(m).t === 'time').length - timesBefore, 4, 'a short re-measure burst');
+assert.equal(first.sent.filter(m => m !== 'ping' && JSON.parse(m).t === 'time').length - timesBefore, 15, '3 round trips per minute');
 
 // Asymmetric network: a slower reply doesn't override the better (faster) sample
 oneWay = 300;

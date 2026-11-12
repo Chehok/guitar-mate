@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 const { default: WebSocket } = await import(process.env.WS_MODULE || 'ws');
 const BASE = process.env.SYNC_URL || 'ws://127.0.0.1:8787';
 const HTTP = BASE.replace(/^ws/, 'http');
-const code = Array.from({ length: 6 }, () => 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 31)]).join('');
+const code = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
 
 function connect(path = `/room/${code}`, origin = 'http://localhost:8000') {
   return new Promise((resolve, reject) => {
@@ -40,6 +40,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 // Health and bad requests
 assert.equal(await (await fetch(HTTP + '/health')).text(), 'guitar-mate sync ok');
 assert.equal((await fetch(HTTP + '/room/abc')).status, 400, 'bad room code');
+assert.equal((await fetch(HTTP + '/room/ABC234')).status, 400, 'old letter codes are no longer valid');
 assert.equal((await fetch(HTTP + `/room/${code}`)).status, 426, 'plain HTTP is not a WebSocket');
 await assert.rejects(connect(`/room/${code}`, 'https://evil.example'), e => e.status === 403, 'other websites are refused');
 
