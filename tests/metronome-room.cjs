@@ -91,6 +91,19 @@ const timesBefore = first.sent.filter(m => m !== 'ping' && JSON.parse(m).t === '
 advance(5 * 60 * 1000);
 assert.equal(first.sent.filter(m => m !== 'ping' && JSON.parse(m).t === 'time').length - timesBefore, 15, '3 round trips per minute');
 
+// Idle (nothing playing): only keep-alive pings, no re-measuring; waking up refreshes the clock at once
+const timeCount = () => first.sent.filter(m => m !== 'ping' && JSON.parse(m).t === 'time').length;
+room.setActive(false);
+const idleTimes = timeCount(), idlePings = first.sent.filter(m => m === 'ping').length;
+advance(10 * 60 * 1000);
+assert.equal(timeCount(), idleTimes, 'no time requests while idle');
+assert.equal(first.sent.filter(m => m === 'ping').length - idlePings, 24, 'still kept alive while idle');
+room.setActive(true);
+advance(2000);
+assert.equal(timeCount() - idleTimes, 6, 'a short burst when play starts');
+advance(60000);
+assert.equal(timeCount() - idleTimes, 9, 'back to 3 per minute');
+
 // Asymmetric network: a slower reply doesn't override the better (faster) sample
 oneWay = 300;
 room.resync();

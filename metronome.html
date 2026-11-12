@@ -368,6 +368,8 @@ function renderButtons(){
   }
   startStop.setAttribute('aria-pressed',String(running));
   tempoRange.disabled=tempoValue.disabled=following;
+  room?.setActive(running||startWhenSynced);
+  armIdle();
 }
 // Follower news shows in the room box and under the main button.
 function tell(text){$('sync-follower-text').textContent=text;status.textContent=text;}
@@ -393,7 +395,7 @@ function changeRoomTempo(bpm){
   pending={grid:next.grid,from:next.from};
   publish({bpm,t0:next.grid.t0,playing:true,from:next.from});
 }
-function publish(state){roomState=state;room.publish(state);renderButtons();}
+function publish(state){roomState=state;idleSince=0;room.publish(state);renderButtons();}
 let startWhenSynced=false;
 function beginLeading(){
   startWhenSynced=false;
@@ -553,7 +555,7 @@ async function joinRoom(){
   }finally{joinButton.disabled=false;renderButtons();}
 }
 function applyRoomState(state){
-  roomState=state;
+  roomState=state;idleSince=0;armIdle();
   if(role==='leader'){renderButtons();return;} // the leader already applied its own change
   if(role!=='follower')return;
   tempoRange.value=tempoValue.value=state.bpm;
@@ -666,6 +668,23 @@ function readRoomHash(){
 }
 window.addEventListener('hashchange',readRoomHash);
 
+// ---- Idle rooms ----
+// A room where nothing has played for an hour is closed on each phone, so forgotten tabs don't linger.
+const IDLE_MS=(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)&&Number(new URLSearchParams(location.search).get('idle')))||60*60*1000;
+let idleTimer=null,idleSince=0;
+function armIdle(){
+  clearTimeout(idleTimer);idleTimer=null;
+  if(!room||running||startWhenSynced||roomState?.playing){idleSince=0;return;}
+  if(!idleSince)idleSince=Date.now();
+  idleTimer=setTimeout(checkIdle,Math.max(0,idleSince+IDLE_MS-Date.now()));
+}
+function checkIdle(){
+  if(!room||!idleSince||Date.now()-idleSince<IDLE_MS){armIdle();return;}
+  if(role==='leader'&&grid)room.publish({...grid,playing:false});
+  closeRoom();
+  status.textContent='1시간 동안 재생하지 않아 방을 닫았어요.';
+}
+
 // ---- Leaving the app ----
 // iOS stops web audio in the background and can leave the context silently broken, so stop and close it;
 // a tap brings it back in a fresh context (followers keep their place in the room).
@@ -675,6 +694,7 @@ document.addEventListener('visibilitychange',()=>{
     if(audioContext){try{audioContext.close();}catch(_){}audioContext=null;clock.reset();}
     return;
   }
+  if(idleSince&&room)checkIdle(); // timers sleep in the background
   room?.reconnectNow();room?.resync();
   if(!pausedByHide)return;
   if(role==='follower'){joinButton.hidden=false;joinButton.textContent='다시 듣기';tell('다른 앱에 다녀와서 멈췄어요. 다시 듣기를 눌러 주세요.');}
