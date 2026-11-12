@@ -138,3 +138,41 @@
 
   root.metronomeCalibrate = { analyze, openMic, bandpass, envelope, CHIRP_HZ, LEADER_HZ };
 })(typeof window !== 'undefined' ? window : globalThis);
+
+// ---- Tap to match (no microphone) ----
+// Phase "own": this phone plays high chirps on the beat and the person taps along.
+// Phase "leader": this phone is silent and the person taps along with the leader's clicks.
+// Each tap is compared with when this phone's beat is (or would be) heard. People tap a little early and
+// touch screens report taps late; both are the same in the two phases, so the difference between the
+// phases is how far the leader's clicks are from mine:  δ = median(leader phase) − median(own phase).
+(function (root) {
+  const api = root.metronomeCalibrate;
+  const median = values => { const s = [...values].sort((a, b) => a - b); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+
+  // taps: tap times (ms); beats: when my beats are heard (ms). Returns the asynchrony of each tap
+  // against the nearest beat, ignoring taps more than 40% of a beat away.
+  function asynchronies(taps, beats, intervalMs) {
+    const out = [];
+    for (const tap of taps) {
+      let best = null;
+      for (const beat of beats) if (best === null || Math.abs(tap - beat) < Math.abs(tap - best)) best = beat;
+      if (best !== null && Math.abs(tap - best) <= intervalMs * 0.4) out.push(tap - best);
+    }
+    return out;
+  }
+
+  // Returns {ok, delta (ms), spread, reason}. The first two taps of each phase are warm-up and skipped.
+  function analyzeTaps({ ownTaps, ownBeats, leaderTaps, leaderBeats, intervalMs, warmup = 2, minTaps = 5 }) {
+    const own = asynchronies(ownTaps.slice(warmup), ownBeats, intervalMs);
+    const leader = asynchronies(leaderTaps.slice(warmup), leaderBeats, intervalMs);
+    if (own.length < minTaps) return { ok: false, reason: 'own' };
+    if (leader.length < minTaps) return { ok: false, reason: 'leader' };
+    const mo = median(own), ml = median(leader);
+    const spread = Math.max(median(own.map(v => Math.abs(v - mo))), median(leader.map(v => Math.abs(v - ml))));
+    if (spread > Math.max(35, intervalMs * 0.08)) return { ok: false, reason: 'uneven', spread };
+    return { ok: true, delta: ml - mo, spread, own: mo, leader: ml };
+  }
+
+  api.analyzeTaps = analyzeTaps;
+  api.TAP_COUNT = 10;
+})(typeof window !== 'undefined' ? window : globalThis);
