@@ -272,6 +272,14 @@ text: {
   '마이크를 시작하지 못했어요. 다시 해 보세요.': 'Couldn’t start the microphone. Please try again.',
   '소리를 시작하지 못했어요. 시작을 다시 누르고, 계속되면 페이지를 새로고침해 주세요.': 'Couldn’t start the sound. Press Start again, and reload the page if it keeps happening.',
   '소리가 멈췄어요. 시작을 다시 눌러 주세요.': 'The sound stopped. Press Start again.',
+  '리더가 방을 만들면 다른 폰은 방 코드로 들어와요. 리더가 시작·정지하거나 템포를 바꾸면 모두 함께 따라가요. 인터넷 연결이 필요해요.': 'The leader creates a room and the other phones join with its code. When the leader starts, stops or changes tempo, everyone follows. Needs an internet connection.',
+  '또는': 'or',
+  '자동 맞추기': 'Auto match',
+  '듣는 중…': 'Listening…',
+  '리더를 따라가는 중': 'Following the leader',
+  '리더를 기다리는 중': 'Waiting for the leader',
+  '내 소리 타이밍 초기화': 'Reset my sound timing',
+  '내 소리가 다른 폰보다 늦게 들리면 빠르게 쪽으로, 일찍 들리면 느리게 쪽으로 옮기세요. 블루투스 이어폰은 많이 빠르게 해야 할 수 있어요. 이 기기에 저장돼요.': 'If your clicks sound later than the other phones, move toward Faster; if earlier, toward Slower. Bluetooth earphones may need a lot of Faster. Saved on this device.',
 
   // Sheet transposer
   '파일 선택': 'Choose file',
@@ -554,7 +562,7 @@ patterns: [
   ['방 코드 {0}', 'Room code {0}'],
   ['방 {0}', 'Room {0}'],
   ['시간 오차 약 ±{0}ms', 'timing error about ±{0} ms'],
-  ['연결된 폰 {0}대', '{0} phones connected'],
+  ['연결된 폰 {0}대', '{0} phones in the room'],
   ['리더 박자 {0} BPM으로 재생 중', 'Playing the leader’s {0} BPM beat'],
   ['리더에 맞춰 내 소리를 {0}ms 앞당겼어요.{1}', 'Moved my clicks {0} ms earlier to match the leader.{1}'],
   ['리더에 맞춰 내 소리를 {0}ms 늦췄어요.{1}', 'Moved my clicks {0} ms later to match the leader.{1}'],

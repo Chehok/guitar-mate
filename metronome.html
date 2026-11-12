@@ -51,38 +51,76 @@ h1 { margin:0 0 8px; font-size:clamp(24px,3vw,30px); font-weight:700; line-heigh
 .start-button { width:100%; min-height:52px; border:1px solid var(--green); border-radius:10px; background:var(--green); color:var(--on-green); font-weight:700; cursor:pointer; }
 .start-button:active { transform:translateY(1px); }
 .status { min-height:24px; margin:12px 0 0; color:var(--muted); text-align:center; font-size:13px; }
+.start-button.passive { border-color:var(--line); background:var(--soft); color:var(--ink); cursor:default; }
+.tempo-value input:disabled, .tempo-slider:disabled { opacity:.55; }
+/* Play together */
 .sync-panel { margin-top:16px; }
-.sync-panel h2 { margin:0 0 4px; font-size:18px; font-weight:700; letter-spacing:-.4px; }
-.sync-panel .hint { margin:0 0 16px; color:var(--muted); font-size:13px; line-height:1.7; }
-.sync-actions { display:flex; flex-wrap:wrap; gap:8px; }
-.sync-actions[hidden], .sync-box button[hidden] { display:none; }
-.sync-actions button, .sync-share button { min-height:44px; padding:8px 14px; border:1px solid var(--control); border-radius:10px; background:var(--panel); color:var(--ink); font-weight:650; cursor:pointer; }
-.sync-actions button.primary { border-color:var(--green); background:var(--green); color:var(--on-green); }
-.sync-box { margin-top:16px; padding:16px; border:1px solid var(--line); border-radius:12px; background:var(--soft); }
-.sync-box[hidden] { display:none; }
-.sync-box p { margin:0 0 8px; font-size:14px; }
-.sync-qr { width:min(240px,100%); margin:4px auto 12px; padding:0; border-radius:8px; background:#fff; line-height:0; }
+.sync-panel [hidden] { display:none !important; }
+.sync-panel h2 { margin:0; font-size:18px; font-weight:700; letter-spacing:-.4px; }
+.sync-panel .hint { margin:0; color:var(--muted); font-size:13px; line-height:1.7; }
+.sync-panel .sync-lede { max-width:44em; margin:4px 0 20px; }
+.sync-grid { display:grid; grid-template-columns:minmax(0,1fr); gap:20px; }
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:44px; padding:8px 16px; border:1px solid var(--control); border-radius:10px; background:var(--panel); color:var(--ink); font-weight:650; line-height:1.3; text-align:center; cursor:pointer; }
+.btn svg { flex:none; }
+.btn.primary { border-color:var(--green); background:var(--green); color:var(--on-green); }
+.btn.wide { width:100%; }
+.btn.tall { min-height:52px; }
+.btn.quiet { min-height:40px; padding:6px 10px; border-color:transparent; background:transparent; color:var(--muted); font-size:13px; }
+.btn:disabled { opacity:.6; cursor:default; }
+.btn:not(.primary):not(:disabled):active { background:var(--soft); }
+.btn.quiet:not(:disabled):active { background:color-mix(in srgb,var(--ink) 8%,transparent); color:var(--ink); }
+@media (hover:hover) {
+  .btn:not(.primary):not(:disabled):hover { background:var(--soft); }
+  .btn.quiet:not(:disabled):hover { background:color-mix(in srgb,var(--ink) 8%,transparent); color:var(--ink); }
+}
+.sync-or { display:flex; align-items:center; gap:12px; margin:16px 0 12px; color:var(--muted); font-size:12px; }
+.sync-or::before, .sync-or::after { content:""; flex:1; border-top:1px solid var(--line); }
+.sync-join-form label { display:block; margin-bottom:8px; font-weight:650; }
+.sync-join-row { display:flex; gap:8px; }
+.sync-join-row input { flex:1; min-width:0; min-height:52px; padding:6px 12px; border:1px solid var(--control); border-radius:10px; background:var(--panel); color:var(--ink); font-size:24px; font-weight:750; letter-spacing:.32em; text-indent:.32em; text-align:center; font-variant-numeric:tabular-nums; }
+.sync-join-row input::placeholder { color:var(--control); opacity:.55; }
+.sync-join-form .hint { margin-top:8px; }
+.sync-box { padding:12px 16px 16px; border:1px solid var(--line); border-radius:12px; background:var(--soft); }
+.sync-box-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin:0 -8px 8px 0; }
+.sync-box-title { margin:0; font-weight:700; }
+.sync-box-title.label { color:var(--muted); font-size:13px; font-weight:600; }
+.sync-leader-body { display:grid; gap:12px; grid-template-areas:"code" "text" "qr" "share"; }
+.sync-code { grid-area:code; display:flex; gap:8px; margin:0; }
+.sync-code span { display:grid; place-items:center; width:52px; height:60px; border:1px solid var(--line); border-radius:12px; background:var(--panel); font-size:32px; font-weight:800; line-height:1; font-variant-numeric:tabular-nums; }
+.sync-leader-text { grid-area:text; margin:0; font-size:14px; }
+.sync-qr { grid-area:qr; justify-self:center; width:168px; padding:8px; border-radius:10px; background:#fff; line-height:0; }
 .sync-qr svg { display:block; width:100%; height:auto; }
-.offset-nudge { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:10px; }
-.offset-nudge button { min-height:44px; border:1px solid var(--control); border-radius:10px; background:var(--panel); color:var(--ink); font:inherit; font-weight:700; font-variant-numeric:tabular-nums; cursor:pointer; }
-.offset-nudge button:active { background:var(--soft); }
-.sync-join-form { margin-top:18px; }
-.sync-join-form label { display:block; margin-bottom:6px; font-weight:650; }
-.sync-join-form input { width:7.5em; min-height:44px; padding:8px 12px; border:1px solid var(--control); border-radius:10px; background:var(--panel); color:var(--ink); font:inherit; font-size:20px; font-weight:700; letter-spacing:.2em; text-align:center; font-variant-numeric:tabular-nums; }
-.sync-join-form .hint { margin:8px 0 0; }
-.sync-code-label { margin:0 !important; color:var(--muted); font-size:13px !important; }
-.sync-code { margin:0 0 8px !important; font-size:40px !important; font-weight:800; letter-spacing:.18em; font-variant-numeric:tabular-nums; }
-.sync-conn { margin:12px 0 0; color:var(--muted); font-size:13px; }
-.sync-conn[hidden] { display:none; }
-.sync-link { display:block; margin:0 0 12px; color:var(--muted); font-size:12px; word-break:break-all; text-align:center; }
-.sync-share { display:flex; justify-content:center; gap:8px; }
-.offset-row { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:18px; }
-.offset-row label { font-weight:650; }
-.offset-row output { min-width:72px; color:var(--muted); text-align:right; font-variant-numeric:tabular-nums; }
+.sync-share { grid-area:share; display:flex; gap:8px; }
+.sync-share .btn { flex:1; }
+.sync-link { display:block; margin-top:12px; color:var(--muted); font-size:12px; word-break:break-all; }
+.sync-follower-text { margin:0 0 12px; font-size:15px; }
+.sync-follower-text:last-of-type { margin-bottom:0; }
+.sync-conn { display:flex; align-items:flex-start; gap:8px; margin:14px 0 0; padding-top:12px; border-top:1px solid var(--line); color:var(--muted); font-size:12px; line-height:1.5; }
+.sync-dot { flex:none; width:8px; height:8px; margin-top:5px; border-radius:50%; background:var(--focus); }
+.sync-conn[data-state=ok] .sync-dot { background:var(--green); }
+.sync-conn[data-state=wait] .sync-dot { animation:sync-pulse 1.2s ease-in-out infinite; }
+@keyframes sync-pulse { 50% { opacity:.25; } }
+.sync-tune { padding-top:20px; border-top:1px solid var(--line); }
+.offset-row { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.offset-row label { font-weight:700; }
+.offset-meta { display:flex; align-items:center; gap:2px; margin-right:-8px; }
+.offset-row output { min-width:64px; padding-right:8px; font-weight:700; text-align:right; font-variant-numeric:tabular-nums; }
 .offset-slider { display:block; width:100%; margin:8px 0 2px; accent-color:var(--green); }
 .offset-limits { display:flex; justify-content:space-between; color:var(--muted); font-size:12px; }
-.tempo-value input:disabled, .tempo-slider:disabled { opacity:.55; }
+.offset-nudge { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:10px; }
+.offset-nudge .btn { padding-inline:4px; font-weight:700; font-variant-numeric:tabular-nums; }
+.sync-tune > .hint { margin-top:10px; }
+.sync-auto { margin-top:16px; }
+.sync-auto .hint { margin-top:8px; }
 .sync-debug { margin:16px 0 0; padding:10px; border-radius:8px; background:var(--soft); color:var(--muted); font-size:11px; line-height:1.5; white-space:pre-wrap; }
+@media (min-width:560px) {
+  .sync-leader-body { grid-template-columns:minmax(0,1fr) auto; grid-template-areas:"code qr" "text qr" "share qr"; column-gap:20px; align-content:start; }
+  .sync-qr { align-self:start; width:148px; }
+}
+@media (min-width:760px) {
+  .sync-grid { grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:32px; align-items:start; }
+  .sync-tune { padding:0 0 0 32px; border-top:0; border-left:1px solid var(--line); }
+}
 @media (min-width: 760px) { .panel { padding: 32px; } }
 @media (prefers-color-scheme:dark) { :root { color-scheme:dark; --paper:#131713; --panel:#1c221d; --soft:#29332b; --ink:#f0f1e6; --muted:#b2beb1; --line:#374438; --control:#7c907d; --green:#a2d2b5; --on-green:#172c21; --focus:#e8c879; } }
 @media (prefers-reduced-motion:reduce) { *,*::before,*::after { transition:none !important; animation:none !important; scroll-behavior:auto !important; } .beats li.active { transform:none; } }
@@ -133,36 +171,48 @@ h1 { margin:0 0 8px; font-size:clamp(24px,3vw,30px); font-weight:700; line-heigh
 </section>
 <section class="panel sync-panel" aria-labelledby="sync-title">
 <h2 id="sync-title">함께 맞추기</h2>
-<p class="hint">한 명이 리더가 되어 방을 만들면, 다른 폰은 방 코드 4자리를 입력하거나 QR을 찍어 참여해요. 리더가 시작·정지하거나 템포를 바꾸면 모두 함께 따라가요. 인터넷 연결이 필요해요.</p>
+<p class="hint sync-lede">리더가 방을 만들면 다른 폰은 방 코드로 들어와요. 리더가 시작·정지하거나 템포를 바꾸면 모두 함께 따라가요. 인터넷 연결이 필요해요.</p>
+<div class="sync-grid">
+<div class="sync-main">
 <div id="sync-idle">
-<div class="sync-actions"><button id="sync-lead" class="primary" type="button">리더로 방 만들기</button></div>
+<button id="sync-lead" class="btn wide tall" type="button">리더로 방 만들기</button>
+<p class="sync-or" aria-hidden="true">또는</p>
 <form class="sync-join-form" id="sync-join-form" novalidate>
 <label for="sync-code-input">방 코드로 참여</label>
-<div class="sync-actions"><input id="sync-code-input" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="0000" aria-describedby="sync-code-hint"><button type="submit">참여하기</button></div>
+<div class="sync-join-row"><input id="sync-code-input" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="0000" aria-describedby="sync-code-hint"><button class="btn tall" type="submit">참여하기</button></div>
 <p class="hint" id="sync-code-hint">리더 화면에 보이는 숫자 4자리를 입력하세요. QR을 찍어도 돼요.</p>
 </form>
 </div>
 <p class="hint" id="sync-unavailable" hidden>함께 맞추기 서버가 아직 준비되지 않았어요.</p>
 <div class="sync-box" id="sync-leader" hidden>
-<p class="sync-code-label">방 코드</p>
+<div class="sync-box-head"><p class="sync-box-title label">방 코드</p><button id="sync-close-room" class="btn quiet" type="button">방 닫기</button></div>
+<div class="sync-leader-body">
 <p class="sync-code" id="sync-leader-code" translate="no"></p>
-<p>다른 폰에서 이 숫자를 입력하거나 QR을 찍게 해 주세요.</p>
+<p class="sync-leader-text">다른 폰에서 이 숫자를 입력하거나 QR을 찍게 해 주세요.</p>
 <div class="sync-qr" id="sync-qr" role="img" aria-label="함께 맞추기 QR 코드"></div>
-<a class="sync-link" id="sync-link" href="#"></a>
-<div class="sync-share"><button id="sync-copy" type="button">링크 복사</button><button id="sync-share" type="button" hidden>공유</button><button id="sync-close-room" type="button">방 닫기</button></div>
+<div class="sync-share"><button id="sync-copy" class="btn" type="button">링크 복사</button><button id="sync-share" class="btn" type="button" hidden>공유</button></div>
+</div>
+<a class="sync-link" id="sync-link" href="#" hidden></a>
 </div>
 <div class="sync-box" id="sync-follower" hidden>
-<p><strong id="sync-follower-code"></strong></p>
-<p id="sync-follower-text">참여하기를 누르면 리더의 박자를 따라가요.</p>
-<div class="sync-actions"><button id="sync-join" class="primary" type="button">참여하기</button><button id="sync-calibrate" class="primary" type="button" hidden>🎤 자동 맞추기</button><button id="sync-leave" type="button">나가기</button></div>
-<p class="hint" id="sync-calibrate-hint" style="margin:10px 0 0" hidden>어긋나게 들리면 리더 폰 가까이에서 자동 맞추기를 눌러 보세요. 4초 동안 마이크로 듣고 내 소리 타이밍을 맞춰요.</p>
+<div class="sync-box-head"><p class="sync-box-title" id="sync-follower-code"></p><button id="sync-leave" class="btn quiet" type="button">나가기</button></div>
+<p class="sync-follower-text" id="sync-follower-text">참여하기를 누르면 리더의 박자를 따라가요.</p>
+<button id="sync-join" class="btn primary wide" type="button">참여하기</button>
 </div>
-<p class="sync-conn" id="sync-conn" role="status" aria-live="polite" hidden></p>
-<div class="offset-row"><label for="sync-offset">내 소리 타이밍</label><output id="sync-offset-value" for="sync-offset">0 ms</output></div>
+<p class="sync-conn" id="sync-conn" role="status" aria-live="polite" hidden><span class="sync-dot" aria-hidden="true"></span><span id="sync-conn-text"></span></p>
+</div>
+<div class="sync-tune" id="sync-tune" hidden>
+<div class="offset-row"><label for="sync-offset">내 소리 타이밍</label><span class="offset-meta"><button id="sync-offset-reset" class="btn quiet" type="button" aria-label="내 소리 타이밍 초기화" hidden>초기화</button><output id="sync-offset-value" for="sync-offset">0 ms</output></span></div>
 <input class="offset-slider" id="sync-offset" type="range" min="-300" max="300" step="5" value="0" aria-describedby="sync-offset-hint">
 <div class="offset-limits" aria-hidden="true"><span>← 느리게</span><span>빠르게 →</span></div>
-<div class="offset-nudge" role="group" aria-label="내 소리 타이밍 미세 조절"><button type="button" data-faster="-20" aria-label="20ms 느리게">−20</button><button type="button" data-faster="-5" aria-label="5ms 느리게">−5</button><button type="button" data-faster="5" aria-label="5ms 빠르게">+5</button><button type="button" data-faster="20" aria-label="20ms 빠르게">+20</button></div>
-<p class="hint" id="sync-offset-hint" style="margin:8px 0 0">다른 폰보다 내 소리가 늦게 들리면 오른쪽(+, 빠르게)으로, 빠르게 들리면 왼쪽(−, 느리게)으로 옮기세요. 블루투스 이어폰은 많이 빠르게 해야 할 수 있어요. 이 기기에 저장돼요.</p>
+<div class="offset-nudge" role="group" aria-label="내 소리 타이밍 미세 조절"><button class="btn" type="button" data-faster="-20" aria-label="20ms 느리게">−20</button><button class="btn" type="button" data-faster="-5" aria-label="5ms 느리게">−5</button><button class="btn" type="button" data-faster="5" aria-label="5ms 빠르게">+5</button><button class="btn" type="button" data-faster="20" aria-label="20ms 빠르게">+20</button></div>
+<p class="hint" id="sync-offset-hint">내 소리가 다른 폰보다 늦게 들리면 빠르게 쪽으로, 일찍 들리면 느리게 쪽으로 옮기세요. 블루투스 이어폰은 많이 빠르게 해야 할 수 있어요. 이 기기에 저장돼요.</p>
+<div class="sync-auto" id="sync-auto" hidden>
+<button id="sync-calibrate" class="btn wide" type="button"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span id="sync-calibrate-label">자동 맞추기</span></button>
+<p class="hint" id="sync-match-text" role="status" aria-live="polite">어긋나게 들리면 리더 폰 가까이에서 자동 맞추기를 눌러 보세요. 4초 동안 마이크로 듣고 내 소리 타이밍을 맞춰요.</p>
+</div>
+</div>
+</div>
 </section>
 </main>
 <gm-footer></gm-footer>
@@ -303,13 +353,24 @@ async function ensureAudio(){
 }
 function renderButtons(){
   const following=role==='follower';
-  const canMatch=following&&running&&Boolean(grid);
-  $('sync-calibrate').hidden=!canMatch;$('sync-calibrate-hint').hidden=!canMatch;
-  startStop.disabled=following;
-  startStop.textContent=following?'리더를 따라가요':running||startWhenSynced?'멈추기':role==='leader'&&roomState?.playing?'다시 듣기':'시작';
+  $('sync-auto').hidden=!(following&&running&&grid);
+  $('sync-tune').hidden=!(role==='leader'||following&&joined);
+  if(following){
+    // Followers join from here too, so the main button is never a dead end.
+    const listening=joinButton.hidden;
+    startStop.disabled=listening||joinButton.disabled;
+    startStop.textContent=listening?(running?'리더를 따라가는 중':'리더를 기다리는 중'):joinButton.textContent;
+    startStop.classList.toggle('passive',listening);
+  }else{
+    startStop.disabled=false;
+    startStop.classList.remove('passive');
+    startStop.textContent=running||startWhenSynced?'멈추기':role==='leader'&&roomState?.playing?'다시 듣기':'시작';
+  }
   startStop.setAttribute('aria-pressed',String(running));
   tempoRange.disabled=tempoValue.disabled=following;
 }
+// Follower news shows in the room box and under the main button.
+function tell(text){$('sync-follower-text').textContent=text;status.textContent=text;}
 
 // ---- Tempo ----
 let publishTimer=null;
@@ -349,7 +410,7 @@ function beginLeading(){
 
 // ---- Start / stop ----
 startStop.addEventListener('click',async()=>{
-  if(role==='follower')return;
+  if(role==='follower'){if(!startStop.disabled)joinRoom();return;}
   if(startWhenSynced){startWhenSynced=false;status.textContent='메트로놈을 멈췄습니다.';renderButtons();return;}
   if(running){
     if(role==='leader'&&grid)publish({...grid,playing:false});
@@ -393,7 +454,8 @@ function renderConn(){
   const lines={connecting:'서버에 연결하는 중…',reconnecting:'연결이 끊겨 다시 연결하는 중…'};
   let text=lines[connState]||(room.synced?`연결됐어요 · 시간 오차 약 ±${Math.max(1,Math.round(room.rtt/2))}ms`:'연결됐어요 · 시간 맞추는 중…');
   if(room.connected&&peers)text+=` · 연결된 폰 ${peers}대`;
-  connLine.textContent=text;
+  connLine.dataset.state=room.connected&&room.synced?'ok':'wait';
+  $('sync-conn-text').textContent=text;
 }
 function openRoom(code,token){
   roomCode=code;
@@ -407,8 +469,11 @@ function openRoom(code,token){
 }
 function closeRoom(){
   clearTimeout(publishTimer);startWhenSynced=false;
+  const wasFollowing=role==='follower';
   room?.close();room=null;role=null;roomState=null;roomCode=null;peers=0;joined=false;
   if(grid){grid=null;pending=null;if(running){stopLoop();status.textContent='메트로놈을 멈췄습니다.';}}
+  if(wasFollowing&&!running)status.textContent='시작을 누르면 메트로놈이 재생됩니다.';
+  $('sync-link').hidden=true;
   idleBox.hidden=!serverUrl;leaderBox.hidden=followerBox.hidden=true;
   try{sessionStorage.removeItem(TOKEN_KEY);}catch(_){}
   if(location.hash)history.replaceState(null,'',location.href.split('#')[0]);
@@ -443,7 +508,8 @@ function startLeading(){
 }
 function showLeader(){
   idleBox.hidden=true;followerBox.hidden=true;leaderBox.hidden=false;
-  $('sync-leader-code').textContent=roomCode;
+  leaderBox.append(connLine);
+  $('sync-leader-code').replaceChildren(...[...roomCode].map(digit=>Object.assign(document.createElement('span'),{textContent:digit})));
   const link=roomLink();
   $('sync-qr').innerHTML=window.gmQr.svg(link);
   $('sync-link').href=link;$('sync-link').textContent=link;
@@ -452,9 +518,10 @@ function showLeader(){
 function showFollower(code){
   roomCode=code;role='follower';
   idleBox.hidden=true;leaderBox.hidden=true;followerBox.hidden=false;
+  followerBox.append(connLine);
   $('sync-follower-code').textContent=`방 ${code}`;
   joinButton.hidden=false;joinButton.textContent='참여하기';
-  $('sync-follower-text').textContent='참여하기를 누르면 리더의 박자를 따라가요.';
+  tell('참여하기를 누르면 리더의 박자를 따라가요.');
   if(running){stopLoop();}
   renderButtons();
 }
@@ -473,33 +540,36 @@ $('sync-join-form').addEventListener('submit',event=>{
 $('sync-code-input').addEventListener('input',event=>{event.target.value=event.target.value.replace(/[^0-9０-９]/g,'').slice(0,4);});
 joinButton.addEventListener('click',()=>joinRoom());
 async function joinRoom(){
-  joinButton.disabled=true;
+  joinButton.disabled=true;renderButtons();
   try{
     await ensureAudio();
     joined=true;pausedByHide=false;
     joinButton.hidden=true;
     if(!room)openRoom(roomCode,null);else{room.reconnectNow();room.resync();}
-    if(roomState)applyRoomState(roomState);else $('sync-follower-text').textContent='리더를 기다리는 중이에요.';
+    if(roomState)applyRoomState(roomState);else tell('리더를 기다리는 중이에요.');
   }catch(_){
-    $('sync-follower-text').textContent='소리를 시작하지 못했어요. 다시 눌러 주세요.';
+    tell('소리를 시작하지 못했어요. 다시 눌러 주세요.');
     joinButton.hidden=false;
-  }finally{joinButton.disabled=false;}
+  }finally{joinButton.disabled=false;renderButtons();}
 }
 function applyRoomState(state){
   roomState=state;
   if(role==='leader'){renderButtons();return;} // the leader already applied its own change
   if(role!=='follower')return;
   tempoRange.value=tempoValue.value=state.bpm;
-  const text=$('sync-follower-text');
   if(!state.playing){
     grid=null;pending=null;
     if(running){stopLoop();}
-    if(joined)text.textContent='리더가 멈췄어요. 리더가 시작하면 함께 시작해요.';
+    if(joined)tell('리더가 멈췄어요. 리더가 시작하면 함께 시작해요.');
     return;
   }
   if(!joined)return;
-  if(!audioContext||audioContext.state==='closed'){text.textContent='다른 앱에 다녀와서 멈췄어요. 다시 듣기를 눌러 주세요.';return;}
-  text.textContent=`리더 박자 ${state.bpm} BPM으로 재생 중`;
+  if(!audioContext||audioContext.state==='closed'){
+    // The sound was closed while away (e.g. the leader was stopped then); it needs a tap to come back.
+    joinButton.hidden=false;joinButton.textContent='다시 듣기';
+    tell('다른 앱에 다녀와서 멈췄어요. 다시 듣기를 눌러 주세요.');renderButtons();return;
+  }
+  tell(`리더 박자 ${state.bpm} BPM으로 재생 중`);
   const next={bpm:state.bpm,t0:state.t0};
   if(!room?.synced){grid=next;return;} // starts once the clock is measured (onSynced)
   if(running&&grid){
@@ -510,12 +580,12 @@ function applyRoomState(state){
   nextK=sync.nextBeatIndex(grid,room.serverNow()+80);
   if(!running)startLoop();
 }
-const calibrateButton=$('sync-calibrate');
+const calibrateButton=$('sync-calibrate'),calibrateLabel=$('sync-calibrate-label');
 async function autoMatch(){
   if(!(role==='follower'&&running&&grid&&audioContext)||calibrating)return;
-  const text=$('sync-follower-text');
+  const text=$('sync-match-text');
   if(!(navigator.mediaDevices?.getUserMedia&&window.AudioWorkletNode)){text.textContent='이 브라우저에서는 자동 맞추기를 쓸 수 없어요. 내 소리 타이밍을 직접 조절해 주세요.';return;}
-  calibrateButton.disabled=true;
+  calibrateButton.disabled=true;calibrateLabel.textContent='듣는 중…';
   text.textContent='리더 폰 소리를 듣는 중이에요… 4초만 조용히 해 주세요.';
   window.metronomeAudio.setAudioSession('play-and-record');
   let mic=null;
@@ -546,7 +616,7 @@ async function autoMatch(){
     calibrating=null;
     mic?.close();
     window.metronomeAudio.setAudioSession('playback');
-    calibrateButton.disabled=false;
+    calibrateButton.disabled=false;calibrateLabel.textContent='자동 맞추기';
   }
 }
 calibrateButton.addEventListener('click',autoMatch);
@@ -574,13 +644,14 @@ $('sync-close-room').addEventListener('click',()=>{
 $('sync-leave').addEventListener('click',closeRoom);
 $('sync-copy').addEventListener('click',async()=>{
   try{await navigator.clipboard.writeText(roomLink());status.textContent='링크를 복사했어요.';}
-  catch(_){status.textContent='링크를 복사하지 못했어요. 링크를 길게 눌러 복사해 주세요.';}
+  catch(_){$('sync-link').hidden=false;status.textContent='링크를 복사하지 못했어요. 링크를 길게 눌러 복사해 주세요.';}
 });
 if(navigator.share){
   $('sync-share').hidden=false;
   $('sync-share').addEventListener('click',()=>navigator.share({title:'기타메이트 메트로놈',url:roomLink()}).catch(()=>{}));
 }
-function showOffset(){const faster=-offsetMs||0;offsetInput.value=faster;offsetValue.textContent=(faster>0?'+':'')+faster+' ms';}
+function showOffset(){const faster=-offsetMs||0;offsetInput.value=faster;offsetValue.textContent=(faster>0?'+':'')+faster+' ms';$('sync-offset-reset').hidden=!faster;}
+$('sync-offset-reset').addEventListener('click',()=>{offsetMs=0;showOffset();saveOffset();offsetInput.focus();});
 offsetInput.addEventListener('input',()=>{
   offsetMs=sync.clampOffset(-offsetInput.value);showOffset();saveOffset();
 });
@@ -606,7 +677,7 @@ document.addEventListener('visibilitychange',()=>{
   }
   room?.reconnectNow();room?.resync();
   if(!pausedByHide)return;
-  if(role==='follower'){joinButton.hidden=false;joinButton.textContent='다시 듣기';$('sync-follower-text').textContent='다른 앱에 다녀와서 멈췄어요. 다시 듣기를 눌러 주세요.';}
+  if(role==='follower'){joinButton.hidden=false;joinButton.textContent='다시 듣기';tell('다른 앱에 다녀와서 멈췄어요. 다시 듣기를 눌러 주세요.');}
   else status.textContent='다른 앱에 다녀와서 멈췄어요. 시작을 눌러 주세요.';
   renderButtons();
 });
