@@ -183,20 +183,20 @@ assert(paint.find(p=>p[0]==='text')[3]<200,'Above mode draws above original chor
   $('score-frets').children[2].handlers.click();assert.deepEqual(state(),[3,1],'a fret keeps the song key change');
   assert.equal($('score-capo-value').textContent,'카포 3');
   click('score-capo-minus');click('score-capo-minus');click('score-capo-minus');click('score-capo-minus');assert.deepEqual(state(),[0,2]);
-  // Sheet key control and capo together: song G raised 2 (A), capo 2 → play G shapes
-  vm.runInContext("scoreState.capo=0;scoreState.keyShift=0;",context);
-  click('score-shift-up');click('score-shift-up');assert.deepEqual(state(),[0,-2]);assert.equal(shown('G'),'A');
-  assert.equal($('score-shift-value').textContent,'G → A (+2)');assert(!$('score-shift-reset').hidden);
-  $('score-frets').children[1].handlers.click();assert.deepEqual(state(),[2,-2]);assert.equal(shown('G'),'G');assert.equal(shown('Em'),'Em');
-  assert.equal(vm.runInContext("scoreKeyStampText({pc:7,minor:false,name:'G'})",context),'G폼 (Capo 2) / A키');
-  assert.match($('score-result-key').textContent,/카포 2 · 소리의 키 .* · 코드 모양의 키/);
-  assert.equal($('score-shift-value').textContent,'G (원래 키)','sheet label follows the drawn chords (capo included)');
-  click('score-capo-plus');assert.equal($('score-shift-value').textContent,'G → F# (−1)','capo moves the sheet label too');
-  assert(!$('score-capo-reset').hidden,'capo side has a reset as well');
-  click('score-capo-reset');assert.deepEqual(state(),[0,0]);assert.equal(shown('G'),'G');assert($('score-shift-reset').hidden);
-  vm.runInContext("scoreState.capo=3;",context);for(let i=0;i<20;i++)click('score-shift-down');
-  assert.deepEqual(state(),[3,8],'sheet − stops when the drawn key is 11 semitones down');assert($('score-shift-down').disabled);
+  // The sheet −/+ are the neck −/+: same state, same steps, same labels
+  vm.runInContext("scoreState.capo=0;scoreState.keyShift=0;",context);context.renderScore();
+  assert.equal($('score-shift-value').textContent,'G (원래 키)');assert($('score-shift-reset').hidden);
+  click('score-shift-up');assert.deepEqual(state(),[1,0],'sheet + puts the capo on, like the neck +');assert.equal(shown('G'),'F#');
+  assert.equal($('score-shift-value').textContent,'G → F# · 카포 1');assert.equal($('score-capo-value').textContent,'카포 1');
+  assert.equal(vm.runInContext("scoreKeyStampText({pc:7,minor:false,name:'G'})",context),'F#폼 (Capo 1) / G키');
+  click('score-shift-down');click('score-shift-down');assert.deepEqual(state(),[0,1],'sheet − takes the capo off, then lowers the key');
+  assert.equal($('score-shift-value').textContent,'G → F# (−1)');assert.equal($('score-capo-value').textContent,'카포 없음 · 키 −1반음');
+  click('score-capo-plus');assert.deepEqual(state(),[0,0]);click('score-capo-plus');click('score-capo-plus');
+  assert.equal($('score-shift-value').textContent,'G → F · 카포 2','neck + moves the sheet label too');
+  assert(!$('score-capo-reset').hidden&&!$('score-shift-reset').hidden);
   click('score-shift-reset');assert.deepEqual(state(),[0,0]);
+  for(let i=0;i<20;i++)click('score-shift-up');assert.deepEqual(state(),[11,0]);assert($('score-shift-up').disabled&&$('score-capo-plus').disabled);
+  click('score-capo-reset');assert.deepEqual(state(),[0,0]);
   vm.runInContext("scoreState.capo=1;scoreState.keyShift=0;",context);
 }
 // Recommendations follow the actual score controls and keep four bars per progression.

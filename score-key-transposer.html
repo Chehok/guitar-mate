@@ -219,6 +219,10 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .score-shift > strong { flex:none; margin-right:2px; white-space:nowrap; }
 .score-shift > button:not(.score-reset), .score-capo-row > button:not(.score-reset) { flex:none; width:40px; min-width:40px; padding-inline:0; }
 #score-panel .score-shift output, #score-panel .score-capo-row output { flex:1 1 auto; min-width:0; text-align:center; font-weight:650; font-variant-numeric:tabular-nums; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+@media (min-width:700px) {
+  /* Keep −, value, + and reset side by side instead of spread across the card */
+  #score-panel .score-shift output, #score-panel .score-capo-row output { flex:0 0 auto; min-width:8em; padding-inline:12px; }
+}
 .score-reset { flex:none; margin-left:4px; padding-inline:8px; font-size:12px; white-space:nowrap; }
 /* Recognition shown on the preview */
 .score-scan { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
@@ -237,7 +241,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
   .score-preview-actions button { flex:1 1 0; min-width:0; padding-inline:4px; font-size:14px; white-space:nowrap; }
 }
 #score-panel label { display:inline-flex; align-items:center; gap:6px; }
-.score-key-row { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:4px 12px; }
+.score-key-row { display:flex; flex-wrap:wrap; align-items:center; gap:4px 16px; }
 .score-key-row p { margin:0; }
 .score-key-row label { font-size:14px; color:var(--muted); }
 .score-drop { display:grid; justify-items:center; gap:8px; padding:28px 12px; border:2px dashed var(--control); border-radius:12px; background:var(--soft); text-align:center; }
@@ -2165,8 +2169,10 @@ for(const [i,button] of [...$('score-frets').children].entries())button.setAttri
 // Sheet-side key control (same state as the neck's "−" below capo 0)
 // The sheet control shows the key the chords are drawn in, so it moves with the capo too.
 const drawn=keyShift-capo,step=`${drawn>0?'+':'−'}${Math.abs(drawn)}`;
-$('score-shift-value').textContent=!drawn?(key?`${key.name} (원래 키)`:'원래 키'):key?`${key.name} → ${destination.name} (${step})`:`${step}반음`;
-$('score-shift-down').disabled=drawn<=-11;$('score-shift-up').disabled=drawn>=11;
+$('score-shift-value').textContent=!drawn&&!capo?(key?`${key.name} (원래 키)`:'원래 키')
+  :capo?(key?`${key.name} → ${destination.name} · 카포 ${capo}`:`카포 ${capo}`)
+  :key?`${key.name} → ${destination.name} (${step})`:`${step}반음`;
+$('score-shift-down').disabled=$('score-capo-minus').disabled;$('score-shift-up').disabled=$('score-capo-plus').disabled;
 $('score-shift-reset').hidden=$('score-capo-reset').hidden=!(keyShift||capo);
 if(!scoreState.image)return;
 $('score-stage').classList.toggle('adding',scoreState.adding);
@@ -2402,12 +2408,14 @@ if(ready(['score'])){
 for(let fret=1;fret<=11;fret++){
 const button=document.createElement('button'),span=document.createElement('span');button.type='button';span.textContent=fret;button.append(span);button.setAttribute('aria-label',`카포 ${fret}프렛`);button.setAttribute('aria-pressed','false');button.addEventListener('click',()=>{scoreState.capo=fret;renderScore();});$('score-frets').append(button);
 }
-$('score-capo-minus').addEventListener('click',()=>{if(scoreState.capo>0)scoreState.capo--;else scoreState.keyShift=Math.max(-11,scoreState.keyShift-1);renderScore();});
-$('score-capo-plus').addEventListener('click',()=>{if(!scoreState.capo&&scoreState.keyShift<0)scoreState.keyShift++;else scoreState.capo=Math.min(11,scoreState.capo+1);renderScore();});
+const scoreKeyDown=()=>{if(scoreState.capo>0)scoreState.capo--;else scoreState.keyShift=Math.max(-11,scoreState.keyShift-1);renderScore();};
+$('score-capo-minus').addEventListener('click',scoreKeyDown);
+const scoreKeyUp=()=>{if(!scoreState.capo&&scoreState.keyShift<0)scoreState.keyShift++;else scoreState.capo=Math.min(11,scoreState.capo+1);renderScore();};
+$('score-capo-plus').addEventListener('click',scoreKeyUp);
 // Sheet −/+ move the drawn chords a semitone; the capo stays where it is.
-const shiftDrawn=delta=>{const drawn=scoreState.keyShift-scoreState.capo+delta;if(drawn<-11||drawn>11)return;scoreState.keyShift+=delta;renderScore();};
-$('score-shift-down').addEventListener('click',()=>shiftDrawn(-1));
-$('score-shift-up').addEventListener('click',()=>shiftDrawn(1));
+// The sheet's −/+ are the same controls as the neck's −/+, just closer to the sheet.
+$('score-shift-down').addEventListener('click',scoreKeyDown);
+$('score-shift-up').addEventListener('click',scoreKeyUp);
 const resetScoreKey=()=>{scoreState.keyShift=0;scoreState.capo=0;renderScore();};
 $('score-shift-reset').addEventListener('click',resetScoreKey);
 $('score-capo-reset').addEventListener('click',resetScoreKey);
