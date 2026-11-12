@@ -90,7 +90,7 @@ taste-skill의 Editorial greeting 방향(seed `332781039`)을 바탕으로 크�
 
 서비스 주소는 `https://guitar-mate.pages.dev/`입니다. `robots.txt`와 `sitemap.xml`이 루트에 있으며, 페이지마다 절대 주소 `canonical`·Open Graph 태그를 넣었습니다(확장자 없는 주소 기준). `tuner`·`identify`·`score`는 이동용 페이지라 `noindex`이며 사이트맵에서 뺍니다. 페이지를 추가하면 `sitemap.xml`에도 넣고, 도메인을 바꾸면 이 주소들을 함께 바꾸세요. 검색 등록은 [네이버 서치어드바이저](https://searchadvisor.naver.com/)와 [Google Search Console](https://search.google.com/search-console)에서 사이트맵 `https://guitar-mate.pages.dev/sitemap.xml`을 제출합니다.
 
-## 메트로놈 함께 맞추기
+## 메트로놈 싱크
 
 리더가 **리더로 방 만들기**를 누르면 숫자 4자리 방 코드와 QR(`metronome#room=0427`)이 표시되고, 다른 폰은 **방 코드로 참여**에 숫자를 입력하거나 QR을 찍어 **참여하기**를 누릅니다(아이폰은 첫 소리에 탭이 필요해서). 그다음부터 리더가 시작·정지하거나 템포를 바꾸면 모든 폰이 같은 박에서 따라갑니다.
 
@@ -108,7 +108,7 @@ taste-skill의 Editorial greeting 방향(seed `332781039`)을 바탕으로 크�
 2. Cloudflare 대시보드 → **Workers 및 Pages** 오른쪽(또는 계정 홈)에서 **계정 ID**를 복사합니다.
 3. GitHub 저장소 → Settings → Secrets and variables → Actions → **New repository secret**으로 `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`를 추가합니다.
 4. Actions 탭에서 **Deploy sync server**를 `stage` 브랜치로 실행(Run workflow)하거나 `stage`에 푸시합니다. 처음 배포하면 Cloudflare가 계정의 `workers.dev` 하위 도메인을 정하라고 할 수 있는데, 대시보드 → Workers 및 Pages에서 확인·설정합니다.
-5. `sync-config.js`의 `subdomain`에 그 하위 도메인(`<이름>.workers.dev`의 `<이름>`)을 넣고 `sw.js`의 `VERSION`을 올려 배포합니다. 비어 있으면 함께 맞추기 화면에 "서버가 아직 준비되지 않았어요"가 표시됩니다.
+5. `sync-config.js`의 `subdomain`에 그 하위 도메인(`<이름>.workers.dev`의 `<이름>`)을 넣고 `sw.js`의 `VERSION`을 올려 배포합니다. 비어 있으면 메트로놈 싱크 화면에 "서버가 아직 준비되지 않았어요"가 표시됩니다.
 
 배포 확인: `https://guitar-mate-sync-stage.<이름>.workers.dev/health`가 `guitar-mate sync ok`를 돌려주면 됩니다. 허용 출처는 `wrangler.toml`의 `ALLOWED_ORIGINS`(운영: `guitar-mate.pages.dev`, stage: `*.guitar-mate.pages.dev`·localhost)입니다.
 

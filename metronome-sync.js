@@ -1,5 +1,5 @@
 'use strict';
-// Shared-beat math for "Play together" (metronome rooms).
+// Shared-beat math for "Metronome sync" (metronome rooms).
 // The leader's beat is a grid on the sync server's clock: beat k sounds at t0 + k·(60000/bpm) ms, and
 // every 4th beat (k % 4 === 0) is the accented first beat. Phones measure their offset to the server
 // clock (NTP-style round trips), then play the same grid on their own audio clock.

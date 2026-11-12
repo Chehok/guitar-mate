@@ -53,7 +53,7 @@ h1 { margin:0 0 8px; font-size:clamp(24px,3vw,30px); font-weight:700; line-heigh
 .status { min-height:24px; margin:12px 0 0; color:var(--muted); text-align:center; font-size:13px; }
 .start-button.passive { border-color:var(--line); background:var(--soft); color:var(--ink); cursor:default; }
 .tempo-value input:disabled, .tempo-slider:disabled { opacity:.55; }
-/* Play together */
+/* Metronome sync */
 .sync-panel { margin-top:16px; }
 .sync-panel [hidden] { display:none !important; }
 .sync-panel h2 { margin:0; font-size:18px; font-weight:700; letter-spacing:-.4px; }
@@ -170,7 +170,7 @@ h1 { margin:0 0 8px; font-size:clamp(24px,3vw,30px); font-weight:700; line-heigh
 </div>
 </section>
 <section class="panel sync-panel" aria-labelledby="sync-title">
-<h2 id="sync-title">함께 맞추기</h2>
+<h2 id="sync-title">메트로놈 싱크</h2>
 <p class="hint sync-lede">리더가 방을 만들면 다른 폰은 방 코드로 들어와요. 리더가 시작·정지하거나 템포를 바꾸면 모두 함께 따라가요. 인터넷 연결이 필요해요.</p>
 <div class="sync-grid">
 <div class="sync-main">
@@ -183,13 +183,13 @@ h1 { margin:0 0 8px; font-size:clamp(24px,3vw,30px); font-weight:700; line-heigh
 <p class="hint" id="sync-code-hint">리더 화면에 보이는 숫자 4자리를 입력하세요. QR을 찍어도 돼요.</p>
 </form>
 </div>
-<p class="hint" id="sync-unavailable" hidden>함께 맞추기 서버가 아직 준비되지 않았어요.</p>
+<p class="hint" id="sync-unavailable" hidden>메트로놈 싱크 서버가 아직 준비되지 않았어요.</p>
 <div class="sync-box" id="sync-leader" hidden>
 <div class="sync-box-head"><p class="sync-box-title label">방 코드</p><button id="sync-close-room" class="btn quiet" type="button">방 닫기</button></div>
 <div class="sync-leader-body">
 <p class="sync-code" id="sync-leader-code" translate="no"></p>
 <p class="sync-leader-text">다른 폰에서 이 숫자를 입력하거나 QR을 찍게 해 주세요.</p>
-<div class="sync-qr" id="sync-qr" role="img" aria-label="함께 맞추기 QR 코드"></div>
+<div class="sync-qr" id="sync-qr" role="img" aria-label="메트로놈 싱크 QR 코드"></div>
 <div class="sync-share"><button id="sync-copy" class="btn" type="button">링크 복사</button><button id="sync-share" class="btn" type="button" hidden>공유</button></div>
 </div>
 <a class="sync-link" id="sync-link" href="#" hidden></a>

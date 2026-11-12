@@ -1,6 +1,10 @@
 gm-header, gm-footer { display: block; }
 .wrap { width: 100%; max-width: 1164px; min-width: 0; margin: auto; padding: 24px 16px 20px; }
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+/* No double-tap zoom (taps on buttons come fast in practice); pinch zoom still works.
+   iOS also zooms into form fields under 16px, so keep them at least that size there. */
+html { touch-action: manipulation; }
+@supports (-webkit-touch-callout: none) { input, select, textarea { font-size: max(16px, 1em); } }
 /* When the buttons don't fit next to the name (narrow phones, large browser text such as Samsung Internet), they drop to the next line instead of overlapping. */
 .site-header-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; margin-bottom: 24px; }
 .brand { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; max-width: 100%; color: inherit; text-decoration: none; }
