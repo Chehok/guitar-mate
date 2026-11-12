@@ -63,6 +63,16 @@ h1 { margin:0 0 8px; font-size:clamp(24px,3vw,30px); font-weight:700; line-heigh
 .sync-box p { margin:0 0 8px; font-size:14px; }
 .sync-qr { width:min(240px,100%); margin:4px auto 12px; padding:0; border-radius:8px; background:#fff; line-height:0; }
 .sync-qr svg { display:block; width:100%; height:auto; }
+.offset-nudge { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:10px; }
+.offset-nudge button { min-height:44px; border:1px solid var(--control); border-radius:10px; background:var(--panel); color:var(--ink); font:inherit; font-weight:700; font-variant-numeric:tabular-nums; cursor:pointer; }
+.offset-nudge button:active { background:var(--soft); }
+.tap-pad[hidden] { display:none; }
+.tap-pad { margin-top:14px; display:grid; gap:10px; }
+.tap-step { margin:0 !important; font-weight:650; }
+.tap-button { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; min-height:150px; border:0; border-radius:16px; background:var(--green); color:var(--on-green); font:inherit; font-size:20px; font-weight:800; touch-action:manipulation; user-select:none; -webkit-user-select:none; cursor:pointer; }
+.tap-button:active { filter:brightness(1.15); }
+#sync-tap-cancel { justify-self:start; min-height:44px; padding:8px 14px; border:1px solid var(--control); border-radius:10px; background:var(--panel); color:var(--ink); font:inherit; font-weight:650; cursor:pointer; }
+.tap-button small { font-size:14px; font-weight:600; opacity:.85; font-variant-numeric:tabular-nums; }
 .sync-join-form { margin-top:18px; }
 .sync-join-form label { display:block; margin-bottom:6px; font-weight:650; }
 .sync-join-form input { width:7.5em; min-height:44px; padding:8px 12px; border:1px solid var(--control); border-radius:10px; background:var(--panel); color:var(--ink); font:inherit; font-size:20px; font-weight:700; letter-spacing:.2em; text-align:center; font-variant-numeric:tabular-nums; }
@@ -151,13 +161,19 @@ h1 { margin:0 0 8px; font-size:clamp(24px,3vw,30px); font-weight:700; line-heigh
 <div class="sync-box" id="sync-follower" hidden>
 <p><strong id="sync-follower-code"></strong></p>
 <p id="sync-follower-text">참여하기를 누르면 리더의 박자를 따라가요.</p>
-<div class="sync-actions"><button id="sync-join" class="primary" type="button">참여하기</button><button id="sync-calibrate" class="primary" type="button" hidden>🎤 자동 맞추기</button><button id="sync-leave" type="button">나가기</button></div>
-<p class="hint" id="sync-calibrate-hint" style="margin:10px 0 0" hidden>어긋나게 들리면 리더 폰 가까이에서 자동 맞추기를 눌러 보세요. 4초 동안 마이크로 듣고 내 소리 타이밍을 맞춰요.</p>
+<div class="sync-actions"><button id="sync-join" class="primary" type="button">참여하기</button><button id="sync-calibrate" class="primary" type="button" hidden>🎤 자동 맞추기</button><button id="sync-tap-start" type="button" hidden>👆 탭으로 맞추기</button><button id="sync-leave" type="button">나가기</button></div>
+<p class="hint" id="sync-calibrate-hint" style="margin:10px 0 0" hidden>어긋나게 들리면 리더 폰 가까이에서 자동 맞추기를 눌러 보세요. 4초 동안 마이크로 듣고 내 소리 타이밍을 맞춰요. 마이크를 쓰기 어렵다면 탭으로 맞추기를 써 보세요.</p>
+<div class="tap-pad" id="sync-tap" hidden>
+<p class="tap-step" id="sync-tap-step"></p>
+<button type="button" class="tap-button" id="sync-tap-button"><span>여기를 두드리세요</span><small id="sync-tap-count">0 / 10</small></button>
+<button type="button" id="sync-tap-cancel">취소</button>
+</div>
 </div>
 <p class="sync-conn" id="sync-conn" role="status" aria-live="polite" hidden></p>
 <div class="offset-row"><label for="sync-offset">내 소리 타이밍</label><output id="sync-offset-value" for="sync-offset">0 ms</output></div>
 <input class="offset-slider" id="sync-offset" type="range" min="-300" max="300" step="5" value="0" aria-describedby="sync-offset-hint">
 <div class="offset-limits" aria-hidden="true"><span>← 앞당기기</span><span>늦추기 →</span></div>
+<div class="offset-nudge" role="group" aria-label="내 소리 타이밍 미세 조절"><button type="button" data-nudge="-20" aria-label="20ms 앞당기기">−20</button><button type="button" data-nudge="-5" aria-label="5ms 앞당기기">−5</button><button type="button" data-nudge="5" aria-label="5ms 늦추기">+5</button><button type="button" data-nudge="20" aria-label="20ms 늦추기">+20</button></div>
 <p class="hint" id="sync-offset-hint" style="margin:8px 0 0">다른 폰보다 내 소리가 늦게 들리면 왼쪽으로, 빠르면 오른쪽으로 옮기세요. 블루투스 이어폰은 많이 앞당겨야 할 수 있어요. 이 기기에 저장돼요.</p>
 </section>
 </main>
@@ -224,7 +240,7 @@ function paintPendulum(){
   pendulum.setAttribute('transform',`rotate(${27*direction*Math.sin(Math.PI*phase)} 126 178)`);
 }
 // Auto match: while listening, my clicks become 2 kHz chirps half a beat later (see metronome-calibrate.js).
-let calibrating=null,lastCalibration=null;
+let calibrating=null,lastCalibration=null,tapState=null;
 function playChirp(time){
   const oscillator=audioContext.createOscillator(),gain=audioContext.createGain();
   oscillator.type='sine';oscillator.frequency.setValueAtTime(window.metronomeCalibrate.CHIRP_HZ,time);
@@ -256,6 +272,11 @@ function schedule(){
       const beat=sync.beatInBar(nextK),interval=sync.intervalMs(grid.bpm)/1000;
       if(time>=now-.005){
         if(calibrating){calibrating.beatTimes.push(time);calibrating.ownTimes.push(time+interval/2);playChirp(time+interval/2);}
+        else if(tapState){
+          // When this beat will be heard here, on the performance clock (same clock as tap timestamps).
+          tapState[tapState.phase==='own'?'ownBeats':'leaderBeats'].push((time+clock.offset()+clock.latency())*1000);
+          if(tapState.phase==='own')playChirp(time);   // phase 1: only my phone, as a high chirp
+        }
         else playClick(time,beat);
         scheduledBeats.push({time,beat,interval});
       }
@@ -300,7 +321,8 @@ async function ensureAudio(){
 function renderButtons(){
   const following=role==='follower';
   const canMatch=following&&running&&Boolean(grid);
-  $('sync-calibrate').hidden=!canMatch;$('sync-calibrate-hint').hidden=!canMatch;
+  $('sync-calibrate').hidden=!canMatch;$('sync-tap-start').hidden=!canMatch;$('sync-calibrate-hint').hidden=!canMatch;
+  if(!canMatch&&tapState)endTap();
   startStop.disabled=following;
   startStop.textContent=following?'리더를 따라가요':running||startWhenSynced?'멈추기':role==='leader'&&roomState?.playing?'다시 듣기':'시작';
   startStop.setAttribute('aria-pressed',String(running));
@@ -508,7 +530,7 @@ function applyRoomState(state){
 }
 const calibrateButton=$('sync-calibrate');
 async function autoMatch(){
-  if(!(role==='follower'&&running&&grid&&audioContext)||calibrating)return;
+  if(!(role==='follower'&&running&&grid&&audioContext)||calibrating||tapState)return;
   const text=$('sync-follower-text');
   if(!(navigator.mediaDevices?.getUserMedia&&window.AudioWorkletNode)){text.textContent='이 브라우저에서는 자동 맞추기를 쓸 수 없어요. 내 소리 타이밍을 직접 조절해 주세요.';return;}
   calibrateButton.disabled=true;
@@ -527,12 +549,7 @@ async function autoMatch(){
     const result=recording?window.metronomeCalibrate.analyze({...recording,...data,interval}):{ok:false,reason:'own'};
     lastCalibration=result;
     if(result.ok){
-      const before=offsetMs;
-      offsetMs=sync.clampOffset(offsetMs+result.delta*1000);showOffset();
-      try{localStorage.setItem(sync.OFFSET_KEY,String(offsetMs));}catch(_){}
-      const moved=offsetMs-before;
-      text.textContent=Math.abs(moved)<3?'이미 잘 맞고 있어요.':`리더에 맞춰 내 소리를 ${Math.abs(moved)}ms ${moved<0?'앞당겼어요':'늦췄어요'}.`;
-      if(Math.abs(offsetMs)>=sync.OFFSET_LIMIT)text.textContent+=' 조절 범위 끝까지 옮겼어요. 한 번 더 해 보세요.';
+      text.textContent=applyMatch(result.delta*1000);
     }else{
       text.textContent={
         own:'내 폰 소리를 마이크로 듣지 못했어요. 음량을 올리고 다시 해 보세요.',
@@ -551,6 +568,55 @@ async function autoMatch(){
   }
 }
 calibrateButton.addEventListener('click',autoMatch);
+
+// ---- Tap to match ----
+const TAP_COUNT=window.metronomeCalibrate.TAP_COUNT;
+function showTapStep(){
+  const own=tapState.phase==='own';
+  $('sync-tap-step').textContent=own?"1/2 · 높은 '삑' 소리(내 폰)에 맞춰 화면을 두드리세요.":'2/2 · 이제 리더 폰 소리에 맞춰 두드리세요. 내 폰은 조용해져요.';
+  $('sync-tap-count').textContent=`${tapState[own?'ownTaps':'leaderTaps'].length} / ${TAP_COUNT}`;
+}
+function startTap(){
+  if(!(role==='follower'&&running&&grid)||calibrating)return;
+  tapState={phase:'own',ownTaps:[],ownBeats:[],leaderTaps:[],leaderBeats:[]};
+  $('sync-tap').hidden=false;$('sync-tap-start').disabled=true;calibrateButton.disabled=true;
+  showTapStep();
+  $('sync-tap-button').focus();
+}
+function endTap(message){
+  tapState=null;
+  $('sync-tap').hidden=true;$('sync-tap-start').disabled=false;calibrateButton.disabled=false;
+  if(message)$('sync-follower-text').textContent=message;
+}
+function applyMatch(deltaMs){
+  const before=offsetMs;
+  offsetMs=sync.clampOffset(offsetMs+deltaMs);showOffset();saveOffset();
+  const moved=offsetMs-before;
+  let text=Math.abs(moved)<3?'이미 잘 맞고 있어요.':`리더에 맞춰 내 소리를 ${Math.abs(moved)}ms ${moved<0?'앞당겼어요':'늦췄어요'}.`;
+  if(Math.abs(offsetMs)>=sync.OFFSET_LIMIT)text+=' 조절 범위 끝까지 옮겼어요. 한 번 더 해 보세요.';
+  return text;
+}
+$('sync-tap-button').addEventListener('pointerdown',event=>{
+  if(!tapState)return;
+  event.preventDefault();
+  const key=tapState.phase==='own'?'ownTaps':'leaderTaps';
+  tapState[key].push(event.timeStamp);
+  showTapStep();
+  if(tapState[key].length<TAP_COUNT)return;
+  if(tapState.phase==='own'){tapState.phase='leader';showTapStep();return;}
+  const result=window.metronomeCalibrate.analyzeTaps({...tapState,intervalMs:sync.intervalMs(grid.bpm)});
+  lastCalibration={...result,via:'tap'};
+  if(result.ok)endTap(applyMatch(result.delta));
+  else endTap({uneven:'박자에 맞춰 일정하게 두드려 주세요. 다시 해 볼까요?'}[result.reason]||'두드린 횟수가 부족해요. 다시 해 주세요.');
+});
+$('sync-tap-start').addEventListener('click',startTap);
+$('sync-tap-cancel').addEventListener('click',()=>endTap());
+
+// ---- Fine adjustment ----
+function saveOffset(){try{localStorage.setItem(sync.OFFSET_KEY,String(offsetMs));}catch(_){}}
+document.querySelectorAll('[data-nudge]').forEach(button=>button.addEventListener('click',()=>{
+  offsetMs=sync.clampOffset(offsetMs+Number(button.dataset.nudge));showOffset();saveOffset();
+}));
 leadButton.addEventListener('click',startLeading);
 $('sync-close-room').addEventListener('click',()=>{
   if(role==='leader'&&grid&&room)room.publish({...grid,playing:false});
