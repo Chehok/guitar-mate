@@ -274,6 +274,7 @@ text: {
   '소리가 멈췄어요. 시작을 다시 눌러 주세요.': 'The sound stopped. Press Start again.',
   '리더가 방을 만들면 다른 폰은 방 코드로 들어와요. 리더가 시작·정지하거나 템포를 바꾸면 모두 함께 따라가요. 인터넷 연결이 필요해요.': 'The leader creates a room and the other phones join with its code. When the leader starts, stops or changes tempo, everyone follows. Needs an internet connection.',
   '또는': 'or',
+  '1시간 동안 재생하지 않아 방을 닫았어요.': 'Closed the room after an hour without playing.',
   '자동 맞추기': 'Auto match',
   '듣는 중…': 'Listening…',
   '리더를 따라가는 중': 'Following the leader',

@@ -16,6 +16,8 @@
     let ws = null, closed = false, attempts = 0;
     let samples = [], best = null, pending = new Map(), seq = 0;
     let keepalive = null, resync = null, retry = null, bursting = false;
+    // While nothing plays, the clock isn't re-measured (only kept alive); it's refreshed when play starts.
+    let active = true;
 
     const send = obj => { if (ws && ws.readyState === 1) ws.send(JSON.stringify(obj)); };
 
@@ -65,7 +67,7 @@
         if (token) send({ t: 'claim', token });
         burst();
         keepalive = setInterval(() => { if (socket.readyState === 1) socket.send('ping'); }, KEEPALIVE_MS);
-        resync = setInterval(() => burst(RESYNC_COUNT), RESYNC_MS);
+        resync = setInterval(() => { if (active) burst(RESYNC_COUNT); }, RESYNC_MS);
       };
       socket.onmessage = event => onMessage(typeof event.data === 'string' ? event.data : String(event.data));
       socket.onclose = () => {
@@ -96,6 +98,7 @@
       offset() { return best ? best.offset : null; },
       publish(state) { if (token) send({ t: 'state', token, state }); },
       resync() { burst(RESYNC_COUNT + 3); },
+      setActive(next) { next = Boolean(next); if (next === active) return; active = next; if (active) burst(RESYNC_COUNT + 3); },
       reconnectNow() { if (!closed && (!ws || ws.readyState > 1)) { clearTimer(retry); attempts = 0; open(); } },
       get connected() { return Boolean(ws && ws.readyState === 1); },
       close() {
