@@ -63,6 +63,12 @@ h1 { margin:0 0 8px; font-size:clamp(24px,3vw,30px); font-weight:700; line-heigh
 .sync-box p { margin:0 0 8px; font-size:14px; }
 .sync-qr { width:min(240px,100%); margin:4px auto 12px; padding:0; border-radius:8px; background:#fff; line-height:0; }
 .sync-qr svg { display:block; width:100%; height:auto; }
+.sync-join-form { margin-top:18px; }
+.sync-join-form label { display:block; margin-bottom:6px; font-weight:650; }
+.sync-join-form input { width:7.5em; min-height:44px; padding:8px 12px; border:1px solid var(--control); border-radius:10px; background:var(--panel); color:var(--ink); font:inherit; font-size:20px; font-weight:700; letter-spacing:.2em; text-align:center; font-variant-numeric:tabular-nums; }
+.sync-join-form .hint { margin:8px 0 0; }
+.sync-code-label { margin:0 !important; color:var(--muted); font-size:13px !important; }
+.sync-code { margin:0 0 8px !important; font-size:40px !important; font-weight:800; letter-spacing:.18em; font-variant-numeric:tabular-nums; }
 .sync-conn { margin:12px 0 0; color:var(--muted); font-size:13px; }
 .sync-conn[hidden] { display:none; }
 .sync-link { display:block; margin:0 0 12px; color:var(--muted); font-size:12px; word-break:break-all; text-align:center; }
@@ -124,12 +130,20 @@ h1 { margin:0 0 8px; font-size:clamp(24px,3vw,30px); font-weight:700; line-heigh
 </section>
 <section class="panel sync-panel" aria-labelledby="sync-title">
 <h2 id="sync-title">함께 맞추기</h2>
-<p class="hint">한 명이 리더가 되어 방을 만들고 QR을 보여주면, 다른 폰은 기본 카메라로 찍어 참여해요. 리더가 시작·정지하거나 템포를 바꾸면 모두 함께 따라가요. 인터넷 연결이 필요해요.</p>
-<div class="sync-actions" id="sync-idle"><button id="sync-lead" class="primary" type="button">리더로 방 만들기</button></div>
+<p class="hint">한 명이 리더가 되어 방을 만들면, 다른 폰은 방 코드 4자리를 입력하거나 QR을 찍어 참여해요. 리더가 시작·정지하거나 템포를 바꾸면 모두 함께 따라가요. 인터넷 연결이 필요해요.</p>
+<div id="sync-idle">
+<div class="sync-actions"><button id="sync-lead" class="primary" type="button">리더로 방 만들기</button></div>
+<form class="sync-join-form" id="sync-join-form" novalidate>
+<label for="sync-code-input">방 코드로 참여</label>
+<div class="sync-actions"><input id="sync-code-input" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="0000" aria-describedby="sync-code-hint"><button type="submit">참여하기</button></div>
+<p class="hint" id="sync-code-hint">리더 화면에 보이는 숫자 4자리를 입력하세요. QR을 찍어도 돼요.</p>
+</form>
+</div>
 <p class="hint" id="sync-unavailable" hidden>함께 맞추기 서버가 아직 준비되지 않았어요.</p>
 <div class="sync-box" id="sync-leader" hidden>
-<p><strong id="sync-leader-code"></strong></p>
-<p>이 QR을 다른 폰 카메라로 찍게 해 주세요.</p>
+<p class="sync-code-label">방 코드</p>
+<p class="sync-code" id="sync-leader-code" translate="no"></p>
+<p>다른 폰에서 이 숫자를 입력하거나 QR을 찍게 해 주세요.</p>
 <div class="sync-qr" id="sync-qr" role="img" aria-label="함께 맞추기 QR 코드"></div>
 <a class="sync-link" id="sync-link" href="#"></a>
 <div class="sync-share"><button id="sync-copy" type="button">링크 복사</button><button id="sync-share" type="button" hidden>공유</button><button id="sync-close-room" type="button">방 닫기</button></div>
@@ -409,7 +423,7 @@ function startLeading(){
 }
 function showLeader(){
   idleBox.hidden=true;followerBox.hidden=true;leaderBox.hidden=false;
-  $('sync-leader-code').textContent=`방 코드 ${roomCode}`;
+  $('sync-leader-code').textContent=roomCode;
   const link=roomLink();
   $('sync-qr').innerHTML=window.gmQr.svg(link);
   $('sync-link').href=link;$('sync-link').textContent=link;
@@ -424,7 +438,21 @@ function showFollower(code){
   if(running){stopLoop();}
   renderButtons();
 }
-joinButton.addEventListener('click',async()=>{
+// Typed code: joining happens right here, inside the tap, so the sound can start on iPhone too.
+$('sync-join-form').addEventListener('submit',event=>{
+  event.preventDefault();
+  const input=$('sync-code-input');
+  const code=sync.normalizeCode(input.value);
+  if(!code){status.textContent='방 코드 4자리를 입력해 주세요.';input.focus();return;}
+  input.value='';
+  if(room)closeRoom();
+  showFollower(code);
+  history.replaceState(null,'','#room='+code);
+  joinRoom();
+});
+$('sync-code-input').addEventListener('input',event=>{event.target.value=event.target.value.replace(/[^0-9０-９]/g,'').slice(0,4);});
+joinButton.addEventListener('click',()=>joinRoom());
+async function joinRoom(){
   joinButton.disabled=true;
   try{
     await ensureAudio();
@@ -434,8 +462,9 @@ joinButton.addEventListener('click',async()=>{
     if(roomState)applyRoomState(roomState);else $('sync-follower-text').textContent='리더를 기다리는 중이에요.';
   }catch(_){
     $('sync-follower-text').textContent='소리를 시작하지 못했어요. 다시 눌러 주세요.';
+    joinButton.hidden=false;
   }finally{joinButton.disabled=false;}
-});
+}
 function applyRoomState(state){
   roomState=state;
   if(role==='leader'){renderButtons();return;} // the leader already applied its own change
@@ -520,7 +549,7 @@ if(new URLSearchParams(location.search).has('debug')){
     debug.textContent=[
       c?`audio ${c.state} · rate ${c.sampleRate} · clock ${(clock.offset()*1000).toFixed(1)} ms · latency ${(clock.latency()*1000).toFixed(1)} ms`:'audio not started',
       `server ${serverUrl||'—'}`,
-      room?`room ${roomCode} · ${role} · ${connState} · rtt ${room.rtt??'—'} ms · offset ${room.offset()?.toFixed(1)??'—'} ms · peers ${peers}`:'no room',
+      room?`room ${roomCode} · ${role} · ${connState} · rtt ${room.rtt?.toFixed(0)??'—'} ms · offset ${room.offset()?.toFixed(1)??'—'} ms · peers ${peers}`:'no room',
       `grid ${grid?grid.bpm+' bpm @'+Math.round(grid.t0):'—'} · pending ${pending?pending.grid.bpm+' from '+Math.round(pending.from):'—'} · next ${nextK} · my offset ${offsetMs} ms`,
       `session ${navigator.audioSession?.type??'n/a'}`,
     ].join('\n');

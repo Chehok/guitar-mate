@@ -12,24 +12,31 @@ vm.runInContext(read('metronome-sync.js'), context);
 vm.runInContext(read('qr.js'), context);
 const sync = context.metronomeSync;
 
-// Room codes: 6 characters without look-alikes (0/O, 1/I/L), read from "#room=CODE"
-const codes = new Set(Array.from({ length: 200 }, () => sync.makeRoomCode()));
-assert(codes.size > 190, 'codes are random');
+// Room codes: 4 digits, read from "#room=0427" or typed (spaces, dashes, full-width digits tolerated)
+const codes = new Set(Array.from({ length: 300 }, () => sync.makeRoomCode()));
+assert(codes.size > 280, 'codes are random');
 for (const c of codes) assert(sync.ROOM_CODE.test(c), c);
-assert.equal(sync.makeRoomCode(() => 0), 'AAAAAA');
-assert.equal(sync.makeRoomCode(() => 0.9999), '999999');
-assert.equal(sync.parseRoom('#room=ABC234'), 'ABC234');
-assert.equal(sync.parseRoom('room=abc234'), 'ABC234', 'lower case from a typed link still works');
-for (const bad of ['', '#room=ABC23', '#room=ABC2345', '#room=ABCO23', '#room=ABC123', '#sync=90.1762870000123'])
+assert.equal(sync.makeRoomCode(() => 0), '0000');
+assert.equal(sync.makeRoomCode(() => 0.99999), '9999');
+assert.equal(sync.makeRoomCode(() => 0.0427), '0427', 'leading zeros kept');
+assert.equal(sync.parseRoom('#room=0427'), '0427');
+for (const bad of ['', '#room=042', '#room=04270', '#room=ABCD', '#room=ABC234', '#sync=90.1762870000123'])
   assert.equal(sync.parseRoom(bad), null, `rejects ${bad}`);
+assert.equal(sync.normalizeCode(' 04 27 '), '0427');
+assert.equal(sync.normalizeCode('04-27'), '0427');
+assert.equal(sync.normalizeCode('０４２７'), '0427', 'full-width digits from some keyboards');
+for (const bad of ['', '427', '04271', 'abcd', null]) assert.equal(sync.normalizeCode(bad), null, `rejects typed ${bad}`);
 
-// Server clock offset: the fastest round trip wins (least network asymmetry)
+// Server clock offset: only the fastest round trips are trusted (within 8 ms of the fastest), and averaged.
+// Extra delay usually hits one direction and skews the estimate, like these slow replies do.
 const offset = sync.pickOffset([
-  { sent: 1000, received: 1300, server: 5150 },   // rtt 300 → offset 4000
-  { sent: 2000, received: 2040, server: 6021 },   // rtt 40  → offset 4001
-  { sent: 3000, received: 2990, server: 0 },      // impossible, ignored
+  { sent: 1000, received: 1300, server: 5100 },   // rtt 300, delayed on the way back → offset 3950 (skewed)
+  { sent: 2000, received: 2040, server: 6022 },   // rtt 40 → offset 4002
+  { sent: 3000, received: 3046, server: 7021 },   // rtt 46 → offset 3998
+  { sent: 4000, received: 4060, server: 8010 },   // rtt 60, outside the fast band
+  { sent: 5000, received: 4990, server: 0 },      // impossible, ignored
 ]);
-assert.deepEqual({ ...offset }, { rtt: 40, offset: 4001 });
+assert.deepEqual({ ...offset }, { rtt: 40, offset: 4000, samples: 2 });
 assert.equal(sync.pickOffset([]), null);
 
 // Server address: production vs branch previews; ?server= override only on localhost

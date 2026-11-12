@@ -11,7 +11,7 @@
 //   • tells everyone how many phones are in    → {t:'peers', n}
 import { DurableObject } from 'cloudflare:workers';
 
-const ROOM_CODE = /^[A-HJ-NP-Z2-9]{6}$/;
+const ROOM_CODE = /^\d{4}$/;
 const MAX_MESSAGE = 512;
 const MAX_PEERS = 32;
 
