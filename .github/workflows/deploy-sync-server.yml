@@ -1,0 +1,32 @@
+# Deploys the metronome sync server (sync-server/) to Cloudflare Workers.
+#   push to stage → guitar-mate-sync-stage   (used by stage.guitar-mate.pages.dev and other previews)
+#   push to main  → guitar-mate-sync         (used by guitar-mate.pages.dev)
+# Needs two repository secrets: CLOUDFLARE_API_TOKEN (template "Edit Cloudflare Workers") and CLOUDFLARE_ACCOUNT_ID.
+name: Deploy sync server
+
+on:
+  push:
+    branches: [main, stage]
+    paths:
+      - 'sync-server/**'
+      - '.github/workflows/deploy-sync-server.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: sync-server-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: sync-server
+          wranglerVersion: '4'
+          command: deploy ${{ github.ref_name == 'stage' && '--env stage' || '' }}

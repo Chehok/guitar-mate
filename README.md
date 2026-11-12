@@ -24,6 +24,10 @@ node tests/navigation.cjs
 node tests/score.cjs
 node tests/chord-filter.cjs
 node tests/i18n.cjs
+node tests/metronome-sync.cjs
+node tests/metronome-audio.cjs
+node tests/metronome-room.cjs
+node tests/metronome-calibrate.cjs
 node tests/audio.cjs
 node tests/ocr-eval.cjs
 node tests/ocr-dataset.cjs
@@ -85,3 +89,36 @@ taste-skill의 Editorial greeting 방향(seed `332781039`)을 바탕으로 크�
 ## 검색 노출
 
 서비스 주소는 `https://guitar-mate.pages.dev/`입니다. `robots.txt`와 `sitemap.xml`이 루트에 있으며, 페이지마다 절대 주소 `canonical`·Open Graph 태그를 넣었습니다(확장자 없는 주소 기준). `tuner`·`identify`·`score`는 이동용 페이지라 `noindex`이며 사이트맵에서 뺍니다. 페이지를 추가하면 `sitemap.xml`에도 넣고, 도메인을 바꾸면 이 주소들을 함께 바꾸세요. 검색 등록은 [네이버 서치어드바이저](https://searchadvisor.naver.com/)와 [Google Search Console](https://search.google.com/search-console)에서 사이트맵 `https://guitar-mate.pages.dev/sitemap.xml`을 제출합니다.
+
+## 메트로놈 함께 맞추기
+
+리더가 **리더로 방 만들기**를 누르면 숫자 4자리 방 코드와 QR(`metronome#room=0427`)이 표시되고, 다른 폰은 **방 코드로 참여**에 숫자를 입력하거나 QR을 찍어 **참여하기**를 누릅니다(아이폰은 첫 소리에 탭이 필요해서). 그다음부터 리더가 시작·정지하거나 템포를 바꾸면 모든 폰이 같은 박에서 따라갑니다.
+
+- **서버**: `sync-server/` — Cloudflare Worker + Durable Object(방 하나당 객체 하나). WebSocket Hibernation API를 쓰고 타이머가 없어 메시지를 처리할 때만 깨어나므로 무료 플랜(일 10만 요청)으로 충분합니다. 연결 유지 `ping`은 런타임 자동 응답이라 객체를 깨우지 않습니다. 서버는 시간 응답(`time`), 리더 인증(`claim`, 토큰), 리더 박자 저장·전달(`state`), 참여 인원(`peers`)만 맡고, 모두 나가면 방 데이터를 지웁니다.
+- **박자 맞춤**: 박 k = `t0 + k × 60000/BPM`(서버 시각 ms, 4박마다 강박). 폰은 접속할 때 12번, 이후 1분마다 3번 왕복하고, 최근 10분 동안 가장 빠른 왕복(최소값 +8ms 이내)들의 시계 차이를 평균해 쓰므로 **기기 시계가 틀려도** 맞습니다. 느린 왕복은 지연이 한쪽 방향에만 걸려 값이 치우치기 때문에 버립니다. (한국 통신사에서 무료 플랜 `workers.dev`는 미국 LAX 데이터센터로 연결되는 경우가 있어 왕복이 200ms 이상 걸립니다.) 템포 변경은 약 0.6초 뒤의 박(`from`)부터 새 템포로 바뀌어 모든 폰이 같은 박에서 넘어갑니다. 계산은 `metronome-sync.js`, 연결은 `metronome-room.js`, 오디오는 `metronome-audio.js`(아이폰 무음 스위치 대응, Safari `getOutputTimestamp()` 버그 회피)가 맡습니다.
+- **앱을 벗어나면**: 화면이 가려지면 소리를 멈추고 오디오를 닫습니다(아이폰은 백그라운드에서 웹 오디오를 멈추고 고장 난 상태로 남기기 때문). 돌아오면 참여자는 **다시 듣기**, 리더는 **다시 듣기/시작**을 누르면 방 박자에 바로 다시 맞춥니다.
+- **🎤 자동 맞추기**(참여자): 기기마다 다른 인터넷 경로와 스피커 지연은 시계 맞춤만으로 없앨 수 없어서, 실제로 들리는 소리로 맞춥니다. 약 4초 동안 내 클릭 대신 반 박 뒤에 2kHz 짧은 신호음을 내며 마이크로 듣고, 음 높이로 구분해 ① 내 신호음이 들리기까지의 시간(R: 내 스피커+마이크 지연)과 ② 리더 클릭(880/1320Hz)이 들리는 시간(D)을 잽니다. 내 클릭을 δ = D − R 만큼 옮기면 리더와 같은 순간에 들리므로 이 값을 **내 소리 타이밍**에 더합니다(마이크 입력 경로 지연은 두 소리에 똑같이 걸려 상쇄). 분석은 `metronome-calibrate.js`(대역 통과 필터·포락선·시작점 검출, 내 신호음 구간은 가려서 리더 검출), 녹음은 에코 제거를 끈 마이크를 AudioWorklet으로 받아 오디오 시계 기준 시각을 붙입니다. 내 신호음이나 리더 소리가 들리지 않거나 시끄러우면 숫자를 바꾸지 않고 이유를 알려 줍니다. 아이폰은 녹음하는 동안 오디오 세션을 `play-and-record`로 바꿨다가 `playback`으로 되돌립니다.
+- **내 소리 타이밍**(±300ms, 기기에 저장)은 자동 맞추기 결과가 들어가는 곳이며, 슬라이더나 **−20 / −5 / +5 / +20ms** 버튼으로 손으로도 조절할 수 있습니다. 화면에서는 왼쪽(−)이 느리게, 오른쪽(+)이 빠르게(내 클릭을 앞당김)입니다. 내부 값 `offsetMs`는 반대 부호(양수 = 늦게)로 저장됩니다. QR 생성은 직접 구현한 `qr.js`입니다.
+
+### 서버 배포(GitHub 자동 배포)
+
+`.github/workflows/deploy-sync-server.yml`이 `sync-server/`가 바뀐 커밋을 `stage`에 푸시하면 `guitar-mate-sync-stage`, `main`에 푸시하면 `guitar-mate-sync` Worker로 배포합니다(Actions 탭에서 수동 실행도 가능).
+
+1. Cloudflare 대시보드 → 내 프로필 → API 토큰 → **토큰 생성** → 템플릿 **Cloudflare Workers 편집(Edit Cloudflare Workers)** → 계정 리소스를 내 계정으로 지정해 생성합니다.
+2. Cloudflare 대시보드 → **Workers 및 Pages** 오른쪽(또는 계정 홈)에서 **계정 ID**를 복사합니다.
+3. GitHub 저장소 → Settings → Secrets and variables → Actions → **New repository secret**으로 `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`를 추가합니다.
+4. Actions 탭에서 **Deploy sync server**를 `stage` 브랜치로 실행(Run workflow)하거나 `stage`에 푸시합니다. 처음 배포하면 Cloudflare가 계정의 `workers.dev` 하위 도메인을 정하라고 할 수 있는데, 대시보드 → Workers 및 Pages에서 확인·설정합니다.
+5. `sync-config.js`의 `subdomain`에 그 하위 도메인(`<이름>.workers.dev`의 `<이름>`)을 넣고 `sw.js`의 `VERSION`을 올려 배포합니다. 비어 있으면 함께 맞추기 화면에 "서버가 아직 준비되지 않았어요"가 표시됩니다.
+
+배포 확인: `https://guitar-mate-sync-stage.<이름>.workers.dev/health`가 `guitar-mate sync ok`를 돌려주면 됩니다. 허용 출처는 `wrangler.toml`의 `ALLOWED_ORIGINS`(운영: `guitar-mate.pages.dev`, stage: `*.guitar-mate.pages.dev`·localhost)입니다.
+
+### 로컬에서 시험하기
+
+```sh
+cd sync-server && npx wrangler dev --env stage --port 8787        # 서버
+python3 -m http.server 8000                                        # 저장소 루트에서 앱
+# http://localhost:8000/metronome.html?server=ws://127.0.0.1:8787&debug
+SYNC_URL=ws://127.0.0.1:8787 node sync-server/test/protocol.mjs   # 프로토콜 테스트(ws 패키지 필요)
+```
+
+`?debug`를 붙이면 오디오 상태, 서버 시계 차이·왕복 시간, 박자 격자가 화면 아래에 표시됩니다. `?server=`는 localhost에서만 적용됩니다.

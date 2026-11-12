@@ -2268,8 +2268,17 @@ if(files?.length>1){scoreStatus('악보 이미지는 한 장씩 올려 주세요
 return loadScoreImage(files?.[0]);
 });
 }
-function scorePasteFallback(){
-scoreStatus('클립보드를 읽을 수 없어요. 파일 선택으로 악보 이미지를 올려 주세요.');
+// The error name is shown so a failure on a phone can be traced without a debugger.
+function scorePasteFallback(error=null){
+const name=error?.name&&error.name!=='Error'?` (${error.name})`:'';
+scoreStatus(error?.name==='NotAllowedError'
+?'붙여넣기가 허용되지 않았어요. 버튼을 다시 누른 뒤 나타나는 ‘붙여넣기’를 눌러 주세요.'
+:'클립보드를 읽을 수 없어요. 파일 선택으로 악보 이미지를 올려 주세요.'+name);
+}
+// Some browsers hand back a clipboard Blob without its MIME type.
+function scoreClipboardFile(blob,type){
+if(blob&&typeof blob.type==='string'&&blob.type.startsWith('image/'))return blob;
+return new File([blob],'clipboard-image',{type});
 }
 if(ready(['score']))document.addEventListener('paste',async event=>{
 if($('score-panel').hidden)return;
@@ -2278,22 +2287,51 @@ if(selected){
 event.preventDefault();
 if(scoreState.busy){scoreStatus('이미지를 처리 중이에요. 끝날 때까지 기다리거나 인식을 중지한 뒤 다시 붙여넣어 주세요.');return;}
 const file=selected.item.getAsFile();
-if(file)await loadScoreImage(file);else scorePasteFallback();
+if(file)await loadScoreImage(scoreClipboardFile(file,selected.type));else scorePasteFallback();
 }else{
 scoreStatus('클립보드에 이미지가 없어요. 텍스트는 악보로 불러오지 않아요. 이미지를 복사한 뒤 붙여넣어 주세요.');
 }
 });
+// iPhone/iPad: clipboard.read() does not hand over pasted images reliably, but the system
+// "붙여넣기" action on an editable element does (as a normal paste event). So the button focuses
+// an invisible editable spot on itself and asks for a paste; iOS shows its "붙여넣기" bubble there,
+// and the document paste handler above loads the image.
+function scoreIsAppleTouch(){
+return /iPad|iPhone|iPod/.test(navigator.userAgent||'')||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+}
+function scorePasteViaEditable(){
+const rect=$('score-paste').getBoundingClientRect?.()||{left:0,top:0};
+const sink=document.createElement('div');
+sink.contentEditable='true';
+sink.setAttribute('inputmode','none');sink.setAttribute('aria-hidden','true');sink.tabIndex=-1;
+sink.style.cssText=`position:fixed;left:${Math.round(rect.left)}px;top:${Math.round(rect.top)}px;width:1px;height:1px;opacity:0;overflow:hidden;z-index:-1;`;
+let pasted=false;
+sink.addEventListener('paste',()=>{pasted=true;});
+document.body.append(sink);
+sink.focus({preventScroll:true});
+let accepted=false;
+try{accepted=document.execCommand('paste');}catch(_){}
+sink.remove();
+return accepted||pasted;
+}
 if(ready(['score']))$('score-paste').addEventListener('click',async()=>{
 if(scoreState.busy)return;
+if(scoreIsAppleTouch()){
+if(!scorePasteViaEditable())scoreStatus('붙여넣지 못했어요. 버튼을 다시 누른 뒤 나타나는 ‘붙여넣기’를 누르거나, 파일 선택으로 올려 주세요.');
+return;
+}
 if(typeof navigator.clipboard?.read!=='function'){scorePasteFallback();return;}
+// iOS Safari shows its "붙여넣기" bubble for this call; read() must start before any DOM change
+// (disabling the tapped button first can blur it and cancel the bubble).
+const reading=navigator.clipboard.read();
 $('score-paste').disabled=true;
 try{
-const selected=selectScoreClipboardImage(await navigator.clipboard.read());
+const selected=selectScoreClipboardImage(await reading);
 if($('score-panel').hidden)return;
 if(!selected){scoreStatus('클립보드에 이미지가 없어요. 텍스트는 악보로 불러오지 않아요. 이미지를 복사한 뒤 붙여넣어 주세요.');return;}
-const file=await selected.item.getType(selected.type);
+const file=scoreClipboardFile(await selected.item.getType(selected.type),selected.type);
 if(!$('score-panel').hidden)await loadScoreImage(file);
-}catch(_){if(!$('score-panel').hidden)scorePasteFallback();}
+}catch(error){if(!$('score-panel').hidden)scorePasteFallback(error);}
 finally{$('score-paste').disabled=scoreState.busy;}
 });
 if(ready(['score'])){

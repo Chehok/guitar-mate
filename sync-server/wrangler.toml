@@ -1,0 +1,31 @@
+# Guitar Mate metronome sync server.
+# Deployed by .github/workflows/deploy-sync-server.yml:
+#   stage branch → guitar-mate-sync-stage   (wrangler deploy --env stage)
+#   main branch  → guitar-mate-sync         (wrangler deploy)
+name = "guitar-mate-sync"
+main = "src/index.js"
+compatibility_date = "2025-10-01"
+workers_dev = true
+
+[vars]
+ALLOWED_ORIGINS = "https://guitar-mate.pages.dev,https://guitar-mate.dev-chehok.workers.dev"
+
+[[durable_objects.bindings]]
+name = "ROOMS"
+class_name = "Room"
+
+# Free plan: Durable Objects must use the SQLite storage backend.
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Room"]
+
+[env.stage]
+name = "guitar-mate-sync-stage"
+workers_dev = true
+
+[env.stage.vars]
+ALLOWED_ORIGINS = "https://*.guitar-mate.pages.dev,https://guitar-mate.pages.dev,https://*guitar-mate.dev-chehok.workers.dev,http://localhost:*,http://127.0.0.1:*"
+
+[[env.stage.durable_objects.bindings]]
+name = "ROOMS"
+class_name = "Room"

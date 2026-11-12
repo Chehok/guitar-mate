@@ -464,11 +464,43 @@ assert.equal(revoked,2);assert.equal(prevented,2);assert.match($('score-status')
 // Ordinary text fields still receive native text paste; no image load is attempted.
 await documentHandlers.paste({...pasteEvent,target:$('score-edit-text'),clipboardData:{items:[textItem]}});
 assert.equal(prevented,2);assert.equal(revoked,2);
+// Without clipboard.read, or when it fails, the status explains why (with the error name for diagnosis).
 await $('score-paste').handlers.click();assert.match($('score-status').textContent,/파일 선택/);
-context.navigator.clipboard={read:async()=>{throw Error('NotAllowedError');}};
-await $('score-paste').handlers.click();assert.match($('score-status').textContent,/파일 선택/);assert.equal($('score-paste').disabled,false);
+context.navigator.clipboard={read:async()=>{throw Error('read failed');}};
+await $('score-paste').handlers.click();assert.equal($('score-status').textContent,'클립보드를 읽을 수 없어요. 파일 선택으로 악보 이미지를 올려 주세요.');assert.equal($('score-paste').disabled,false);
+context.navigator.clipboard.read=async()=>{throw Object.assign(Error('denied'),{name:'NotAllowedError'});};
+await $('score-paste').handlers.click();assert.match($('score-status').textContent,/허용되지 않았어요/);
+context.navigator.clipboard.read=async()=>{throw Object.assign(Error('bad'),{name:'DataError'});};
+await $('score-paste').handlers.click();assert.match($('score-status').textContent,/\(DataError\)$/);
+// clipboard.read() starts before the button is disabled (iOS cancels its paste bubble otherwise).
+let disabledAtRead=null;context.navigator.clipboard.read=async()=>{disabledAtRead=$('score-paste').disabled;return [];};
+$('score-paste').disabled=false;await $('score-paste').handlers.click();assert.equal(disabledAtRead,false);
+// iPhone/iPad: the button pastes into an invisible editable spot so iOS fires a real paste event.
+{
+  const pasteCalls=[];let sinks=0;
+  context.navigator.userAgent='Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)';
+  context.navigator.clipboard.read=async()=>{throw Error('clipboard.read must not be used on iOS');};
+  const realCreate=context.document.createElement,realBody=context.document.body;
+  context.document.createElement=()=>{const el=new Element();el.focus=()=>{};el.remove=()=>{sinks--;};return el;};
+  context.document.body={append(){sinks++;}};
+  context.document.execCommand=command=>{pasteCalls.push(command);return false;};
+  await $('score-paste').handlers.click();
+  assert.deepEqual(pasteCalls,['paste']);assert.equal(sinks,0,'The invisible paste spot is removed');
+  assert.match($('score-status').textContent,/붙여넣지 못했어요/);
+  context.document.execCommand=()=>{documentHandlers.paste(pasteEvent);return true;};
+  const loaded=[];const realLoad=context.loadScoreImage;context.loadScoreImage=async file=>{loaded.push(file);};
+  await $('score-paste').handlers.click();
+  assert.equal(loaded.length,1,'The pasted image is loaded through the paste event');
+  context.loadScoreImage=realLoad;context.document.createElement=realCreate;context.document.body=realBody;
+  delete context.document.execCommand;context.navigator.userAgent='';
+}
 context.navigator.clipboard.read=async()=>[{types:['text/plain']}];
 await $('score-paste').handlers.click();assert.equal(revoked,2);assert.match($('score-status').textContent,/텍스트/);
+context.File=class {constructor(parts,name,options){this.parts=parts;this.name=name;this.type=options.type;this.size=100;}};
+context.navigator.clipboard.read=async()=>[{types:['image/png'],getType:async()=>({size:100,type:''})}];
+const loaded=[];const realLoad=context.loadScoreImage;context.loadScoreImage=async file=>{loaded.push(file);};
+await $('score-paste').handlers.click();assert.equal(loaded[0].type,'image/png','A clipboard Blob without a MIME type is still loaded as an image');
+context.loadScoreImage=realLoad;
 context.navigator.clipboard.read=async()=>[{types:['text/html','image/webp'],getType:async type=>{assert.equal(type,'image/webp');return pasted;}}];
 let automaticOCR=0;context.recognizeScore=async()=>{automaticOCR++;};
 await $('score-paste').handlers.click();assert.equal(revoked,3);assert.equal(automaticOCR,1);
