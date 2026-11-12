@@ -668,6 +668,9 @@ function readRoomHash(){
 }
 window.addEventListener('hashchange',readRoomHash);
 
+// An app update waits while the metronome plays or a room is open.
+window.guitarMateBusy=()=>running||startWhenSynced||Boolean(room);
+
 // ---- Idle rooms ----
 // A room where nothing has played for an hour is closed on each phone, so forgotten tabs don't linger.
 const IDLE_MS=(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)&&Number(new URLSearchParams(location.search).get('idle')))||60*60*1000;

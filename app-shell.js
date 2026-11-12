@@ -114,5 +114,29 @@ customElements.define('gm-header', GuitarMateHeader);
 customElements.define('gm-footer', GuitarMateFooter);
 
 if ('serviceWorker' in navigator && window.isSecureContext) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js', {scope: './'}).catch(() => {}));
+  // Installed apps (iOS especially) are often resumed rather than reopened, so they never ask for a new
+  // version on their own. Check on load and whenever the app comes back to the screen, and reload into
+  // the new version once it takes over, unless the page is busy (e.g. the metronome is playing).
+  const sw = navigator.serviceWorker;
+  const hadController = Boolean(sw.controller);
+  let registration = null, reloadPending = false, lastCheck = 0;
+  const busy = () => { try { return Boolean(window.guitarMateBusy && window.guitarMateBusy()); } catch (_) { return false; } };
+  const reloadIfIdle = () => { if (reloadPending && !busy()) { reloadPending = false; location.reload(); } };
+  const check = () => {
+    if (!registration || Date.now() - lastCheck < 30000) return;
+    lastCheck = Date.now();
+    registration.update().catch(() => {});
+  };
+  window.addEventListener('load', () => {
+    sw.register('./sw.js', {scope: './', updateViaCache: 'none'}).then(reg => { registration = reg; check(); }).catch(() => {});
+  });
+  sw.addEventListener('controllerchange', () => {
+    if (!hadController) return; // first install: the page is already current
+    reloadPending = true;
+    reloadIfIdle();
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') { check(); reloadIfIdle(); }
+  });
+  window.addEventListener('pageshow', event => { if (event.persisted) { check(); reloadIfIdle(); } });
 }

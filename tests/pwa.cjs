@@ -22,7 +22,7 @@ assert(html.includes('<title>기타메이트 · 기타 튜너</title>'));
 assert(html.includes('name="apple-mobile-web-app-title" content="기타메이트"'));
 assert(fs.readFileSync('favicon.svg','utf8').includes('<title>기타메이트</title>'));
 assert(html.includes('src="./app-shell.js"'));
-assert.match(fs.readFileSync('app-shell.js','utf8'),/register\('\.\/sw\.js',\s*\{scope: '\.\/'\}\)/);
+assert.match(fs.readFileSync('app-shell.js','utf8'),/register\('\.\/sw\.js',\s*\{scope: '\.\/', updateViaCache: 'none'\}\)/);
 const source=fs.readFileSync('sw.js','utf8');
 async function checkScope(scope){
   const handlers={},stored=new Map(),deleted=[],requests=[];
