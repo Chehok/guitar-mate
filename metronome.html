@@ -99,6 +99,8 @@ h1 { margin:0 0 8px; font-size:clamp(24px,3vw,30px); font-weight:700; line-heigh
 .btn svg { flex:none; }
 .btn.primary { border-color:var(--green); background:var(--green); color:var(--on-green); }
 .btn.wide { width:100%; }
+/* Leaving a room: a clear outlined button on the soft room card */
+.btn.leave { min-height:36px; padding:4px 14px; border-color:var(--control); background:var(--panel); color:var(--ink); font-size:14px; font-weight:700; }
 .btn.tall { min-height:52px; }
 .btn.quiet { min-height:40px; padding:6px 10px; border-color:transparent; background:transparent; color:var(--muted); font-size:13px; }
 .btn:disabled { opacity:.6; cursor:default; }
@@ -116,7 +118,7 @@ h1 { margin:0 0 8px; font-size:clamp(24px,3vw,30px); font-weight:700; line-heigh
 .sync-join-row input::placeholder { color:var(--control); opacity:.55; }
 .sync-join-form .hint { margin-top:8px; }
 .sync-box { padding:12px 16px 16px; border:1px solid var(--line); border-radius:12px; background:var(--soft); }
-.sync-box-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin:0 -8px 8px 0; }
+.sync-box-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin:0 0 10px; }
 .sync-box-title { margin:0; font-weight:700; }
 .sync-box-title.label { color:var(--muted); font-size:13px; font-weight:600; }
 .sync-leader-body { display:grid; gap:12px; grid-template-areas:"code" "text" "qr" "share"; }
@@ -221,7 +223,7 @@ h1 { margin:0 0 8px; font-size:clamp(24px,3vw,30px); font-weight:700; line-heigh
 </div>
 <p class="hint" id="sync-unavailable" hidden>메트로놈 싱크 서버가 아직 준비되지 않았어요.</p>
 <div class="sync-box" id="sync-leader" hidden>
-<div class="sync-box-head"><p class="sync-box-title label">방 코드</p><button id="sync-close-room" class="btn quiet" type="button">방 닫기</button></div>
+<div class="sync-box-head"><p class="sync-box-title label">방 코드</p><button id="sync-close-room" class="btn leave" type="button">방 닫기</button></div>
 <div class="sync-leader-body">
 <p class="sync-code" id="sync-leader-code" translate="no"></p>
 <p class="sync-leader-text">다른 폰에서 이 숫자를 입력하거나 QR을 찍게 해 주세요.</p>
@@ -231,7 +233,7 @@ h1 { margin:0 0 8px; font-size:clamp(24px,3vw,30px); font-weight:700; line-heigh
 <a class="sync-link" id="sync-link" href="#" hidden></a>
 </div>
 <div class="sync-box" id="sync-follower" hidden>
-<div class="sync-box-head"><p class="sync-box-title" id="sync-follower-code"></p><button id="sync-leave" class="btn quiet" type="button">나가기</button></div>
+<div class="sync-box-head"><p class="sync-box-title" id="sync-follower-code"></p><button id="sync-leave" class="btn leave" type="button">나가기</button></div>
 <p class="sync-follower-text" id="sync-follower-text">참여하기를 누르면 리더의 박자를 따라가요.</p>
 <button id="sync-join" class="btn primary wide" type="button">참여하기</button>
 </div>
