@@ -151,7 +151,8 @@ h1 { margin:0 0 8px; font-size:clamp(24px,3vw,30px); font-weight:700; line-heigh
 <div class="sync-box" id="sync-follower" hidden>
 <p><strong id="sync-follower-code"></strong></p>
 <p id="sync-follower-text">참여하기를 누르면 리더의 박자를 따라가요.</p>
-<div class="sync-actions"><button id="sync-join" class="primary" type="button">참여하기</button><button id="sync-leave" type="button">나가기</button></div>
+<div class="sync-actions"><button id="sync-join" class="primary" type="button">참여하기</button><button id="sync-calibrate" class="primary" type="button" hidden>🎤 자동 맞추기</button><button id="sync-leave" type="button">나가기</button></div>
+<p class="hint" id="sync-calibrate-hint" style="margin:10px 0 0" hidden>어긋나게 들리면 리더 폰 가까이에서 자동 맞추기를 눌러 보세요. 4초 동안 마이크로 듣고 내 소리 타이밍을 맞춰요.</p>
 </div>
 <p class="sync-conn" id="sync-conn" role="status" aria-live="polite" hidden></p>
 <div class="offset-row"><label for="sync-offset">내 소리 타이밍</label><output id="sync-offset-value" for="sync-offset">0 ms</output></div>
@@ -167,6 +168,7 @@ h1 { margin:0 0 8px; font-size:clamp(24px,3vw,30px); font-weight:700; line-heigh
 <script src="./metronome-sync.js"></script>
 <script src="./metronome-audio.js"></script>
 <script src="./metronome-room.js"></script>
+<script src="./metronome-calibrate.js"></script>
 <script>
 'use strict';
 const $=id=>document.getElementById(id);
@@ -221,6 +223,14 @@ function paintPendulum(){
   // Each click is a center crossing; the swing reverses halfway between clicks.
   pendulum.setAttribute('transform',`rotate(${27*direction*Math.sin(Math.PI*phase)} 126 178)`);
 }
+// Auto match: while listening, my clicks become 2 kHz chirps half a beat later (see metronome-calibrate.js).
+let calibrating=null,lastCalibration=null;
+function playChirp(time){
+  const oscillator=audioContext.createOscillator(),gain=audioContext.createGain();
+  oscillator.type='sine';oscillator.frequency.setValueAtTime(window.metronomeCalibrate.CHIRP_HZ,time);
+  gain.gain.setValueAtTime(.0001,time);gain.gain.exponentialRampToValueAtTime(.35,time+.002);gain.gain.exponentialRampToValueAtTime(.0001,time+.04);
+  oscillator.connect(gain);gain.connect(audioContext.destination);sources.add(oscillator);oscillator.onended=()=>sources.delete(oscillator);oscillator.start(time);oscillator.stop(time+.045);
+}
 function playClick(time,beat){
   const oscillator=audioContext.createOscillator(),gain=audioContext.createGain();
   oscillator.type='square';oscillator.frequency.setValueAtTime(beat===0?1320:880,time);
@@ -243,8 +253,12 @@ function schedule(){
       if(pending&&sync.beatEpoch(grid,nextK)>=pending.from-1){grid=pending.grid;nextK=sync.nextBeatIndex(grid,pending.from-1);pending=null;}
       const time=serverToAudio(sync.beatEpoch(grid,nextK));
       if(time>=now+.12)break;
-      const beat=sync.beatInBar(nextK);
-      if(time>=now-.005){playClick(time,beat);scheduledBeats.push({time,beat,interval:sync.intervalMs(grid.bpm)/1000});}
+      const beat=sync.beatInBar(nextK),interval=sync.intervalMs(grid.bpm)/1000;
+      if(time>=now-.005){
+        if(calibrating){calibrating.beatTimes.push(time);calibrating.ownTimes.push(time+interval/2);playChirp(time+interval/2);}
+        else playClick(time,beat);
+        scheduledBeats.push({time,beat,interval});
+      }
       nextK++;
     }
     return;
@@ -285,6 +299,8 @@ async function ensureAudio(){
 }
 function renderButtons(){
   const following=role==='follower';
+  const canMatch=following&&running&&Boolean(grid);
+  $('sync-calibrate').hidden=!canMatch;$('sync-calibrate-hint').hidden=!canMatch;
   startStop.disabled=following;
   startStop.textContent=following?'리더를 따라가요':running||startWhenSynced?'멈추기':role==='leader'&&roomState?.playing?'다시 듣기':'시작';
   startStop.setAttribute('aria-pressed',String(running));
@@ -490,6 +506,51 @@ function applyRoomState(state){
   nextK=sync.nextBeatIndex(grid,room.serverNow()+80);
   if(!running)startLoop();
 }
+const calibrateButton=$('sync-calibrate');
+async function autoMatch(){
+  if(!(role==='follower'&&running&&grid&&audioContext)||calibrating)return;
+  const text=$('sync-follower-text');
+  if(!(navigator.mediaDevices?.getUserMedia&&window.AudioWorkletNode)){text.textContent='이 브라우저에서는 자동 맞추기를 쓸 수 없어요. 내 소리 타이밍을 직접 조절해 주세요.';return;}
+  calibrateButton.disabled=true;
+  text.textContent='리더 폰 소리를 듣는 중이에요… 4초만 조용히 해 주세요.';
+  window.metronomeAudio.setAudioSession('play-and-record');
+  let mic=null;
+  try{
+    mic=await window.metronomeCalibrate.openMic(audioContext);
+    if(audioContext.state!=='running')await window.metronomeAudio.resume(audioContext);
+    const interval=sync.intervalMs(grid.bpm)/1000;
+    calibrating={beatTimes:[],ownTimes:[]};
+    await new Promise(done=>setTimeout(done,Math.max(4000,interval*7000)+400));
+    const data=calibrating;calibrating=null;
+    await new Promise(done=>setTimeout(done,Math.min(600,interval*1000)+300)); // let the last chirps be heard
+    const recording=mic.take();
+    const result=recording?window.metronomeCalibrate.analyze({...recording,...data,interval}):{ok:false,reason:'own'};
+    lastCalibration=result;
+    if(result.ok){
+      const before=offsetMs;
+      offsetMs=sync.clampOffset(offsetMs+result.delta*1000);showOffset();
+      try{localStorage.setItem(sync.OFFSET_KEY,String(offsetMs));}catch(_){}
+      const moved=offsetMs-before;
+      text.textContent=Math.abs(moved)<3?'이미 잘 맞고 있어요.':`리더에 맞춰 내 소리를 ${Math.abs(moved)}ms ${moved<0?'앞당겼어요':'늦췄어요'}.`;
+      if(Math.abs(offsetMs)>=sync.OFFSET_LIMIT)text.textContent+=' 조절 범위 끝까지 옮겼어요. 한 번 더 해 보세요.';
+    }else{
+      text.textContent={
+        own:'내 폰 소리를 마이크로 듣지 못했어요. 음량을 올리고 다시 해 보세요.',
+        leader:'리더 폰 소리가 들리지 않았어요. 리더 폰 가까이에서 다시 해 보세요.',
+        noisy:'주변 소리 때문에 잘 들리지 않았어요. 조용한 곳에서 다시 해 보세요.',
+      }[result.reason]||'다시 해 보세요.';
+    }
+  }catch(error){
+    calibrating=null;
+    text.textContent=error&&error.name==='NotAllowedError'?'마이크 권한이 필요해요. 브라우저 설정에서 마이크를 허용해 주세요.':'마이크를 시작하지 못했어요. 다시 해 보세요.';
+  }finally{
+    calibrating=null;
+    mic?.close();
+    window.metronomeAudio.setAudioSession('playback');
+    calibrateButton.disabled=false;
+  }
+}
+calibrateButton.addEventListener('click',autoMatch);
 leadButton.addEventListener('click',startLeading);
 $('sync-close-room').addEventListener('click',()=>{
   if(role==='leader'&&grid&&room)room.publish({...grid,playing:false});
@@ -551,7 +612,7 @@ if(new URLSearchParams(location.search).has('debug')){
       `server ${serverUrl||'—'}`,
       room?`room ${roomCode} · ${role} · ${connState} · rtt ${room.rtt?.toFixed(0)??'—'} ms · offset ${room.offset()?.toFixed(1)??'—'} ms · peers ${peers}`:'no room',
       `grid ${grid?grid.bpm+' bpm @'+Math.round(grid.t0):'—'} · pending ${pending?pending.grid.bpm+' from '+Math.round(pending.from):'—'} · next ${nextK} · my offset ${offsetMs} ms`,
-      `session ${navigator.audioSession?.type??'n/a'}`,
+      `session ${navigator.audioSession?.type??'n/a'} · last match ${lastCalibration?JSON.stringify({...lastCalibration,delta:lastCalibration.delta&&Math.round(lastCalibration.delta*1000),loopback:lastCalibration.loopback&&Math.round(lastCalibration.loopback*1000)}):'—'}`,
     ].join('\n');
   },500);
 }

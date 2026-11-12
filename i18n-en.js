@@ -253,6 +253,18 @@ text: {
   '다른 앱에 다녀와서 멈췄어요. 시작을 눌러 주세요.': 'Paused while you were in another app. Press Start.',
   '소리를 시작하지 못했어요. 다시 눌러 주세요.': 'Couldn’t start the sound. Please press again.',
   '새 방을 만들었어요.': 'Created a new room.',
+  '🎤 자동 맞추기': '🎤 Auto match',
+  '어긋나게 들리면 리더 폰 가까이에서 자동 맞추기를 눌러 보세요. 4초 동안 마이크로 듣고 내 소리 타이밍을 맞춰요.': 'If it sounds off, press Auto match near the leader’s phone. It listens for 4 seconds and sets My sound timing.',
+  '이 브라우저에서는 자동 맞추기를 쓸 수 없어요. 내 소리 타이밍을 직접 조절해 주세요.': 'Auto match isn’t available in this browser. Adjust My sound timing by hand.',
+  '리더 폰 소리를 듣는 중이에요… 4초만 조용히 해 주세요.': 'Listening to the leader’s phone… please keep quiet for 4 seconds.',
+  '이미 잘 맞고 있어요.': 'Already in time.',
+  '조절 범위 끝까지 옮겼어요. 한 번 더 해 보세요.': 'Moved to the end of the range. Try once more.',
+  '내 폰 소리를 마이크로 듣지 못했어요. 음량을 올리고 다시 해 보세요.': 'Couldn’t hear this phone through the mic. Turn the volume up and try again.',
+  '리더 폰 소리가 들리지 않았어요. 리더 폰 가까이에서 다시 해 보세요.': 'Couldn’t hear the leader’s phone. Move closer to it and try again.',
+  '주변 소리 때문에 잘 들리지 않았어요. 조용한 곳에서 다시 해 보세요.': 'Too much noise around. Try again somewhere quieter.',
+  '다시 해 보세요.': 'Please try again.',
+  '마이크 권한이 필요해요. 브라우저 설정에서 마이크를 허용해 주세요.': 'Microphone access is needed. Allow the mic in your browser settings.',
+  '마이크를 시작하지 못했어요. 다시 해 보세요.': 'Couldn’t start the microphone. Please try again.',
   '소리를 시작하지 못했어요. 시작을 다시 누르고, 계속되면 페이지를 새로고침해 주세요.': 'Couldn’t start the sound. Press Start again, and reload the page if it keeps happening.',
   '소리가 멈췄어요. 시작을 다시 눌러 주세요.': 'The sound stopped. Press Start again.',
 
@@ -539,6 +551,8 @@ patterns: [
   ['시간 오차 약 ±{0}ms', 'timing error about ±{0} ms'],
   ['연결된 폰 {0}대', '{0} phones connected'],
   ['리더 박자 {0} BPM으로 재생 중', 'Playing the leader’s {0} BPM beat'],
+  ['리더에 맞춰 내 소리를 {0}ms 앞당겼어요.{1}', 'Moved my clicks {0} ms earlier to match the leader.{1}'],
+  ['리더에 맞춰 내 소리를 {0}ms 늦췄어요.{1}', 'Moved my clicks {0} ms later to match the leader.{1}'],
 
   // Sheet transposer
   ['감지 키: {0} (추정)', 'Detected key: {0} (estimated)'],
