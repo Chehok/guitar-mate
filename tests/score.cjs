@@ -190,8 +190,13 @@ assert(paint.find(p=>p[0]==='text')[3]<200,'Above mode draws above original chor
   $('score-frets').children[1].handlers.click();assert.deepEqual(state(),[2,-2]);assert.equal(shown('G'),'G');assert.equal(shown('Em'),'Em');
   assert.equal(vm.runInContext("scoreKeyStampText({pc:7,minor:false,name:'G'})",context),'G폼 (Capo 2) / A키');
   assert.match($('score-result-key').textContent,/카포 2 · 소리의 키 .* · 코드 모양의 키/);
-  click('score-shift-reset');assert.deepEqual(state(),[2,0]);assert.equal(shown('G'),'F');
-  for(let i=0;i<20;i++)click('score-shift-down');assert.equal(vm.runInContext('scoreState.keyShift',context),-11);assert($('score-shift-down').disabled);
+  assert.equal($('score-shift-value').textContent,'G (원래 키)','sheet label follows the drawn chords (capo included)');
+  click('score-capo-plus');assert.equal($('score-shift-value').textContent,'G → F# (−1)','capo moves the sheet label too');
+  assert(!$('score-capo-reset').hidden,'capo side has a reset as well');
+  click('score-capo-reset');assert.deepEqual(state(),[0,0]);assert.equal(shown('G'),'G');assert($('score-shift-reset').hidden);
+  vm.runInContext("scoreState.capo=3;",context);for(let i=0;i<20;i++)click('score-shift-down');
+  assert.deepEqual(state(),[3,8],'sheet − stops when the drawn key is 11 semitones down');assert($('score-shift-down').disabled);
+  click('score-shift-reset');assert.deepEqual(state(),[0,0]);
   vm.runInContext("scoreState.capo=1;scoreState.keyShift=0;",context);
 }
 // Recommendations follow the actual score controls and keep four bars per progression.
@@ -199,7 +204,7 @@ assert(paint.find(p=>p[0]==='text')[3]<200,'Above mode draws above original chor
   const bars=id=>$(id).children.map(item=>item.children[1].textContent);
   const easy='score-intro-easy',opening='score-intro-opening';
   vm.runInContext("scoreState.codes=[];scoreState.capo=0;",context);
-  context.renderScore();assert($('score-intro-open').hidden,'No key, no intro button');
+  context.renderScore();assert(!$('score-intro-open').hidden,'Intro button is there before any chord is found');assert(!$('score-intro-empty').hidden,'Without a key the dialog explains what is coming');
   vm.runInContext("scoreState.codes=['C','G','Am','F','C'].map((text,i)=>({text,bbox:{x0:50+i*90,y0:200,x1:85+i*90,y1:218}}));",context);
   context.renderScore();
   assert(!$('score-intro-open').hidden,'Recommended intros open from a button beside manual add');

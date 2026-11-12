@@ -215,9 +215,21 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .score-row { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-top:12px; }
 .score-preview-tools { display:flex; flex-wrap:wrap; align-items:center; gap:8px 16px; }
 .score-preview-tools .score-row { margin-top:0; }
-.score-shift { flex-basis:100%; }
-.score-shift button { min-width:44px; }
-.score-shift output { min-width:7em; text-align:center; font-weight:650; font-variant-numeric:tabular-nums; }
+.score-shift, .score-capo-row { flex-basis:100%; flex-wrap:nowrap; gap:4px; }
+.score-shift > strong { flex:none; margin-right:2px; white-space:nowrap; }
+.score-shift > button:not(.score-reset), .score-capo-row > button:not(.score-reset) { flex:none; width:40px; min-width:40px; padding-inline:0; }
+#score-panel .score-shift output, #score-panel .score-capo-row output { flex:1 1 auto; min-width:0; text-align:center; font-weight:650; font-variant-numeric:tabular-nums; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.score-reset { flex:none; margin-left:4px; padding-inline:8px; font-size:12px; white-space:nowrap; }
+/* Recognition shown on the preview */
+.score-scan { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+.score-scan-label { position:absolute; top:8px; right:8px; padding:4px 10px; border-radius:12px; background:var(--green); color:var(--on-green, #fffef9); font-size:12px; font-weight:650; }
+.score-scan-sweep { position:absolute; left:0; right:0; height:18%; background:linear-gradient(to bottom,transparent,rgba(36,91,71,.16),transparent); animation:score-sweep 2.4s ease-in-out infinite; }
+.score-scan.regions .score-scan-sweep { display:none; }
+@keyframes score-sweep { from { top:-18%; } to { top:100%; } }
+.score-scan-box { position:absolute; border:1.5px dashed rgba(36,91,71,.35); border-radius:4px; }
+.score-scan-box.current { border:2px solid #c8891d; background:rgba(232,200,121,.22); }
+.score-scan-box.done { border-style:solid; border-color:rgba(36,91,71,.25); background:rgba(36,91,71,.06); }
+.score-scan-box.found::after { content:attr(data-text); position:absolute; left:0; bottom:100%; padding:0 5px; border-radius:4px; background:#245b47; color:#fffef9; font:700 11px/1.5 system-ui,sans-serif; white-space:nowrap; }
 .score-preview-actions { margin-left:auto; justify-content:flex-end; }
 @media (max-width: 759px) {
   /* Keep the three preview actions on one line on phones (e.g. 393px iPhone). */
@@ -341,7 +353,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 </div>
 <div class="panel score-controls">
 <div class="score-key-row"><p id="score-key" role="status">감지 키: —</p><label><input id="score-key-stamp" type="checkbox" checked> 악보에 표시</label></div>
-<div id="score-capo-controls"><div class="score-row"><button id="score-capo-minus" type="button" aria-label="카포 한 프렛 내리기 (카포 없음에서는 키를 반음 내림)">−</button><output id="score-capo-value" aria-live="polite">카포 없음</output><button id="score-capo-plus" type="button" aria-label="카포 한 프렛 올리기">+</button></div>
+<div id="score-capo-controls"><div class="score-row score-capo-row"><button id="score-capo-minus" type="button" aria-label="카포 한 프렛 내리기 (카포 없음에서는 키를 반음 내림)">−</button><output id="score-capo-value" aria-live="polite">카포 없음</output><button id="score-capo-plus" type="button" aria-label="카포 한 프렛 올리기">+</button><button id="score-capo-reset" class="score-reset" type="button" hidden>원래 키로</button></div>
 <div class="score-fret-scroll" tabindex="0" role="region" aria-label="카포 1부터 11프렛 선택, 좌우로 스크롤"><div class="score-neck">
 <svg class="score-headstock" viewBox="0 0 96 126" preserveAspectRatio="none" aria-hidden="true" focusable="false">
 <path d="M16 22 37 18q4-1 8 1l18 9 20-11 13-4v100l-13-4-20-11-18 9q-4 2-8 1l-21-4q-6-4-6-12V34q0-8 6-12Z" fill="var(--green)" stroke="var(--fret)"/>
@@ -363,7 +375,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <div id="score-work" hidden>
 <div class="panel score-controls">
 <div class="score-preview-tools">
-<div class="score-row score-shift" role="group" aria-labelledby="score-shift-label"><strong id="score-shift-label">곡의 키</strong><button id="score-shift-down" type="button" aria-label="곡의 키를 반음 내리기">−</button><output id="score-shift-value" aria-live="polite">원래 키</output><button id="score-shift-up" type="button" aria-label="곡의 키를 반음 올리기">+</button><button id="score-shift-reset" type="button" hidden>원래 키로</button></div>
+<div class="score-row score-shift" role="group" aria-labelledby="score-shift-label"><strong id="score-shift-label">곡의 키</strong><button id="score-shift-down" type="button" aria-label="곡의 키를 반음 내리기">−</button><output id="score-shift-value" aria-live="polite">원래 키</output><button id="score-shift-up" type="button" aria-label="곡의 키를 반음 올리기">+</button><button id="score-shift-reset" class="score-reset" type="button" hidden>원래 키로</button></div>
 <div class="score-row" role="group" aria-labelledby="score-overlay-label"><strong id="score-overlay-label">코드 표시</strong><label><input type="radio" name="score-overlay" value="replace" checked> 교체</label><label><input type="radio" name="score-overlay" value="above"> 위에</label><label><input id="score-original" type="checkbox"> 원본 보기</label></div>
 <div class="score-row score-preview-actions"><button id="score-add" type="button">코드 직접 추가</button><button id="score-intro-open" type="button" aria-haspopup="dialog" data-i18n-en="Intros" hidden>추천 전주</button><button id="score-download" type="button" class="primary">PNG 다운로드</button></div>
 </div>
@@ -381,6 +393,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <input id="score-intro-tempo-range" type="range" min="50" max="180" step="1" value="120" aria-label="재생 템포 조절">
 <fieldset class="score-intro-meter"><legend>박자</legend><label><input type="radio" name="score-intro-meter" value="4/4" checked> 4/4</label><label><input type="radio" name="score-intro-meter" value="3/4"> 3/4</label><label><input type="radio" name="score-intro-meter" value="6/8"> 6/8</label></fieldset>
 <p id="score-intro-tempo-note" class="hint">4/4박자 · 한 마디 2.0초</p></div>
+<p id="score-intro-empty" class="hint" hidden>악보에서 코드를 찾으면 곡의 키에 맞는 전주를 추천해요. 인식이 끝나면 여기에 나와요.</p>
 <h3 id="score-intro-easy-title">쉬운 전주</h3>
 <ol id="score-intro-easy" class="score-intro-bars" aria-labelledby="score-intro-easy-title" role="list"></ol>
 <div id="score-intro-easy-actions" class="score-row score-intro-actions" role="group" aria-labelledby="score-intro-easy-title"><button id="score-intro-easy-play" type="button">소리 듣기</button><button id="score-intro-easy-place" type="button">악보에 넣기</button></div>
@@ -1678,6 +1691,7 @@ best={...best,agreement:!!(primary?.confidence>=90&&secondary?.support>=3&&secon
 if(useStaff&&!bbox.recovery){const suffix=[...suffixReadings.values()].filter(r=>r.support>=2||r.confidence>=40).sort((a,b)=>b.support-a.support||b.text.length-a.text.length)[0];if(suffix)fragments.push(suffix);}
 if(useStaff)samples.push({bbox,numericReads,rootHint:[...rootHints].sort((a,b)=>b[1]-a[1])[0]?.[0],readings:[...readings.values()],best,signature:scoreRegionSignature(source,bbox)});
 else if(best)candidates.push(best);
+if(onStage)onStage('region',{bbox,text:best?.text||null});
 }
 if(useStaff&&worker.recognizeRegion){
 const original=samples.filter(s=>s.best&&!s.bbox.recovery).map(s=>s.best),recovered=samples.filter(s=>s.best&&s.bbox.recovery).map(s=>s.best);
@@ -1862,10 +1876,41 @@ function cancelScoreOCR(){
 scoreState.run++;if(scoreAbortOCR)scoreAbortOCR();
 scoreBusy(false);
 }
+// Recognition in the preview: the area being read is outlined, read areas are tinted and show what was read.
+const scoreScan={
+layer:null,label:null,boxes:new Map(),
+start(){
+this.stop();const stage=$('score-stage');if(!stage||!document.createElement)return;
+const layer=document.createElement('div');layer.className='score-scan';layer.setAttribute('aria-hidden','true');
+const label=document.createElement('span');label.className='score-scan-label';label.textContent='코드 찾는 중…';
+const sweep=document.createElement('span');sweep.className='score-scan-sweep';
+layer.append(sweep,label);stage.append(layer);this.layer=layer;this.label=label;this.boxes=new Map();
+},
+box(bbox){
+const source=scoreState.source;if(!this.layer||!source||!bbox)return null;
+const key=`${bbox.x0},${bbox.y0},${bbox.x1},${bbox.y1}`;
+if(!this.boxes.has(key)){const el=document.createElement('span');el.className='score-scan-box';
+Object.assign(el.style,{left:bbox.x0/source.width*100+'%',top:bbox.y0/source.height*100+'%',width:(bbox.x1-bbox.x0)/source.width*100+'%',height:(bbox.y1-bbox.y0)/source.height*100+'%'});
+this.layer.append(el);this.boxes.set(key,el);}
+return this.boxes.get(key);
+},
+stage(stage,info){
+if(!this.layer)return;
+if(stage==='layout'){this.layer.classList.toggle('regions',info.regions.length>0);for(const bbox of info.regions)this.box(bbox);}
+if(stage==='region'){const el=this.box(info.bbox);if(el){el.classList.remove('current');el.classList.add('done');if(info.text){el.dataset.text=info.text;el.classList.add('found');}}}
+},
+step(index,total,bbox){
+if(!this.layer)return;
+this.label.textContent=`코드 찾는 중 ${index+1}/${total}`;
+for(const el of this.boxes.values())el.classList.remove('current');
+const el=bbox&&this.box(bbox);if(el)el.classList.add('current');
+},
+stop(){this.layer?.remove();this.layer=null;this.label=null;this.boxes=new Map();}
+};
 async function recognizeScore(){
 if(!scoreState.image||scoreState.busy)return;
 if(navigator.onLine===false){scoreStatus('오프라인에서는 자동 인식 준비가 어려울 수 있어요. 코드 직접 추가로 위치와 코드를 입력하거나, 연결 후 이미지를 다시 열어 주세요.');return;}
-const run=++scoreState.run;scoreBusy(true,true);scoreStatus('자동 인식을 준비합니다. 처음에는 인식 도구를 내려받아 잠시 걸릴 수 있어요.');
+const run=++scoreState.run;scoreBusy(true,true);scoreScan.start();scoreStatus('자동 인식을 준비합니다. 처음에는 인식 도구를 내려받아 잠시 걸릴 수 있어요.');
 let worker=null,timer,timedOut=false,abort,canvas=null,passIndex=0,passTotal=3,passVariant='color';
 const labels={color:'컬러 글씨 분리',gray:'확대·대비 보정',adaptive:'적응형 이진화',region:'코드 영역 확대'};
 const current=()=>run===scoreState.run&&!timedOut;
@@ -1880,10 +1925,11 @@ return canvas;
 worker=await scoreRecognitionWorker(current,message=>{if(current()&&message.status==='recognizing text')scoreStatus(`기기 안에서 코드를 읽고 있어요… ${passIndex+1}/${passTotal} · ${labels[passVariant]} · ${Math.round((passIndex+message.progress)/passTotal*100)}%`);},encode);
 if(!current()){await worker.terminate();return;}
 const source=scoreState.source,pixels=source.getContext('2d').getImageData(0,0,source.width,source.height);
-const codes=await runScoreOCRPasses(worker,{data:pixels.data,width:source.width,height:source.height},encode,async(index,total,variant)=>{
+const codes=await runScoreOCRPasses(worker,{data:pixels.data,width:source.width,height:source.height},encode,async(index,total,variant,bbox)=>{
 passIndex=index;passTotal=total;passVariant=variant;scoreStatus(`코드 인식 ${index+1}/${total} · ${labels[variant]} 준비 중… ${Math.round(index/total*100)}%`);
+scoreScan.step(index,total,bbox);
 await new Promise(resolve=>setTimeout(resolve,0));
-},current);
+},current,(stage,info)=>{if(current())scoreScan.stage(stage,info);});
 if(!current())return;
 scoreState.codes=codes;
 scoreState.adding=false;$('score-editor').close();renderScore();
@@ -1894,7 +1940,7 @@ scoreStatus(scoreState.codes.length?`${scoreState.codes.length}개 코드를 찾
 if(run===scoreState.run)scoreStatus('자동 인식을 완료하지 못했어요. 인터넷 연결 또는 브라우저의 인식 도구 지원을 확인해 주세요. 코드 직접 추가로 계속할 수 있어요.');
 }finally{
 clearTimeout(timer);if(scoreAbortOCR===abort)scoreAbortOCR=null;if(canvas){canvas.width=canvas.height=1;}if(worker)worker.terminate().catch(()=>{});
-if(run===scoreState.run)scoreBusy(false);
+if(run===scoreState.run){scoreBusy(false);scoreScan.stop();}
 }
 }
 // Chords as drawn: the song's key moved by keyShift (sheet control), then played with the capo (neck).
@@ -1995,7 +2041,7 @@ renderScore();
 scoreStatus('전주를 악보 왼쪽 위에 넣었어요. 끌어서 원하는 위치로 옮기세요.');
 }
 function openScoreIntros(){
-if(scoreState.busy||$('score-intro-open').hidden)return;
+if($('score-intro-open').hidden)return;
 $('score-intro-dialog').showModal();
 }
 // Intro size on the score: 50–200% of the default label size.
@@ -2010,11 +2056,14 @@ renderScore();
 scoreStatus(`전주 크기를 ${Math.round(next*100)}%로 바꿨어요.`);
 }
 function renderScoreIntros(key){
-$('score-intro-open').hidden=!key;
+$('score-intro-open').hidden=!scoreState.image;
+$('score-intro-empty').hidden=Boolean(key);
+for(const id of ['easy','opening','ending'])for(const part of ['-title','','-actions'])$(`score-intro-${id}${part}`).hidden=!key;
+if(!key)$('score-intro-more').hidden=true;
 $('score-intro-remove').hidden=!scoreState.intro;
 $('score-intro-size').hidden=!scoreState.intro;
 if(scoreState.intro){const scale=scoreState.intro.scale||1;$('score-intro-size-value').textContent=Math.round(scale*100)+'%';$('score-intro-smaller').disabled=scale<=scoreIntroScales[0];$('score-intro-bigger').disabled=scale>=scoreIntroScales.at(-1);}
-if(!key){$('score-intro-dialog').close();return;}
+if(!key)return;
 const {easy,basedOnOpening,basedOnEnding}=recommendScoreIntros(key,scoreState.codes.map(code=>code.text));
 $('score-intro-more').hidden=basedOnOpening.length>0&&basedOnEnding.length>0;
 for(const [id,chords] of [['score-intro-easy',easy],['score-intro-opening',basedOnOpening],['score-intro-ending',basedOnEnding]]){
@@ -2114,10 +2163,11 @@ $('score-capo-value').textContent=capo?'카포 '+capo:keyShift<0?`카포 없음 
 $('score-capo-minus').disabled=capo===0&&keyShift===-11;$('score-capo-plus').disabled=capo===11;
 for(const [i,button] of [...$('score-frets').children].entries())button.setAttribute('aria-pressed',String(i+1===capo));
 // Sheet-side key control (same state as the neck's "−" below capo 0)
-const step=`${keyShift>0?'+':'−'}${Math.abs(keyShift)}`;
-$('score-shift-value').textContent=!keyShift?(key?`${key.name} (원래 키)`:'원래 키'):key?`${key.name} → ${sound.name} (${step})`:`${step}반음`;
-$('score-shift-down').disabled=keyShift===-11;$('score-shift-up').disabled=keyShift===11;
-$('score-shift-reset').hidden=!keyShift;
+// The sheet control shows the key the chords are drawn in, so it moves with the capo too.
+const drawn=keyShift-capo,step=`${drawn>0?'+':'−'}${Math.abs(drawn)}`;
+$('score-shift-value').textContent=!drawn?(key?`${key.name} (원래 키)`:'원래 키'):key?`${key.name} → ${destination.name} (${step})`:`${step}반음`;
+$('score-shift-down').disabled=drawn<=-11;$('score-shift-up').disabled=drawn>=11;
+$('score-shift-reset').hidden=$('score-capo-reset').hidden=!(keyShift||capo);
 if(!scoreState.image)return;
 $('score-stage').classList.toggle('adding',scoreState.adding);
 $('score-add').textContent=scoreState.adding?'위치 선택 취소':'코드 직접 추가';
@@ -2354,9 +2404,13 @@ const button=document.createElement('button'),span=document.createElement('span'
 }
 $('score-capo-minus').addEventListener('click',()=>{if(scoreState.capo>0)scoreState.capo--;else scoreState.keyShift=Math.max(-11,scoreState.keyShift-1);renderScore();});
 $('score-capo-plus').addEventListener('click',()=>{if(!scoreState.capo&&scoreState.keyShift<0)scoreState.keyShift++;else scoreState.capo=Math.min(11,scoreState.capo+1);renderScore();});
-$('score-shift-down').addEventListener('click',()=>{scoreState.keyShift=Math.max(-11,scoreState.keyShift-1);renderScore();});
-$('score-shift-up').addEventListener('click',()=>{scoreState.keyShift=Math.min(11,scoreState.keyShift+1);renderScore();});
-$('score-shift-reset').addEventListener('click',()=>{scoreState.keyShift=0;renderScore();});
+// Sheet −/+ move the drawn chords a semitone; the capo stays where it is.
+const shiftDrawn=delta=>{const drawn=scoreState.keyShift-scoreState.capo+delta;if(drawn<-11||drawn>11)return;scoreState.keyShift+=delta;renderScore();};
+$('score-shift-down').addEventListener('click',()=>shiftDrawn(-1));
+$('score-shift-up').addEventListener('click',()=>shiftDrawn(1));
+const resetScoreKey=()=>{scoreState.keyShift=0;scoreState.capo=0;renderScore();};
+$('score-shift-reset').addEventListener('click',resetScoreKey);
+$('score-capo-reset').addEventListener('click',resetScoreKey);
 for(const input of document.querySelectorAll('input[name="score-overlay"]'))input.addEventListener('change',()=>{scoreState.overlay=input.value;renderScore();});
 $('score-original').addEventListener('change',()=>{scoreState.original=$('score-original').checked;renderScore();});
 $('score-key-stamp').addEventListener('change',()=>{scoreState.showKey=$('score-key-stamp').checked;renderScore();});

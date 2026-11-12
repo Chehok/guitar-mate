@@ -328,6 +328,8 @@ text: {
   '곡의 키를 반음 올리기': 'Raise the song key a semitone',
   '원래 키': 'Original key',
   '원래 키로': 'Reset key',
+  '코드 찾는 중…': 'Finding chords…',
+  '악보에서 코드를 찾으면 곡의 키에 맞는 전주를 추천해요. 인식이 끝나면 여기에 나와요.': 'Once chords are found on the sheet, intros in the song’s key appear here.',
   // Sheet transposer
   '파일 선택': 'Choose file',
   '클립보드에서 붙여넣기': 'Paste from clipboard',
@@ -577,6 +579,7 @@ htmlPatterns: [
   ['기본음 {0} · 종류 {1} · 베이스 {2} → {3}개{4}', 'Root {0} · type {1} · bass {2} → {3}{4}'],
 ],
 patterns: [
+  ['코드 찾는 중 {0}/{1}', 'Finding chords {0}/{1}'],
   ['카포 {0} · 소리의 키 {1} → {2} · 코드 모양의 키 {3}', 'Capo {0} · sounding key {1} → {2} · chord shapes in {3}'],
   ['{0} (원래 키)', '{0} (original key)'],
   ['{0}반음', '{0} semitone(s)'],
