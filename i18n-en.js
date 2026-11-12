@@ -323,6 +323,11 @@ text: {
   '2박과 4박에 오른손 옆면으로 줄을 눌러 "착" 소리를 내요. 신나는 곡에 좋아요.': 'On beats 2 and 4, press the strings with the side of your strumming hand for a “chick” sound. Great for upbeat songs.',
   '8비트처럼 치되 업을 살짝 늦게 쳐서 통통 튀는 느낌을 내요.': 'Play it like eighth notes, but delay each up a little for a bouncy, swung feel.',
   '업만 엇박에 짧게 끊어 쳐요. 치자마자 왼손 힘을 빼서 소리를 끊어요.': 'Play short ups on the off-beats only. Relax your fretting hand right after each one to cut the sound.',
+  '곡의 키': 'Song key',
+  '곡의 키를 반음 내리기': 'Lower the song key a semitone',
+  '곡의 키를 반음 올리기': 'Raise the song key a semitone',
+  '원래 키': 'Original key',
+  '원래 키로': 'Reset key',
   // Sheet transposer
   '파일 선택': 'Choose file',
   '클립보드에서 붙여넣기': 'Paste from clipboard',
@@ -572,6 +577,9 @@ htmlPatterns: [
   ['기본음 {0} · 종류 {1} · 베이스 {2} → {3}개{4}', 'Root {0} · type {1} · bass {2} → {3}{4}'],
 ],
 patterns: [
+  ['카포 {0} · 소리의 키 {1} → {2} · 코드 모양의 키 {3}', 'Capo {0} · sounding key {1} → {2} · chord shapes in {3}'],
+  ['{0} (원래 키)', '{0} (original key)'],
+  ['{0}반음', '{0} semitone(s)'],
   ['{0} BPM 추천', '{0} BPM suggested'],
   ['{0} BPM으로 맞추기', 'Set to {0} BPM'],
   ['템포를 {0} BPM으로 맞췄어요.', 'Tempo set to {0} BPM.'],
