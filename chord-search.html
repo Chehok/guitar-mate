@@ -115,7 +115,8 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .panel { min-width: 0; padding: 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
 .voicing-panel #audio-status:empty { margin: 0; min-height: 0; }
 .diagram-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px 8px; }
-.quality { grid-column: 1 / -1; color: var(--muted); font-size: 13px; }
+.voicing-summary { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+.quality { flex: 1 1 44px; color: var(--muted); font-size: 12px; line-height: 1.35; }
 .play { flex: none; padding: 8px 10px; font-size: 13px; }
 .diagram { display: block; width: 100%; max-width: 290px; height: auto; margin: 8px auto; overflow: visible; }
 .diagram text, .neck text { font-family: inherit; }
@@ -264,9 +265,11 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <section class="panel voicing-panel" aria-label="코드 운지법">
 <h2 id="chord-title" class="sr-only"></h2>
 <div class="diagram-head">
+<div class="voicing-summary">
 <div id="tones" class="tones" role="group" aria-label="코드 구성음"></div>
-<button id="play" class="play" type="button">소리 듣기</button>
 <p id="quality" class="quality"></p>
+</div>
+<button id="play" class="play" type="button">소리 듣기</button>
 </div>
 <div id="diagram"></div>
 <div class="nav"><button id="prev" type="button" aria-label="이전 보이싱">← 이전</button><span id="counter" class="counter" aria-live="polite"></span><button id="next" type="button" aria-label="다음 보이싱">다음 →</button></div>
@@ -375,7 +378,7 @@ $('neck-note').textContent=vertical?'0–15프렛 · 왼쪽이 6번 줄(낮은 E
 $('neck').innerHTML=neck(voicings[position],vertical);
 }
 neckLayout.addEventListener('change',renderNeck);
-function render(){const v=voicings[position];$('chord-title').textContent=current.label;$('quality').textContent=current.name+(current.bassNote?' · 베이스 '+current.bassNote:'');$('diagram').innerHTML=diagram(v);$('counter').textContent=voicings.length?`보이싱 ${position+1}/${voicings.length}`:'보이싱 없음';$('prev').disabled=$('next').disabled=voicings.length<2;$('play').disabled=!v;
+function render(){const v=voicings[position];$('chord-title').textContent=current.label;$('quality').textContent=current.name;$('diagram').innerHTML=diagram(v);$('counter').textContent=voicings.length?`보이싱 ${position+1}/${voicings.length}`:'보이싱 없음';$('prev').disabled=$('next').disabled=voicings.length<2;$('play').disabled=!v;
 $('tones').replaceChildren(...current.tones.map(t=>{const div=document.createElement('div');div.className='tone'+(t[0]===0?' root':'');const strong=document.createElement('strong'),small=document.createElement('small');strong.textContent=toneName(current,t);small.textContent=t[1]==='R'?'1':t[1];div.append(strong,small);return div;}));
 renderNeck();$('audio-status').textContent='';}
 let identifyPlaybackRequest=0;

@@ -148,9 +148,9 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 #identify-status { margin-top: 0; }
 .identify-candidates { display: grid; gap: 8px; padding-left: 24px; }
 .identify-candidates li::marker { color: var(--muted); font-size: 13px; }
-.identify-candidates > li > button { width: 100%; padding: 12px 14px; text-align: left; border-color: var(--line); }
-.identify-candidates strong { display: block; font-size: 22px; font-weight: 550; }
-.identify-candidates small { display: block; color: var(--muted); font-size: 12px; margin-top: 4px; }
+.identify-candidates > li > button { width: 100%; padding: 8px 12px; text-align: left; border-color: var(--line); }
+.identify-candidates strong { display: block; font-size: 19px; font-weight: 550; }
+.identify-candidates small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
 #identify-status { font-size: 14px; }
 .identify-hit { cursor: pointer; touch-action: manipulation; }
 .identify-hit:focus { outline: none; }
@@ -347,11 +347,13 @@ const sounding=identifyFrets.filter(f=>f>=0).length,canPlay=sounding>=2&&pcs.len
 $('identify-play').disabled=!canPlay;
 $('identify-play').setAttribute('aria-label',canPlay?'입력 운지 소리 듣기':'입력 운지가 부족해 소리를 들을 수 없습니다');
 $('identify-candidates').replaceChildren(...candidates.map(candidate=>{
-const li=document.createElement('li'),button=document.createElement('button'),title=document.createElement('strong'),details=document.createElement('small'),tones=document.createElement('small');
+const li=document.createElement('li'),button=document.createElement('button'),title=document.createElement('strong'),tones=document.createElement('small');
 button.type='button';title.textContent=displayChord(candidate.label)+(candidate.alias?' / '+displayChord(candidate.alias):'');
-details.textContent=(candidate.slash?(candidate.nonChordBass?'슬래시 코드 · 비구성음 베이스':'슬래시 코드 · 전위형'):'최저음 = 근음')+(candidate.omitted.length?' · 생략: '+candidate.omitted.join(', '):' · 구성음 일치');
-tones.textContent='구성음 · 음정: '+candidate.chord.tones.filter(t=>candidate.notes.includes(mod(candidate.chord.pc+t[0]))).map(t=>displayChord(toneName(candidate.chord,t))+' ('+t[1]+')').join(' · ')+(candidate.nonChordBass?' · 베이스 '+displayChord(identifyRoots[candidate.bass]):'');
-button.append(title,details,tones);
+tones.textContent=candidate.chord.tones
+  .filter(t=>candidate.notes.includes(mod(candidate.chord.pc+t[0])))
+  .map(t=>displayChord(toneName(candidate.chord,t)))
+  .join(' · ');
+button.append(title,tones);
 button.addEventListener('click',()=>{
   const url=new URL($('chords-tab').href);
   url.searchParams.set('chord',candidate.label);
