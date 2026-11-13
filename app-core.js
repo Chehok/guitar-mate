@@ -227,7 +227,7 @@ s+=`<g class="identify-hit" role="button" tabindex="0" data-string="${i}" data-f
 }
 return svg(s,'-8 24 272 292','diagram diagram-editor',`운지 입력, ${base}–${base+4}프렛`).replace('role="img"','role="group"');
 }
-return svg(s,'0 0 290 310','diagram',`${current.label} 운지, 6번 줄부터 ${f.map(n=>n<0?'뮤트':n+'프렛').join(', ')}`);
+return svg(s,'0 22 290 288','diagram',`${current.label} 운지, 6번 줄부터 ${f.map(n=>n<0?'뮤트':n+'프렛').join(', ')}`);
 }
 // The chord search page refreshes its step filter when another chord is shown.
 function syncFilters(){if(typeof renderSteps==='function'&&document.getElementById('chord-steps'))renderSteps();}

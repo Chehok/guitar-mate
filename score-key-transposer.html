@@ -174,13 +174,13 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .score-row { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-top:12px; }
 .score-preview-tools { display:flex; flex-wrap:wrap; align-items:center; gap:8px 16px; }
 .score-preview-tools .score-row { margin-top:0; }
-.score-capo-row { flex-basis:100%; flex-wrap:nowrap; gap:4px; }
-.score-listen { flex:none; width:40px; min-width:40px; padding:0; margin-left:4px; display:inline-grid; place-items:center; background:var(--green); border-color:var(--green); color:var(--on-green); }
-.score-listen .score-listen-stop, .score-listen[aria-pressed=true] .score-listen-play { display:none; }
-.score-listen[aria-pressed=true] .score-listen-stop { display:block; }
-.score-listen:disabled { background:var(--soft); border-color:var(--line); color:var(--muted); }
-.score-capo-row > button:not(.score-reset) { flex:none; width:40px; min-width:40px; padding-inline:0; }
-#score-panel .score-capo-row output { flex:1 1 auto; min-width:0; text-align:center; font-weight:650; font-variant-numeric:tabular-nums; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.score-capo-row { flex-basis:100%; gap:4px; }
+.score-listen { flex:none; margin-left:4px; padding-inline:8px; display:inline-grid; place-items:center; font-size:12px; white-space:nowrap; }
+.score-listen > span { grid-area:1 / 1; display:inline-flex; align-items:center; gap:4px; }
+.score-listen .score-listen-stop, .score-listen[data-playing] .score-listen-play { visibility:hidden; }
+.score-listen[data-playing] .score-listen-stop { visibility:visible; }
+#score-capo-minus, #score-capo-plus { flex:none; width:40px; min-width:40px; padding-inline:0; }
+#score-panel .score-capo-row output { flex:1 1 4.5em; min-width:0; text-align:center; font-weight:650; font-variant-numeric:tabular-nums; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 @media (min-width:700px) {
   /* Keep −, value, + and reset side by side instead of spread across the card */
   #score-panel .score-capo-row output { flex:0 0 auto; min-width:8em; padding-inline:12px; }
@@ -223,7 +223,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
   .score-preview-actions button { flex:1 1 0; min-width:0; padding-inline:4px; font-size:14px; white-space:nowrap; }
 }
 #score-panel label { display:inline-flex; align-items:center; gap:6px; }
-.score-drop { display:grid; justify-items:center; gap:8px; padding:28px 12px; border:2px dashed var(--control); border-radius:12px; background:var(--soft); text-align:center; }
+.score-drop { display:grid; justify-items:center; align-content:center; min-height:clamp(200px,32svh,340px); gap:8px; padding:28px 12px; border:2px dashed var(--control); border-radius:12px; background:var(--soft); text-align:center; }
 .score-upload-actions { display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:8px; }
 .score-drop.is-dragging { border-color:var(--green); background:var(--hit); }
 .score-file-button { display:inline-flex; align-items:center; justify-content:center; min-height:44px; padding:8px 18px; border-radius:10px; background:var(--green); color:var(--on-green); font-weight:700; cursor:pointer; }
@@ -281,32 +281,39 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .score-code-hit.draggable { border-color:var(--orange); cursor:grab; touch-action:none; }
 .score-code-hit.dragging { cursor:grabbing; background:var(--hit); }
 #score-intro-dialog { max-width:420px; text-align:left; }
-#score-intro-dialog h2 { margin:0 0 4px; }
+#score-intro-dialog h2 { margin:0; }
+.score-intro-header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+#score-intro-close { min-width:44px; padding:0; font-size:22px; line-height:1; }
 .score-intro h3 { margin:14px 0 0; font-size:14px; }
 .score-intro h3[hidden] { display:none; }
 .score-intro-actions { margin-top:8px; }
-.score-intro-close { justify-content:flex-end; margin-top:16px; }
+#score-intro-remove { display:block; margin:16px 0 0 auto; }
 .score-intro-size { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:16px; padding:10px 12px; border:1px solid var(--line); border-radius:12px; background:var(--soft); }
 .score-intro-size[hidden] { display:none; }
 .score-intro-size > span { font-size:14px; font-weight:650; }
 .score-intro-size .score-row { margin-top:0; gap:8px; flex-wrap:nowrap; }
 .score-intro-size button { min-width:44px; padding-inline:0; }
 #score-panel .score-intro-size output { min-width:52px; }
-.score-intro-tempo { margin-top:14px; padding:10px 12px; border:1px solid var(--line); border-radius:12px; background:var(--soft); }
-.score-intro-tempo-row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
-.score-intro-tempo-row label { font-size:14px; font-weight:650; }
+.score-intro-tempo { margin-top:10px; padding:8px 10px; border:1px solid var(--line); border-radius:12px; background:var(--soft); }
+.score-intro-tempo-row { display:flex; align-items:center; gap:10px; }
 .score-intro-tempo-value { display:flex; align-items:center; gap:6px; color:var(--muted); font-size:13px; }
-#score-intro-tempo-value { width:72px; min-height:44px; padding:6px 8px; border:1px solid var(--control); border-radius:10px; background:var(--panel); color:var(--ink); text-align:center; font:inherit; font-size:16px; font-variant-numeric:tabular-nums; }
-#score-intro-tempo-range { display:block; width:100%; margin:8px 0 0; accent-color:var(--green); }
-.score-intro-meter { display:flex; flex-wrap:wrap; align-items:center; gap:4px 12px; margin:10px 0 0; padding:0; border:0; }
-.score-intro-meter legend { float:left; margin-right:4px; padding:0; font-size:14px; font-weight:650; }
-.score-intro-meter label { display:inline-flex; align-items:center; gap:4px; min-height:44px; font-size:14px; }
+#score-intro-tempo-value { width:64px; min-height:44px; padding:6px 8px; border:1px solid var(--control); border-radius:10px; background:var(--panel); color:var(--ink); text-align:center; font:inherit; font-size:16px; font-variant-numeric:tabular-nums; }
+#score-intro-tempo-range { flex:1; min-width:0; margin:0; accent-color:var(--green); }
+.score-intro-meter { display:flex; align-items:center; gap:6px; margin-top:6px; }
+#score-intro-meter-label { margin-right:2px; font-size:14px; font-weight:650; }
+.score-intro-meter label { flex:1; }
+.score-intro-meter label span { display:grid; place-items:center; min-height:44px; border:1px solid var(--control); border-radius:8px; background:var(--panel); font-size:14px; cursor:pointer; }
+.score-intro-meter input:checked + span { border-color:var(--green); background:var(--green); color:var(--on-green); font-weight:650; }
+.score-intro-meter input:focus-visible + span { outline:3px solid var(--focus); outline-offset:1px; }
 .score-intro-bars { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; list-style:none; margin:6px 0 0; padding:0; }
 .score-intro-bars li { padding:8px 4px; border:1px solid var(--line); border-radius:8px; background:var(--soft); text-align:center; overflow-wrap:anywhere; }
 .score-intro-bars span { display:block; color:var(--muted); font-size:12px; }
 #score-edit-text { display:block; width:100%; padding:10px; margin:10px 0; }
 #score-editor .score-row { justify-content:center; }
-@media (min-width:760px) { .score-controls { max-width:none; } }
+@media (min-width:760px) {
+  .score-controls { max-width:none; }
+  .score-drop { min-height:clamp(210px,40svh,440px); }
+}
 
 </style>
 <link rel="stylesheet" href="./app-shell.css">
@@ -347,7 +354,10 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <p id="score-edit-hint" class="hint">악보 위의 코드를 눌러 수정하세요. 직접 추가한 코드와 전주는 끌어서 옮길 수 있어요. 아래 목록에서도 편집할 수 있어요.<br><span id="score-size"></span></p>
 </div>
 <div id="score-capo-panel" class="panel score-controls">
-<div id="score-capo-controls"><div class="score-row score-capo-row"><button id="score-capo-minus" type="button" aria-label="키 올리기 (카포를 한 프렛 내리고, 카포 없음에서는 키를 반음 올림)">−</button><output id="score-capo-value" aria-live="polite">카포 없음</output><button id="score-capo-plus" type="button" aria-label="키 내리기 (카포를 한 프렛 올림)">+</button><button id="score-capo-reset" class="score-reset" type="button" disabled>원래 키로</button><button id="score-listen" class="score-listen" type="button" aria-label="악보 코드 들어보기" title="악보 코드 들어보기" aria-pressed="false" disabled><svg class="score-listen-play" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg><svg class="score-listen-stop" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/></svg></button></div>
+<div id="score-capo-controls"><div class="score-row score-capo-row"><button id="score-capo-minus" type="button" aria-label="키 올리기 (카포를 한 프렛 내리고, 카포 없음에서는 키를 반음 올림)">−</button><output id="score-capo-value" aria-live="polite">카포 없음</output><button id="score-capo-plus" type="button" aria-label="키 내리기 (카포를 한 프렛 올림)">+</button><button id="score-capo-reset" class="score-reset" type="button" disabled>원래 키로</button><button id="score-listen" class="score-listen primary" type="button" disabled>
+<span class="score-listen-play"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg><span>코드 재생</span></span>
+<span class="score-listen-stop"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/></svg><span>정지</span></span>
+</button></div>
 <div class="score-fret-scroll" tabindex="0" role="region" aria-label="카포 1부터 11프렛 선택, 좌우로 스크롤"><div class="score-neck">
 <svg class="score-headstock" viewBox="0 0 96 126" preserveAspectRatio="none" aria-hidden="true" focusable="false">
 <path d="M16 22 37 18q4-1 8 1l18 9 20-11 13-4v100l-13-4-20-11-18 9q-4 2-8 1l-21-4q-6-4-6-12V34q0-8 6-12Z" fill="var(--green)" stroke="var(--fret)"/>
@@ -369,12 +379,21 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 </div>
 </section>
 <dialog id="score-intro-dialog" class="install-guide score-intro" aria-labelledby="score-intro-title">
-<h2 id="score-intro-title">추천 전주</h2>
+<div class="score-intro-header"><h2 id="score-intro-title">추천 전주</h2><button id="score-intro-close" type="button" aria-label="닫기" autofocus>×</button></div>
 <p class="hint">한 마디에 코드 하나씩 연주한 뒤 곡의 첫 코드로 넘어가세요.</p>
-<div class="score-intro-tempo"><div class="score-intro-tempo-row"><label for="score-intro-tempo-value">재생 템포</label><div class="score-intro-tempo-value"><input id="score-intro-tempo-value" type="number" min="50" max="180" step="1" value="120" inputmode="numeric" aria-describedby="score-intro-tempo-note"><span>BPM</span></div></div>
-<input id="score-intro-tempo-range" type="range" min="50" max="180" step="1" value="120" aria-label="재생 템포 조절">
-<fieldset class="score-intro-meter"><legend>박자</legend><label><input type="radio" name="score-intro-meter" value="4/4" checked> 4/4</label><label><input type="radio" name="score-intro-meter" value="3/4"> 3/4</label><label><input type="radio" name="score-intro-meter" value="6/8"> 6/8</label></fieldset>
-<p id="score-intro-tempo-note" class="hint">4/4박자 · 한 마디 2.0초</p></div>
+<div class="score-intro-tempo">
+<div class="score-intro-tempo-row">
+<label class="sr-only" for="score-intro-tempo-value">재생 템포</label>
+<input id="score-intro-tempo-range" type="range" min="40" max="240" step="1" value="100" aria-label="재생 템포 조절">
+<div class="score-intro-tempo-value"><input id="score-intro-tempo-value" type="number" min="40" max="240" step="1" value="100" inputmode="numeric"><span>BPM</span></div>
+</div>
+<div class="score-intro-meter" role="radiogroup" aria-labelledby="score-intro-meter-label">
+<span id="score-intro-meter-label">박자</span>
+<label><input class="sr-only" type="radio" name="score-intro-meter" value="4/4" checked><span>4/4</span></label>
+<label><input class="sr-only" type="radio" name="score-intro-meter" value="3/4"><span>3/4</span></label>
+<label><input class="sr-only" type="radio" name="score-intro-meter" value="6/8" aria-label="6/8박자 · 점4분음표 기준"><span>6/8</span></label>
+</div>
+</div>
 <p id="score-intro-empty" class="hint" hidden>악보에서 코드를 찾으면 곡의 키에 맞는 전주를 추천해요. 인식이 끝나면 여기에 나와요.</p>
 <h3 id="score-intro-easy-title">쉬운 전주</h3>
 <ol id="score-intro-easy" class="score-intro-bars" aria-labelledby="score-intro-easy-title" role="list"></ol>
@@ -388,7 +407,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <p id="score-intro-more" class="hint" hidden>코드를 더 인식하면 곡의 첫·끝 코드 진행을 활용한 전주도 추천해요.</p>
 <p id="score-intro-audio-status" class="hint" role="status" hidden></p>
 <div id="score-intro-size" class="score-intro-size" role="group" aria-labelledby="score-intro-size-label" hidden><span id="score-intro-size-label">악보 속 전주 크기</span><div class="score-row"><button id="score-intro-smaller" type="button" aria-label="전주 작게">−</button><output id="score-intro-size-value" aria-live="polite">100%</output><button id="score-intro-bigger" type="button" aria-label="전주 크게">+</button></div></div>
-<div class="score-row score-intro-close"><button id="score-intro-remove" type="button" hidden>악보에서 빼기</button><button id="score-intro-close" type="button">닫기</button></div>
+<button id="score-intro-remove" type="button" hidden>악보에서 빼기</button>
 </dialog>
 <dialog id="score-editor" class="install-guide" aria-labelledby="score-editor-title">
 <h2 id="score-editor-title">원래 코드 수정</h2>
@@ -1161,7 +1180,7 @@ return true;
 // End score music functions.
 
 // Score editor: images and OCR results stay in memory on this device.
-const scoreState={showKey:true,introTempo:120,introMeter:'4/4',image:null,codes:[],capo:0,keyShift:0,overlay:'replace',original:false,busy:false,adding:false,intro:null,drag:null,editIndex:null,pending:null,run:0};
+const scoreState={showKey:true,introTempo:100,introMeter:'4/4',image:null,codes:[],capo:0,keyShift:0,overlay:'replace',original:false,busy:false,adding:false,intro:null,drag:null,editIndex:null,pending:null,run:0};
 let scoreIntroPlayback=null;
 let scoreLibraryPromise=null,scoreRuntimePromise=null;
 function scoreStatus(message){$('score-status').textContent=message;$('score-work-status').textContent=message;}
@@ -1319,30 +1338,25 @@ return [{midi:48+(bass??root)+capo,low:true},...chord.tones.map(t=>({midi:60+sco
 // One chord per bar, strummed on every pulse with the downbeat loudest.
 // BPM counts quarter notes in 4/4 and 3/4, and dotted quarters in 6/8.
 const scoreIntroMeters={
-'4/4':{beats:4,pulses:[[0,1],[1,.45],[2,.7],[3,.45]],label:'4/4박자'},
-'3/4':{beats:3,pulses:[[0,1],[1,.45],[2,.45]],label:'3/4박자'},
-'6/8':{beats:2,pulses:[[0,1],[1/3,.35],[2/3,.35],[1,.7],[4/3,.35],[5/3,.35]],label:'6/8박자 · 점4분음표 기준'}
+'4/4':{beats:4,pulses:[[0,1],[1,.45],[2,.7],[3,.45]]},
+'3/4':{beats:3,pulses:[[0,1],[1,.45],[2,.45]]},
+'6/8':{beats:2,pulses:[[0,1],[1/3,.35],[2/3,.35],[1,.7],[4/3,.35],[5/3,.35]]}
 };
 function scoreIntroBarLength(){return scoreIntroMeters[scoreState.introMeter].beats*60/scoreState.introTempo;}
-function updateScoreIntroTempoNote(){
-$('score-intro-tempo-note').textContent=`${scoreIntroMeters[scoreState.introMeter].label} · 한 마디 ${scoreIntroBarLength().toFixed(1)}초`;
-}
 function setScoreIntroMeter(value){
 if(!scoreIntroMeters[value]||value===scoreState.introMeter)return;
 stopScoreIntro();
 scoreState.introMeter=value;
-updateScoreIntroTempoNote();
 }
 function setScoreIntroTempo(raw,commit=true){
 const value=String(raw).trim()===''?NaN:Math.round(Number(raw));
 if(!Number.isFinite(value)){if(commit)$('score-intro-tempo-value').value=String(scoreState.introTempo);return;}
-const bpm=Math.max(50,Math.min(180,value));
+const bpm=Math.max(40,Math.min(240,value));
 if(!commit&&bpm!==value)return;
 if(bpm!==scoreState.introTempo)stopScoreIntro();
 scoreState.introTempo=bpm;
 $('score-intro-tempo-range').value=String(bpm);
 if(commit||document.activeElement!==$('score-intro-tempo-value'))$('score-intro-tempo-value').value=String(bpm);
-updateScoreIntroTempoNote();
 }
 function stopScoreIntro(){
 const playback=scoreIntroPlayback;
@@ -1357,9 +1371,9 @@ stopScoreIntro();
 const status=button.id==='score-listen'?$('score-work-status'):$('score-intro-audio-status');
 if(status!==$('score-work-status'))status.hidden=true;
 if(wasPlaying||scoreState.busy)return;
-const sheet=button.id==='score-listen',playback={button,voices:[],idle:()=>{if(sheet)button.setAttribute('aria-pressed','false');else button.textContent='소리 듣기';}},capo=scoreState.capo;
+const sheet=button.id==='score-listen',playback={button,voices:[],idle:()=>{if(sheet)delete button.dataset.playing;else button.textContent='소리 듣기';}},capo=scoreState.capo;
 scoreIntroPlayback=playback;
-if(sheet)button.setAttribute('aria-pressed','true');else button.textContent='중지';
+if(sheet)button.dataset.playing='';else button.textContent='중지';
 const fail=()=>{
 if(scoreIntroPlayback!==playback)return;
 stopScoreIntro();

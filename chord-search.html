@@ -52,7 +52,7 @@
   --fret: #72816e;
   --string: #71816d;
   --neck: #f1eee3;
-  --inlay: #b0b39f;
+  --inlay: #596455;
   --note: #dce4d3;
   --note-ink: #314a3c;
   --hit: #245b4718;
@@ -115,7 +115,8 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .panel { min-width: 0; padding: 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
 .voicing-panel #audio-status:empty { margin: 0; min-height: 0; }
 .diagram-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px 8px; }
-.quality { grid-column: 1 / -1; color: var(--muted); font-size: 13px; }
+.voicing-summary { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+.quality { flex: 1 1 44px; color: var(--muted); font-size: 12px; line-height: 1.35; }
 .play { flex: none; padding: 8px 10px; font-size: 13px; }
 .diagram { display: block; width: 100%; max-width: 290px; height: auto; margin: 8px auto; overflow: visible; }
 .diagram text, .neck text { font-family: inherit; }
@@ -134,9 +135,9 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--muted); }
 .legend span { display: flex; align-items: center; gap: 6px; }
 .key { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: var(--note); border: 1px solid var(--fret); }
-.fret-panel .key { background: var(--neck-tone-soft); border: 0; }
+.fret-panel .key { background: var(--neck-tone-soft); }
 .fret-panel .key.root { background: var(--root-soft); }
-.fret-panel .key.current { background: var(--green); }
+.fret-panel .key.current { background: var(--green); border: 0; }
 .scroll { overflow-x: auto; overscroll-behavior-x: contain; margin-top: 12px; padding: 8px 16px; scrollbar-color: var(--control) var(--soft); }
 .scroll:focus-visible { outline-offset: -4px; }
 .neck { display: block; width: 100%; min-width: 640px; height: auto; }
@@ -179,9 +180,12 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
   .identify-hit:hover rect { fill: var(--hit); stroke: var(--green); stroke-width: 2; }
 }
 @media (min-width: 760px) {
-  .chord-results { grid-template-columns: minmax(290px, 1fr) minmax(0, 2fr); }
+  .chord-results { grid-template-columns: minmax(290px, 1fr) minmax(0, 2fr); align-items: stretch; }
+  .chord-results > .panel { display: flex; flex-direction: column; }
+  .voicing-panel #diagram { margin-block: auto; }
+  .fret-panel .scroll { margin-block: auto; padding-top: 20px; }
   .panel { padding: 24px; }
-  .fret-panel { padding: 24px 0 16px; }
+  .fret-panel { padding: 24px 0; }
   .fret-header { padding-inline: 24px; }
 }
 @media (min-width: 760px) and (max-width: 1023px) {
@@ -195,7 +199,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
     --green: #a2d2b5; --on-green: #172c21; --green-hover: #b9e0c8;
     --lime: #dfea9c; --orange: #efb17f; --error: #ffa392; --focus: #e8c879;
     --root-soft: #624637; --root-ink: #f2d5bf; --neck-tone-soft: #344238;
-    --fret: #83977e; --string: #92a58d; --neck: #242c24; --inlay: #67755f;
+    --fret: #83977e; --string: #92a58d; --neck: #242c24; --inlay: #a7b49f;
     --note: #3c513d; --note-ink: #ecf1e5; --hit: #a2d2b524;
   }
 }
@@ -264,9 +268,11 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <section class="panel voicing-panel" aria-label="코드 운지법">
 <h2 id="chord-title" class="sr-only"></h2>
 <div class="diagram-head">
+<div class="voicing-summary">
 <div id="tones" class="tones" role="group" aria-label="코드 구성음"></div>
-<button id="play" class="play" type="button">소리 듣기</button>
 <p id="quality" class="quality"></p>
+</div>
+<button id="play" class="play" type="button">소리 듣기</button>
 </div>
 <div id="diagram"></div>
 <div class="nav"><button id="prev" type="button" aria-label="이전 보이싱">← 이전</button><span id="counter" class="counter" aria-live="polite"></span><button id="next" type="button" aria-label="다음 보이싱">다음 →</button></div>
@@ -342,9 +348,9 @@ const line=(a,b,c,d,stroke,width)=>{
 const [x1,y1]=point(a,b),[x2,y2]=point(c,d);
 return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${stroke}" stroke-width="${width}"/>`;
 };
-const dot=(along,across,r,fill)=>{
+const dot=(along,across,r,fill,outlined=false)=>{
 const [cx,cy]=point(along,across);
-return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}"/>`;
+return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}"${outlined?' stroke="var(--fret)" stroke-width="1"':''}/>`;
 };
 let s='';
 for(let f=0;f<=15;f++)s+=text(fret(f),vertical?22:13,f);
@@ -353,7 +359,7 @@ s+=`<rect x="${x}" y="${y}" width="${width}" height="${height}" rx="4" fill="var
 for(let f=0;f<=15;f++){const at=start+f*step;s+=line(at,side,at,edge,'var(--fret)',f===0?5:1);}
 const between=(a,b)=>(string(a)+string(b))/2;
 for(const f of [3,5,7,9,12,15]){
-for(const across of f===12?[between(4,3),between(2,1)]:[between(3,2)])s+=dot(fret(f),across,4,'var(--inlay)');
+for(const across of f===12?[between(4,3),between(2,1)]:[between(3,2)])s+=dot(fret(f),across,5,'var(--inlay)');
 }
 for(let i=0;i<6;i++){
 s+=text(vertical?15:12,string(i),['E','A','D','G','B','e'][i]);
@@ -362,7 +368,7 @@ for(let f=0;f<=15;f++){const pc=mod(tuning[i]+f),selected=v&&v.frets[i]===f;if(!
 const fill=selected?(root?'var(--orange)':'var(--green)'):(root?'var(--root-soft)':'var(--neck-tone-soft)');
 const ink=selected?'var(--on-green)':(root?'var(--root-ink)':'var(--note-ink)');
 const label=noteName(current,pc);
-s+=dot(fret(f),string(i),12,fill)+text(fret(f),string(i),label,label.length>2?9:11,ink,600);
+s+=dot(fret(f),string(i),12,fill,!selected)+text(fret(f),string(i),label,label.length>2?9:11,ink,600);
 }}
 return svg(s,vertical?'0 0 280 652':'0 0 650 237',vertical?'neck neck-vertical':'neck',`${current.label} 코드 구성음의 전체 지판 위치. 근음은 주황 계열, 현재 운지는 진한 색으로 표시.`);
 }
@@ -375,7 +381,7 @@ $('neck-note').textContent=vertical?'0–15프렛 · 왼쪽이 6번 줄(낮은 E
 $('neck').innerHTML=neck(voicings[position],vertical);
 }
 neckLayout.addEventListener('change',renderNeck);
-function render(){const v=voicings[position];$('chord-title').textContent=current.label;$('quality').textContent=current.name+(current.bassNote?' · 베이스 '+current.bassNote:'');$('diagram').innerHTML=diagram(v);$('counter').textContent=voicings.length?`보이싱 ${position+1}/${voicings.length}`:'보이싱 없음';$('prev').disabled=$('next').disabled=voicings.length<2;$('play').disabled=!v;
+function render(){const v=voicings[position];$('chord-title').textContent=current.label;$('quality').textContent=current.name;$('diagram').innerHTML=diagram(v);$('counter').textContent=voicings.length?`보이싱 ${position+1}/${voicings.length}`:'보이싱 없음';$('prev').disabled=$('next').disabled=voicings.length<2;$('play').disabled=!v;
 $('tones').replaceChildren(...current.tones.map(t=>{const div=document.createElement('div');div.className='tone'+(t[0]===0?' root':'');const strong=document.createElement('strong'),small=document.createElement('small');strong.textContent=toneName(current,t);small.textContent=t[1]==='R'?'1':t[1];div.append(strong,small);return div;}));
 renderNeck();$('audio-status').textContent='';}
 let identifyPlaybackRequest=0;

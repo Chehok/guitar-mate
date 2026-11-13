@@ -66,6 +66,10 @@ const fretboards=run("current=parse('C'); var grip=makeVoicings(current)[0]; [ne
 for(const board of fretboards){
   assert.deepEqual([...board.matchAll(/>(\d+)<\/text>/g)].map(match=>Number(match[1])),Array.from({length:16},(_,i)=>i));
   assert.equal([...board.matchAll(/<circle[^>]*fill="var\(--(?:orange|green)\)"/g)].length,5,'Same open C fingering highlighted');
+  const circles=board.match(/<circle[^>]+>/g);
+  const inactive=circles.filter(dot=>/var\(--(?:root-soft|neck-tone-soft)\)/.test(dot));
+  assert(inactive.length>0&&inactive.every(dot=>dot.includes('stroke-width="1"')),'Inactive notes have thin outlines');
+  assert(circles.filter(dot=>!inactive.includes(dot)).every(dot=>!dot.includes('stroke=')),'Active notes and position markers stay unoutlined');
 }
 assert.match(fretboards[0],/<circle cx="40" cy="35" r="12" fill="var\(--green\)"/,'High E open note at the top on desktop');
 assert.match(fretboards[1],/<circle cx="256" cy="48" r="12" fill="var\(--green\)"/,'High E open note at the right on mobile');
