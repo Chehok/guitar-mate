@@ -253,7 +253,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <div id="chord-steps" class="chord-steps" role="tabpanel" aria-labelledby="mode-steps" hidden>
 <div class="step-picked"><p id="step-current" class="step-current"></p><button id="filter-reset" class="step-reset" type="button" disabled><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>처음부터</button></div>
 <div id="step-roots" class="step-grid" role="group" aria-label="기본음"></div>
-<div id="step-results" class="step-results" hidden><div class="step-row"><span id="filter-status" class="step-count" role="status" aria-live="polite"></span><nav id="quick" class="quick results" aria-label="조건에 맞는 코드"></nav></div><div id="bass-row" class="step-row" hidden><span class="step-count">베이스</span><nav id="bass-quick" class="quick results" aria-label="베이스음"></nav></div></div>
+<div id="step-results" class="step-results" hidden><div class="step-row"><span class="step-count">종류</span><nav id="quick" class="quick results" aria-label="조건에 맞는 코드"></nav></div><div id="bass-row" class="step-row" hidden><span class="step-count" data-i18n-en="Bass">근음</span><nav id="bass-quick" class="quick results" aria-label="베이스음"></nav></div></div>
 </div>
 </section>
 <div class="chord-results">
@@ -393,7 +393,6 @@ const label=$('step-current');
 if(picked){const chip=document.createElement('strong');chip.textContent=current.label;label.replaceChildren(chip);}else label.textContent='기본음을 골라 주세요';
 $('filter-reset').disabled=!stepRoot;
 $('step-results').hidden=!stepRoot;
-$('filter-status').textContent=`${names.length}개`;
 const slash=picked&&current.bassPc!==null?'/'+stepRootOrder.find(n=>filterPc[n]===current.bassPc):'';
 $('quick').replaceChildren(...names.map(name=>stepButton(name,picked&&name===base,()=>pickChord(name+slash))));
 $('bass-row').hidden=!picked;
