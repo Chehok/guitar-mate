@@ -105,7 +105,9 @@ h2 { margin: 0; font-size: 19px; line-height: 1.4; }
 }
 .guide-tabs button:hover, .guide-tabs button[aria-selected=true] { background: var(--soft); color: var(--ink); }
 .guide-tabs button[aria-selected=true] { border-color: var(--green); font-weight: 750; }
-.guide-tabs button:focus-visible, [role=tabpanel]:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.guide-tabs button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.embedded [role=tabpanel]:focus { outline: none; }
+.embedded [role=tabpanel]:focus-visible > h2 { text-decoration: underline 2px var(--focus); text-underline-offset: .2em; }
 @media (min-width: 760px) {
   .wrap { padding: 32px; }
   .mode-tabs { grid-template-columns: repeat(6, minmax(0, 144px)); margin-bottom: 32px; }
