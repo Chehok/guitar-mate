@@ -350,7 +350,6 @@ text: {
   '4/4박자': '4/4 time',
   '3/4박자': '3/4 time',
   '6/8박자 · 점4분음표 기준': '6/8 time · dotted quarter beat',
-  '4/4박자 · 한 마디 2.0초': '4/4 time · 2.0 s per bar',
   '쉬운 전주': 'Easy intro',
   '첫 코드 진행을 활용한 전주': 'Intro from the opening progression',
   '곡 끝 코드 진행을 활용한 전주': 'Intro from the ending progression',

@@ -281,11 +281,13 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .score-code-hit.draggable { border-color:var(--orange); cursor:grab; touch-action:none; }
 .score-code-hit.dragging { cursor:grabbing; background:var(--hit); }
 #score-intro-dialog { max-width:420px; text-align:left; }
-#score-intro-dialog h2 { margin:0 0 4px; }
+#score-intro-dialog h2 { margin:0; }
+.score-intro-header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+#score-intro-close { min-width:44px; padding:0; font-size:22px; line-height:1; }
 .score-intro h3 { margin:14px 0 0; font-size:14px; }
 .score-intro h3[hidden] { display:none; }
 .score-intro-actions { margin-top:8px; }
-.score-intro-close { justify-content:flex-end; margin-top:16px; }
+#score-intro-remove { display:block; margin:16px 0 0 auto; }
 .score-intro-size { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:16px; padding:10px 12px; border:1px solid var(--line); border-radius:12px; background:var(--soft); }
 .score-intro-size[hidden] { display:none; }
 .score-intro-size > span { font-size:14px; font-weight:650; }
@@ -369,12 +371,12 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 </div>
 </section>
 <dialog id="score-intro-dialog" class="install-guide score-intro" aria-labelledby="score-intro-title">
-<h2 id="score-intro-title">추천 전주</h2>
+<div class="score-intro-header"><h2 id="score-intro-title">추천 전주</h2><button id="score-intro-close" type="button" aria-label="닫기" autofocus>×</button></div>
 <p class="hint">한 마디에 코드 하나씩 연주한 뒤 곡의 첫 코드로 넘어가세요.</p>
-<div class="score-intro-tempo"><div class="score-intro-tempo-row"><label for="score-intro-tempo-value">재생 템포</label><div class="score-intro-tempo-value"><input id="score-intro-tempo-value" type="number" min="50" max="180" step="1" value="120" inputmode="numeric" aria-describedby="score-intro-tempo-note"><span>BPM</span></div></div>
-<input id="score-intro-tempo-range" type="range" min="50" max="180" step="1" value="120" aria-label="재생 템포 조절">
+<div class="score-intro-tempo"><div class="score-intro-tempo-row"><label for="score-intro-tempo-value">재생 템포</label><div class="score-intro-tempo-value"><input id="score-intro-tempo-value" type="number" min="40" max="240" step="1" value="100" inputmode="numeric" aria-describedby="score-intro-tempo-note"><span>BPM</span></div></div>
+<input id="score-intro-tempo-range" type="range" min="40" max="240" step="1" value="100" aria-label="재생 템포 조절">
 <fieldset class="score-intro-meter"><legend>박자</legend><label><input type="radio" name="score-intro-meter" value="4/4" checked> 4/4</label><label><input type="radio" name="score-intro-meter" value="3/4"> 3/4</label><label><input type="radio" name="score-intro-meter" value="6/8"> 6/8</label></fieldset>
-<p id="score-intro-tempo-note" class="hint">4/4박자 · 한 마디 2.0초</p></div>
+<p id="score-intro-tempo-note" class="hint">4/4박자 · 한 마디 2.4초</p></div>
 <p id="score-intro-empty" class="hint" hidden>악보에서 코드를 찾으면 곡의 키에 맞는 전주를 추천해요. 인식이 끝나면 여기에 나와요.</p>
 <h3 id="score-intro-easy-title">쉬운 전주</h3>
 <ol id="score-intro-easy" class="score-intro-bars" aria-labelledby="score-intro-easy-title" role="list"></ol>
@@ -388,7 +390,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <p id="score-intro-more" class="hint" hidden>코드를 더 인식하면 곡의 첫·끝 코드 진행을 활용한 전주도 추천해요.</p>
 <p id="score-intro-audio-status" class="hint" role="status" hidden></p>
 <div id="score-intro-size" class="score-intro-size" role="group" aria-labelledby="score-intro-size-label" hidden><span id="score-intro-size-label">악보 속 전주 크기</span><div class="score-row"><button id="score-intro-smaller" type="button" aria-label="전주 작게">−</button><output id="score-intro-size-value" aria-live="polite">100%</output><button id="score-intro-bigger" type="button" aria-label="전주 크게">+</button></div></div>
-<div class="score-row score-intro-close"><button id="score-intro-remove" type="button" hidden>악보에서 빼기</button><button id="score-intro-close" type="button">닫기</button></div>
+<button id="score-intro-remove" type="button" hidden>악보에서 빼기</button>
 </dialog>
 <dialog id="score-editor" class="install-guide" aria-labelledby="score-editor-title">
 <h2 id="score-editor-title">원래 코드 수정</h2>
@@ -1161,7 +1163,7 @@ return true;
 // End score music functions.
 
 // Score editor: images and OCR results stay in memory on this device.
-const scoreState={showKey:true,introTempo:120,introMeter:'4/4',image:null,codes:[],capo:0,keyShift:0,overlay:'replace',original:false,busy:false,adding:false,intro:null,drag:null,editIndex:null,pending:null,run:0};
+const scoreState={showKey:true,introTempo:100,introMeter:'4/4',image:null,codes:[],capo:0,keyShift:0,overlay:'replace',original:false,busy:false,adding:false,intro:null,drag:null,editIndex:null,pending:null,run:0};
 let scoreIntroPlayback=null;
 let scoreLibraryPromise=null,scoreRuntimePromise=null;
 function scoreStatus(message){$('score-status').textContent=message;$('score-work-status').textContent=message;}
@@ -1336,7 +1338,7 @@ updateScoreIntroTempoNote();
 function setScoreIntroTempo(raw,commit=true){
 const value=String(raw).trim()===''?NaN:Math.round(Number(raw));
 if(!Number.isFinite(value)){if(commit)$('score-intro-tempo-value').value=String(scoreState.introTempo);return;}
-const bpm=Math.max(50,Math.min(180,value));
+const bpm=Math.max(40,Math.min(240,value));
 if(!commit&&bpm!==value)return;
 if(bpm!==scoreState.introTempo)stopScoreIntro();
 scoreState.introTempo=bpm;

@@ -136,11 +136,9 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .tuner-advice { min-height: 22px; margin: 2px 0 8px; color: var(--orange); font-size: 14px; font-weight: 650; }
 .headstock { display: grid; grid-template-columns: 52px 150px 52px; grid-template-rows: repeat(3, 50px) 22px; justify-content: center; align-items: center; column-gap: 6px; }
 .headstock-art { grid-column: 2; grid-row: 1 / span 4; width: 100%; height: 100%; }
-.headstock button { width: 46px; height: 46px; padding: 0; border-radius: 50%; border-color: var(--line); background: var(--panel); display: grid; place-content: center; line-height: 1.05; }
+.headstock button { width: 44px; height: 44px; justify-self: center; padding: 0; border-radius: 50%; border-color: var(--line); background: var(--panel); display: grid; place-content: center; line-height: 1.05; }
 .headstock button strong { font-size: 19px; font-weight: 600; }
-.headstock button small { font-size: 10px; color: var(--muted); }
 .headstock button[aria-pressed=true] { background: var(--green); border-color: var(--green); color: var(--on-green); }
-.headstock button[aria-pressed=true] small { color: inherit; opacity: .8; }
 .headstock button.detected { outline: 3px solid var(--orange); outline-offset: 2px; }
 .tuner-display.in-tune .headstock button.detected { outline-color: var(--green); }
 .headstock button:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
@@ -155,7 +153,6 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
   .tuner-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: center; }
   .tuner-gauge { max-width: 360px; }
   .headstock { grid-template-columns: 58px 162px 58px; grid-template-rows: repeat(3, 54px) 24px; }
-  .headstock button { width: 50px; height: 50px; }
 }
 #identify-play { flex: none; padding-inline: 12px; font-size: 13px; white-space: nowrap; }
 #identify-reset { flex: none; }
@@ -464,7 +461,7 @@ if(ready(['tuner'])){
 $('auto-string').addEventListener('click',()=>selectString(selectedString===null?(lastDetected??0):null));
 for(const [index,column,row] of pegLayout){
 const name=stringNames[index],peg=document.createElement('button');peg.type='button';peg.dataset.string=index;
-peg.innerHTML=`<strong>${name[0]}</strong><small>${6-index}</small>`;peg.setAttribute('aria-label',`${6-index}번 줄 ${name}`);peg.setAttribute('aria-pressed','false');
+const note=document.createElement('strong');note.textContent=name[0];peg.append(note);peg.setAttribute('aria-label',`${6-index}번 줄 ${name}`);peg.setAttribute('aria-pressed','false');
 peg.style.gridColumn=column;peg.style.gridRow=row;
 peg.addEventListener('click',()=>{selectString(index);playReference(index);});
 $('string-select').append(peg);

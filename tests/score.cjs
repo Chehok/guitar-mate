@@ -235,7 +235,7 @@ async function checkIntroActions(){
   const easy=$('score-intro-easy-play'),opening=$('score-intro-opening-play');
   $('score-frets').children[1].handlers.click();
   await easy.onclick();
-  assert.deepEqual(bars.map(bar=>bar.at),[10.04,12.04,14.04,16.04]);
+  assert.deepEqual(bars.map(bar=>Number(bar.at.toFixed(2))),[10.04,12.44,14.84,17.24],'Default 100 BPM gives 2.4 seconds per bar');
   assert.deepEqual(bars[0].pitches,[0,4,7],'Bb shapes with capo 2 sound in C');
   assert.equal(easy.textContent,'중지');
   await opening.onclick();
@@ -245,7 +245,7 @@ async function checkIntroActions(){
   assert.equal(stopped.length,32,'Changing key or capo stops playback');
   await easy.onclick();
   assert.deepEqual(bars[8].pitches,[1,5,8],'Raising the key one semitone sounds in Db');
-  assert.deepEqual(strums.slice(-16,-12).map(s=>[Number((s.at-10.04).toFixed(3)),s.level]),[[0,1],[.5,.45],[1,.7],[1.5,.45]],'4/4 strums every quarter note');
+  assert.deepEqual(strums.slice(-16,-12).map(s=>[Number((s.at-10.04).toFixed(3)),s.level]),[[0,1],[.6,.45],[1.2,.7],[1.8,.45]],'4/4 strums every quarter note');
   assert(strums.at(-15).count<=3,'Weak beats brush the top strings');
   // Tempo: 4/4 bars, changing it stops playback, typing a partial number waits for a valid value.
   $('score-intro-tempo-range').value='90';$('score-intro-tempo-range').handlers.input();
@@ -258,9 +258,11 @@ async function checkIntroActions(){
   $('score-intro-tempo-value').value='9';$('score-intro-tempo-value').handlers.input();
   assert.equal(vm.runInContext('scoreState.introTempo',context),90,'A partial number does not change the tempo');
   $('score-intro-tempo-value').value='500';$('score-intro-tempo-value').handlers.change();
-  assert.equal($('score-intro-tempo-value').value,'180');
+  assert.equal($('score-intro-tempo-value').value,'240');
+  $('score-intro-tempo-value').value='20';$('score-intro-tempo-value').handlers.change();
+  assert.equal($('score-intro-tempo-value').value,'40');
   $('score-intro-tempo-value').value='';$('score-intro-tempo-value').handlers.change();
-  assert.equal($('score-intro-tempo-value').value,'180','An empty field restores the tempo');
+  assert.equal($('score-intro-tempo-value').value,'40','An empty field restores the tempo');
   $('score-intro-tempo-range').value='120';$('score-intro-tempo-range').handlers.input();
   // Meter: 3/4 and 6/8 (BPM counts dotted quarters) change bar length and strum pulses.
   await easy.onclick();const beforeMeter=stopped.length;
