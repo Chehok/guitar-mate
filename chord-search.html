@@ -97,8 +97,9 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .step-current strong { display: inline-block; padding: 3px 12px; border-radius: 16px; background: var(--soft); color: var(--green); font-size: 15px; font-weight: 700; }
 .step-reset:disabled { opacity: .4; background: transparent; cursor: default; }
 .step-reset { flex: none; display: inline-flex; align-items: center; gap: 4px; min-height: 36px; padding: 4px 8px; border: 0; background: transparent; color: var(--muted); font-size: 13px; }
-.step-results { display: flex; align-items: center; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
-.step-count { flex: none; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.step-results { display: grid; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.step-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.step-count { flex: none; min-width: 34px; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
 .chord-filter .quick.results { flex: 1; min-width: 0; flex-wrap: nowrap; margin: 0; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; padding-bottom: 2px; }
 .chord-filter .quick.results button { flex: none; min-height: 40px; }
 .chord-filter .search { max-width: none; }
@@ -252,7 +253,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <div id="chord-steps" class="chord-steps" role="tabpanel" aria-labelledby="mode-steps" hidden>
 <div class="step-picked"><p id="step-current" class="step-current"></p><button id="filter-reset" class="step-reset" type="button" disabled><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>처음부터</button></div>
 <div id="step-roots" class="step-grid" role="group" aria-label="기본음"></div>
-<div id="step-results" class="step-results" hidden><span id="filter-status" class="step-count" role="status" aria-live="polite"></span><nav id="quick" class="quick results" aria-label="조건에 맞는 코드"></nav></div>
+<div id="step-results" class="step-results" hidden><div class="step-row"><span id="filter-status" class="step-count" role="status" aria-live="polite"></span><nav id="quick" class="quick results" aria-label="조건에 맞는 코드"></nav></div><div id="bass-row" class="step-row" hidden><span class="step-count">베이스</span><nav id="bass-quick" class="quick results" aria-label="베이스음"></nav></div></div>
 </div>
 </section>
 <div class="chord-results">
@@ -371,10 +372,10 @@ $('neck').innerHTML=neck(voicings[position],vertical);
 neckLayout.addEventListener('change',renderNeck);
 function render(){const v=voicings[position];$('chord-title').textContent=current.label;$('quality').textContent=current.name+(current.bassNote?' · 베이스 '+current.bassNote:'');$('diagram').innerHTML=diagram(v);$('counter').textContent=voicings.length?`보이싱 ${position+1}/${voicings.length}`:'보이싱 없음';$('prev').disabled=$('next').disabled=voicings.length<2;$('play').disabled=!v;
 $('tones').replaceChildren(...current.tones.map(t=>{const div=document.createElement('div');div.className='tone'+(t[0]===0?' root':'');const strong=document.createElement('strong'),small=document.createElement('small');strong.textContent=toneName(current,t);small.textContent=t[1]==='R'?'1':t[1];div.append(strong,small);return div;}));
-renderNeck();$('audio-status').textContent='';document.querySelectorAll('#quick button').forEach(b=>b.setAttribute('aria-pressed',String(b.textContent===current.label)));}
+renderNeck();$('audio-status').textContent='';}
 let identifyPlaybackRequest=0;
 if(ready(['chords']))$('search').addEventListener('submit',e=>{e.preventDefault();find($('chord-input').value);});
-// Filter: pick a root, then any chord on that root from the result row.
+// Filter: pick a root, then any chord on that root, then optionally a slash bass under it.
 const stepRootOrder=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 let stepRoot=null;
 function stepButton(text,pressed,onClick){const b=document.createElement('button');b.type='button';b.textContent=text;b.setAttribute('aria-pressed',String(pressed));b.addEventListener('click',onClick);return b;}
@@ -384,16 +385,24 @@ stepRoot=root;
 const names=stepResults();
 if(names.length&&!(current&&names.includes(current.label))){$('chord-input').value=names[0];find(names[0]);}else renderSteps();
 }
+function pickChord(name){$('chord-input').value=name;find(name);}
 function renderSteps(){
 $('step-roots').replaceChildren(...stepRootOrder.map(r=>stepButton(r,r===stepRoot,()=>setStep(r))));
-const names=stepResults(),picked=stepRoot&&current&&names.includes(current.label);
+const names=stepResults(),base=current?current.label.split('/')[0]:'',picked=Boolean(stepRoot&&names.includes(base));
 const label=$('step-current');
 if(picked){const chip=document.createElement('strong');chip.textContent=current.label;label.replaceChildren(chip);}else label.textContent='기본음을 골라 주세요';
 $('filter-reset').disabled=!stepRoot;
 $('step-results').hidden=!stepRoot;
 $('filter-status').textContent=`${names.length}개`;
-$('quick').replaceChildren(...names.map(name=>stepButton(name,current&&current.label===name,()=>{$('chord-input').value=name;find(name);})));
-const active=$('quick').querySelector('[aria-pressed=true]');if(active)active.scrollIntoView({block:'nearest',inline:'nearest'});
+const slash=picked&&current.bassPc!==null?'/'+stepRootOrder.find(n=>filterPc[n]===current.bassPc):'';
+$('quick').replaceChildren(...names.map(name=>stepButton(name,picked&&name===base,()=>pickChord(name+slash))));
+$('bass-row').hidden=!picked;
+if(picked){
+const rootPc=filterPc[stepRoot],bassPc=current.bassPc;
+const basses=stepRootOrder.filter(n=>filterPc[n]!==rootPc);
+$('bass-quick').replaceChildren(stepButton('없음',bassPc===null,()=>pickChord(base)),...basses.map(n=>stepButton('/'+n,bassPc===filterPc[n],()=>pickChord(base+'/'+n))));
+}else $('bass-quick').replaceChildren();
+for(const id of ['quick','bass-quick']){const active=$(id).querySelector('[aria-pressed=true]');if(active)active.scrollIntoView({block:'nearest',inline:'nearest'});}
 }
 function setFindMode(steps){
 $('mode-name').setAttribute('aria-selected',String(!steps));$('mode-steps').setAttribute('aria-selected',String(steps));
