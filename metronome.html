@@ -46,13 +46,6 @@ button,input { font:inherit; }
 .beats li { display:grid; place-items:center; aspect-ratio:1; border:1px solid var(--line); border-radius:50%; color:var(--muted); background:var(--soft); font-size:20px; font-variant-numeric:tabular-nums; transition:transform .08s ease, background-color .08s ease, color .08s ease; }
 .beats li:first-child { font-weight:750; }
 .beats li.active { transform:scale(1.12); background:var(--green); border-color:var(--green); color:var(--on-green); }
-.volume-row { display:grid; grid-template-columns:auto minmax(0,1fr) 3.2em auto; align-items:center; gap:10px; margin:0 0 14px; font-size:14px; }
-.volume-row > label:first-child { font-weight:650; white-space:nowrap; }
-.volume-row input[type=range] { width:100%; margin:0; accent-color:var(--green); }
-.volume-row output { color:var(--ink); font-weight:650; font-variant-numeric:tabular-nums; text-align:right; }
-.ear-chip { display:inline-flex; align-items:center; gap:6px; min-height:36px; padding:4px 12px 4px 10px; border:1px solid var(--line); border-radius:18px; color:var(--ink); white-space:nowrap; cursor:pointer; }
-.ear-chip input { margin:0; accent-color:var(--green); }
-.ear-row { grid-template-columns:auto minmax(0,1fr) 3.2em; margin-top:-6px; color:var(--muted); }
 .start-button { width:100%; min-height:52px; border:1px solid var(--green); border-radius:10px; background:var(--green); color:var(--on-green); font-weight:700; cursor:pointer; }
 .start-button:active { transform:translateY(1px); }
 .status { min-height:24px; margin:12px 0 0; color:var(--muted); text-align:center; font-size:13px; }
@@ -219,8 +212,6 @@ button,input { font:inherit; }
 <input class="tempo-slider" id="tempo-range" type="range" min="40" max="240" step="1" value="100" aria-label="템포 조절">
 <div class="tempo-limits" aria-hidden="true"><span>40</span><span>240</span></div>
 <ol class="beats" aria-label="4분의 4박자"><li data-beat="0">1</li><li data-beat="1">2</li><li data-beat="2">3</li><li data-beat="3">4</li></ol>
-<div class="volume-row"><label for="volume-range">음량</label><input id="volume-range" type="range" min="0" max="100" step="5" value="60"><output id="volume-value" for="volume-range">60%</output><label class="ear-chip"><input id="ear-mode" type="checkbox"> 이어폰</label></div>
-<div class="volume-row ear-row" id="ear-row" hidden><label for="ear-max">이어폰 최대</label><input id="ear-max" type="range" min="10" max="100" step="5" value="40"><output id="ear-max-value" for="ear-max">40%</output></div>
 <button class="start-button" id="start-stop" type="button" aria-pressed="false">시작</button>
 <p class="status" id="status" role="status" aria-live="polite">시작을 누르면 메트로놈이 재생됩니다.</p>
 </div>
@@ -348,23 +339,19 @@ function paintPendulum(){
 }
 // Auto match: while listening, my clicks become 2 kHz chirps half a beat later (see metronome-calibrate.js).
 let calibrating=null,lastCalibration=null,lastRecording=null,autoWait=false,autoWaitTimer=null;
-// Output: clicks → volume → soft clipper → speaker. The clipper (no added delay, unlike a compressor)
-// lets the top of the volume range be really loud on a phone speaker without harsh overload.
-// The auto-match chirp joins after the volume, so it stays loud enough for the mic at any setting.
-const MAX_GAIN=4;
-let volume=60,earMode=false,earMax=40,outBus=null;
-try{const saved=JSON.parse(localStorage.getItem('gm-metronome-volume')||'null');if(saved){volume=Math.max(0,Math.min(100,Number(saved.volume)||0));earMode=Boolean(saved.earMode);earMax=Math.max(10,Math.min(100,Number(saved.earMax)||40));}}catch(_){}
-const effectiveVolume=()=>earMode?Math.min(volume,earMax):volume;
-const volumeGain=()=>MAX_GAIN*(effectiveVolume()/100)**2;
+// Output: clicks → boost → soft clipper → speaker. The clicks play near full scale so the phone's own
+// volume buttons decide how loud they are (and the mic can hear them for auto match). The clipper
+// keeps that from overloading harshly and, unlike a compressor, adds no delay.
+const CLICK_GAIN=4;
+let outBus=null;
 function bus(){
   if(outBus&&outBus.ctx===audioContext)return outBus;
   const clip=audioContext.createWaveShaper(),curve=new Float32Array(1025);
   for(let i=0;i<curve.length;i++){const x=(i/512-1)*1.6;curve[i]=Math.tanh(1.4*x)/Math.tanh(1.4*1.6)*.98;}
   clip.curve=curve;clip.connect(audioContext.destination);
-  const level=audioContext.createGain();level.gain.value=volumeGain();level.connect(clip);
+  const level=audioContext.createGain();level.gain.value=CLICK_GAIN;level.connect(clip);
   outBus={ctx:audioContext,level,clip};return outBus;
 }
-function applyVolume(){if(outBus&&outBus.ctx===audioContext)outBus.level.gain.setTargetAtTime(volumeGain(),audioContext.currentTime,.02);}
 function playChirp(time){
   const oscillator=audioContext.createOscillator(),gain=audioContext.createGain();
   oscillator.type='sine';oscillator.frequency.setValueAtTime(window.metronomeCalibrate.CHIRP_HZ,time);
@@ -562,18 +549,6 @@ function renderStrums(){
     strumList.append(li);
   }
 }
-// Volume: speakers can go well above the old level; with earphones on, a cap of your choosing applies.
-function showVolume(){
-  const range=$('volume-range');range.max=String(earMode?earMax:100);range.value=String(effectiveVolume());
-  $('volume-value').textContent=effectiveVolume()+'%';
-  $('ear-mode').checked=earMode;$('ear-row').hidden=!earMode;
-  $('ear-max').value=String(earMax);$('ear-max-value').textContent=earMax+'%';
-}
-function saveVolume(){try{localStorage.setItem('gm-metronome-volume',JSON.stringify({volume,earMode,earMax}));}catch(_){}}
-$('volume-range').addEventListener('input',()=>{volume=Number($('volume-range').value);showVolume();applyVolume();saveVolume();});
-$('ear-mode').addEventListener('change',()=>{earMode=$('ear-mode').checked;showVolume();applyVolume();saveVolume();});
-$('ear-max').addEventListener('input',()=>{earMax=Number($('ear-max').value);showVolume();applyVolume();saveVolume();});
-showVolume();
 $('strum-open').addEventListener('click',()=>{
   renderStrums();
   strumList.querySelectorAll('.strum-use').forEach(b=>{b.disabled=role==='follower';});
@@ -852,8 +827,8 @@ async function autoMatch(){
       const of=(n)=>`${n||0}/${result.total||0}박`;
       text.textContent={
         silent:'마이크로 아무 소리도 들어오지 않았어요. 다른 앱이 마이크를 쓰고 있지 않은지 확인하고 다시 해 보세요.',
-        own:earMode?`내 폰 소리가 마이크에 잘 안 잡혔어요(${of(result.ownHeard)}). 이어폰을 빼고 스피커로 다시 해 보세요.`:`내 폰 소리가 마이크에 잘 안 잡혔어요(${of(result.ownHeard)}). 이 폰 음량을 올리고 다시 해 보세요.`,
-        leader:`리더 폰 소리가 잘 안 들렸어요(${of(result.leaderHeard)}). 리더 폰의 메트로놈 음량을 올리고, 가까이에서 다시 해 보세요.`,
+        own:`내 폰 소리가 마이크에 잘 안 잡혔어요(${of(result.ownHeard)}). 이어폰은 빼고, 이 폰 음량을 올려 다시 해 보세요.`,
+        leader:`리더 폰 소리가 잘 안 들렸어요(${of(result.leaderHeard)}). 리더 폰 음량을 올리고, 가까이에서 다시 해 보세요.`,
         noisy:`박마다 들린 시간이 들쭉날쭉했어요(${of(result.leaderHeard)}). 조용한 곳에서 다시 해 보세요.`,
       }[result.reason]||'다시 해 보세요.';
     }
