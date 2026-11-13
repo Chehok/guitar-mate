@@ -1497,7 +1497,7 @@ const {capo,keyShift}=scoreState,keyName=k=>k?k.name:'미정';
 $('score-result-key').textContent=keyShift&&capo?`카포 ${capo} · 소리의 키 ${keyName(key)} → ${keyName(sound)} · 코드 모양의 키 ${keyName(destination)}`
   :keyShift?`카포 없음 · 소리의 키 ${keyName(key)} → ${keyName(sound)}`
   :capo?`카포 ${capo} · 원래 키 ${keyName(key)} 유지 · 코드 모양의 키 ${keyName(destination)}`:'카포 없이 키를 낮추려면 −를 누르세요.';
-$('score-capo-value').textContent=capo?'카포 '+capo:keyShift<0?`카포 없음 · 키 −${-keyShift}반음`:'카포 없음';
+$('score-capo-value').textContent=capo?'카포 '+capo:keyShift<0?`카포 X · −${-keyShift}키`:'카포 없음';
 $('score-capo-minus').disabled=capo===0&&keyShift===-11;$('score-capo-plus').disabled=capo===11;
 for(const [i,button] of [...$('score-frets').children].entries())button.setAttribute('aria-pressed',String(i+1===capo));
 // Sheet-side key control (same state as the neck's "−" below capo 0)
@@ -1505,7 +1505,7 @@ for(const [i,button] of [...$('score-frets').children].entries())button.setAttri
 const drawn=keyShift-capo,step=`${drawn>0?'+':'−'}${Math.abs(drawn)}`;
 // Only the drawn key here; the capo shows on the neck.
 $('score-shift-value').textContent=!drawn?(key?`${key.name} (원래 키)`:'원래 키')
-  :key?`${key.name} → ${destination.name}`:`${step}반음`;
+  :key?`${key.name} → ${destination.name}`:`${step}키`;
 $('score-shift-down').disabled=$('score-capo-minus').disabled;$('score-shift-up').disabled=$('score-capo-plus').disabled;
 $('score-shift-reset').disabled=$('score-capo-reset').disabled=!(keyShift||capo);
 if(!scoreState.image)return;
