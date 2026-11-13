@@ -174,14 +174,21 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .score-row { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-top:12px; }
 .score-preview-tools { display:flex; flex-wrap:wrap; align-items:center; gap:8px 16px; }
 .score-preview-tools .score-row { margin-top:0; }
-.score-shift, .score-capo-row { flex-basis:100%; flex-wrap:nowrap; gap:4px; }
-.score-shift > strong { flex:none; margin-right:2px; white-space:nowrap; }
-.score-shift > button:not(.score-reset), .score-capo-row > button:not(.score-reset) { flex:none; width:40px; min-width:40px; padding-inline:0; }
-#score-panel .score-shift output, #score-panel .score-capo-row output { flex:1 1 auto; min-width:0; text-align:center; font-weight:650; font-variant-numeric:tabular-nums; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.score-capo-row { flex-basis:100%; flex-wrap:nowrap; gap:4px; }
+.score-capo-row > button:not(.score-reset) { flex:none; width:40px; min-width:40px; padding-inline:0; }
+#score-panel .score-capo-row output { flex:1 1 auto; min-width:0; text-align:center; font-weight:650; font-variant-numeric:tabular-nums; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 @media (min-width:700px) {
   /* Keep −, value, + and reset side by side instead of spread across the card */
-  #score-panel .score-shift output, #score-panel .score-capo-row output { flex:0 0 auto; min-width:8em; padding-inline:12px; }
+  #score-panel .score-capo-row output { flex:0 0 auto; min-width:8em; padding-inline:12px; }
 }
+.score-reselect-row { flex-basis:100%; }
+/* On roomy screens the capo panel rides along the bottom while the sheet scrolls, so the key
+   can be changed while looking at the chords. Phones keep it in place under the sheet. */
+@media (min-width:760px) and (min-height:760px) {
+  #score-capo-panel { position:sticky; bottom:12px; z-index:2; box-shadow:0 -6px 24px rgba(31,61,47,.12); }
+}
+.score-reselect { display:inline-flex; align-items:center; gap:4px; min-height:36px; padding:4px 8px; margin-left:-8px; border:0; background:transparent; color:var(--muted); font-size:13px; }
+.score-work-status:empty { display:none; }
 .score-reset { flex:none; margin-left:4px; padding-inline:8px; font-size:12px; white-space:nowrap; }
 /* Recognition shown on the preview */
 .score-scan { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
@@ -302,7 +309,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <main>
 <section id="score-panel">
 <h1 class="sr-only">악보 키 변환</h1>
-<div class="panel score-upload">
+<div id="score-upload" class="panel score-upload">
 <div id="score-drop" class="score-drop">
 <div class="score-upload-actions">
 <input class="sr-only" id="score-file" type="file" accept="image/*" aria-label="악보 이미지 파일 선택" aria-describedby="score-file-hint">
@@ -314,7 +321,20 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 </div>
 <p id="score-status" class="hint" role="status" aria-live="polite">첫 자동 인식에는 인터넷 연결이 필요해요.</p>
 </div>
+<div id="score-work" hidden>
 <div class="panel score-controls">
+<div class="score-preview-tools">
+<div class="score-row score-reselect-row"><button id="score-reselect" class="score-reselect" type="button"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>다른 악보 선택</button></div>
+
+<div class="score-row" role="group" aria-labelledby="score-overlay-label"><strong id="score-overlay-label">코드 표시</strong><label><input type="radio" name="score-overlay" value="replace" checked> 교체</label><label><input type="radio" name="score-overlay" value="above"> 위에</label><label><input id="score-original" type="checkbox"> 원본 보기</label></div>
+<div class="score-row score-preview-actions"><button id="score-add" type="button">코드 직접 추가</button><button id="score-intro-open" type="button" aria-haspopup="dialog" data-i18n-en="Intros" hidden>추천 전주</button><button id="score-download" type="button" class="primary">PNG 다운로드</button></div>
+</div>
+<div id="score-manual-position" tabindex="-1" hidden><p id="score-position-hint" class="hint"></p><div class="score-row"><label>가로 % <input id="score-pos-x" type="number" min="0" max="100" value="10" style="width:80px"></label><label>세로 % <input id="score-pos-y" type="number" min="0" max="100" value="10" style="width:80px"></label><button id="score-position-add" type="button">이 위치에 추가</button></div></div>
+<div class="score-preview-scroll"><div id="score-stage" class="score-stage"><canvas id="score-canvas" aria-label="변환한 악보. 아래 코드 목록에서 인식 결과를 수정할 수 있습니다."></canvas><div id="score-hit-layer"></div></div></div>
+<p id="score-work-status" class="hint score-work-status" role="status" aria-live="polite"></p>
+<p id="score-edit-hint" class="hint">악보 위의 코드를 눌러 수정하세요. 직접 추가한 코드와 전주는 끌어서 옮길 수 있어요. 아래 목록에서도 편집할 수 있어요.<br><span id="score-size"></span></p>
+</div>
+<div id="score-capo-panel" class="panel score-controls">
 <div class="score-key-row"><p id="score-key" role="status">감지 키: —</p><label><input id="score-key-stamp" type="checkbox" checked> 악보에 표시</label></div>
 <div id="score-capo-controls"><div class="score-row score-capo-row"><button id="score-capo-minus" type="button" aria-label="카포 한 프렛 내리기 (카포 없음에서는 키를 반음 내림)">−</button><output id="score-capo-value" aria-live="polite">카포 없음</output><button id="score-capo-plus" type="button" aria-label="카포 한 프렛 올리기">+</button><button id="score-capo-reset" class="score-reset" type="button" disabled>원래 키로</button></div>
 <div class="score-fret-scroll" tabindex="0" role="region" aria-label="카포 1부터 11프렛 선택, 좌우로 스크롤"><div class="score-neck">
@@ -334,17 +354,6 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <div id="score-frets" class="score-frets" role="group" aria-label="카포 위치"></div>
 </div></div></div>
 <p id="score-result-key" class="hint" aria-live="polite">카포 없이 키를 낮추려면 −를 누르세요.</p>
-</div>
-<div id="score-work" hidden>
-<div class="panel score-controls">
-<div class="score-preview-tools">
-<div class="score-row score-shift" role="group" aria-labelledby="score-shift-label"><strong id="score-shift-label">곡의 키</strong><button id="score-shift-down" type="button" aria-label="곡의 키를 반음 내리기">−</button><output id="score-shift-value" aria-live="polite">원래 키</output><button id="score-shift-up" type="button" aria-label="곡의 키를 반음 올리기">+</button><button id="score-shift-reset" class="score-reset" type="button" disabled>원래 키로</button></div>
-<div class="score-row" role="group" aria-labelledby="score-overlay-label"><strong id="score-overlay-label">코드 표시</strong><label><input type="radio" name="score-overlay" value="replace" checked> 교체</label><label><input type="radio" name="score-overlay" value="above"> 위에</label><label><input id="score-original" type="checkbox"> 원본 보기</label></div>
-<div class="score-row score-preview-actions"><button id="score-add" type="button">코드 직접 추가</button><button id="score-intro-open" type="button" aria-haspopup="dialog" data-i18n-en="Intros" hidden>추천 전주</button><button id="score-download" type="button" class="primary">PNG 다운로드</button></div>
-</div>
-<div id="score-manual-position" tabindex="-1" hidden><p id="score-position-hint" class="hint"></p><div class="score-row"><label>가로 % <input id="score-pos-x" type="number" min="0" max="100" value="10" style="width:80px"></label><label>세로 % <input id="score-pos-y" type="number" min="0" max="100" value="10" style="width:80px"></label><button id="score-position-add" type="button">이 위치에 추가</button></div></div>
-<div class="score-preview-scroll"><div id="score-stage" class="score-stage"><canvas id="score-canvas" aria-label="변환한 악보. 아래 코드 목록에서 인식 결과를 수정할 수 있습니다."></canvas><div id="score-hit-layer"></div></div></div>
-<p id="score-edit-hint" class="hint">악보 위의 코드를 눌러 수정하세요. 직접 추가한 코드와 전주는 끌어서 옮길 수 있어요. 아래 목록에서도 편집할 수 있어요.<br><span id="score-size"></span></p>
 </div>
 <details class="panel score-list"><summary id="score-count">악보 코드 0개 · 확인 및 수정</summary><div id="score-code-list" class="quick"></div></details>
 </div>
@@ -1144,7 +1153,7 @@ return true;
 const scoreState={showKey:true,introTempo:120,introMeter:'4/4',image:null,codes:[],capo:0,keyShift:0,overlay:'replace',original:false,busy:false,adding:false,intro:null,drag:null,editIndex:null,pending:null,run:0};
 let scoreIntroPlayback=null;
 let scoreLibraryPromise=null,scoreRuntimePromise=null;
-function scoreStatus(message){$('score-status').textContent=message;}
+function scoreStatus(message){$('score-status').textContent=message;$('score-work-status').textContent=message;}
 function scoreBusy(value,allowManual=false){
 scoreState.busy=value;$('score-file').disabled=value;$('score-paste').disabled=value;
 if(value)stopScoreIntro();
@@ -1281,7 +1290,7 @@ clearTimeout(timer);if(scoreAbortOCR===abort)scoreAbortOCR=null;if(canvas){canva
 if(run===scoreState.run){scoreBusy(false);scoreScan.stop();}
 }
 }
-// Chords as drawn: the song's key moved by keyShift (sheet control), then played with the capo (neck).
+// Chords as drawn: the song's key moved by keyShift (neck − below capo 0), then played with the capo.
 function scoreTotalShift(){return scoreState.keyShift-scoreState.capo;}
 function transformedScoreChord(text,key){if(!scoreState.keyShift)return capoScoreChord(text,scoreState.capo,key);const total=scoreTotalShift();return transposeScoreChord(text,total,transposeScoreKey(key,total));}
 function scoreIntroNotes(text,capo){
@@ -1501,14 +1510,7 @@ const keyStep=keyShift?` · ${keyShift>0?'+':'−'}${Math.abs(keyShift)}키`:'';
 $('score-capo-value').textContent=capo?'카포 '+capo+keyStep:keyShift?'카포 X'+keyStep:'카포 없음';
 $('score-capo-minus').disabled=capo===0&&keyShift===-11;$('score-capo-plus').disabled=capo===11;
 for(const [i,button] of [...$('score-frets').children].entries())button.setAttribute('aria-pressed',String(i+1===capo));
-// Sheet-side key control (same state as the neck's "−" below capo 0)
-// The sheet control shows the key the chords are drawn in, so it moves with the capo too.
-const drawn=keyShift-capo,step=`${drawn>0?'+':'−'}${Math.abs(drawn)}`;
-// Only the drawn key here; the capo shows on the neck.
-$('score-shift-value').textContent=!drawn?(key?`${key.name} (원래 키)`:'원래 키')
-  :key?`${key.name} → ${destination.name}`:`${step}키`;
-$('score-shift-down').disabled=keyShift===-11||keyShift===0&&capo===11;$('score-shift-up').disabled=capo===0&&keyShift===11;
-$('score-shift-reset').disabled=$('score-capo-reset').disabled=!(keyShift||capo);
+$('score-capo-reset').disabled=!(keyShift||capo);
 if(!scoreState.image)return;
 $('score-stage').classList.toggle('adding',scoreState.adding);
 $('score-add').textContent=scoreState.adding?'위치 선택 취소':'코드 직접 추가';
@@ -1645,7 +1647,7 @@ const size=scoreImageSize(image.naturalWidth,image.naturalHeight),scale=size.wid
 const source=document.createElement('canvas');source.width=size.width;source.height=size.height;
 const ctx=source.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,source.width,source.height);ctx.drawImage(image,0,0,source.width,source.height);
 scoreState.image=image;scoreState.source=source;scoreState.codes=[];scoreState.adding=false;scoreState.drag=null;scoreState.intro=null;scoreState.original=false;$('score-original').checked=false;
-$('score-work').hidden=false;$('score-manual-position').hidden=true;scoreBusy(false);renderScore();
+$('score-work').hidden=false;$('score-upload').hidden=true;$('score-manual-position').hidden=true;scoreBusy(false);renderScore();
 $('score-size').textContent=`처리·저장 크기: ${source.width} × ${source.height}px`+(scale<1?' · 기기 메모리를 위해 이미지를 축소했어요.':'');
 scoreStatus(scale<1?'큰 이미지는 기기 메모리를 위해 긴 변 4096px·최대 1200만 화소로 줄여 처리·저장합니다.':'이미지를 열었어요.');
 await recognizeScore();
@@ -1747,14 +1749,16 @@ const scoreKeyDown=()=>{if(scoreState.capo>0)scoreState.capo--;else scoreState.k
 $('score-capo-minus').addEventListener('click',scoreKeyDown);
 const scoreKeyUp=()=>{if(!scoreState.capo&&scoreState.keyShift<0)scoreState.keyShift++;else scoreState.capo=Math.min(11,scoreState.capo+1);renderScore();};
 $('score-capo-plus').addEventListener('click',scoreKeyUp);
-// Sheet −/+ move the drawn chords down/up a semitone, sharing state with the neck.
-// Down puts a capo on so the sound stays (G → F# with capo 1); once the key itself was moved it keeps moving it.
-// Up takes the capo off first, then raises the key.
-$('score-shift-down').addEventListener('click',()=>{const st=scoreState;if(st.keyShift>0)st.keyShift--;else if(st.keyShift<0)st.keyShift=Math.max(-11,st.keyShift-1);else st.capo=Math.min(11,st.capo+1);renderScore();});
-$('score-shift-up').addEventListener('click',()=>{const st=scoreState;if(st.capo>0)st.capo--;else st.keyShift=Math.min(11,st.keyShift+1);renderScore();});
 const resetScoreKey=()=>{scoreState.keyShift=0;scoreState.capo=0;renderScore();};
-$('score-shift-reset').addEventListener('click',resetScoreKey);
 $('score-capo-reset').addEventListener('click',resetScoreKey);
+// "다른 악보 선택": drop this sheet (and any recognition still running) and show the upload area again.
+$('score-reselect').addEventListener('click',()=>{
+scoreState.run++;stopScoreIntro();scoreScan.stop();scoreBusy(false);
+Object.assign(scoreState,{image:null,source:null,codes:[],capo:0,keyShift:0,intro:null,adding:false,drag:null,editIndex:null,pending:null,original:false});
+$('score-original').checked=false;$('score-work').hidden=true;$('score-upload').hidden=false;renderScore();
+scoreStatus('악보 이미지를 선택하거나 붙여넣어 주세요.');
+$('score-upload').scrollIntoView?.({block:'start'});
+});
 for(const input of document.querySelectorAll('input[name="score-overlay"]'))input.addEventListener('change',()=>{scoreState.overlay=input.value;renderScore();});
 $('score-original').addEventListener('change',()=>{scoreState.original=$('score-original').checked;renderScore();});
 $('score-key-stamp').addEventListener('change',()=>{scoreState.showKey=$('score-key-stamp').checked;renderScore();});
