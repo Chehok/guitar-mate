@@ -52,9 +52,10 @@ for(const rate of [44100,48000,96000]){
   for(const [name,count] of [['guitar',6],['bass4',4],['bass5',5]]){
     vm.runInContext(`instrument='${name}';tunerNotes=INSTRUMENTS.${name}.notes;stringNames=INSTRUMENTS.${name}.names;`,context);
     for(let index=0;index<count;index++)assert.equal(vm.runInContext(`nearestString(stringFrequency(${index}),440)`,context),index,`${name} string ${index}`);
-    const parts=vm.runInContext(`headstockParts(INSTRUMENTS.${name})`,context);
-    assert.equal((parts.match(/<circle /g)||[]).length,count);assert.equal((parts.match(/<path d="M[\d.]+ [\d.]+L/g)||[]).length,count);
-    const layout=JSON.parse(vm.runInContext(`JSON.stringify(INSTRUMENTS.${name}.layout)`,context));
+    const parts=name==='guitar'?vm.runInContext(`headstockParts(INSTRUMENTS.${name})`,context):vm.runInContext(`bassHeadArt(INSTRUMENTS.${name}).markup`,context);
+    assert.equal((parts.match(/<circle /g)||[]).length,count,`${name}: one post per string`);
+    assert.equal((parts.match(/<path d="M[\d.]+ [\d.]+(H44)?L/g)||[]).length,count,`${name}: one string per post`);
+    const layout=JSON.parse(vm.runInContext(`JSON.stringify(pegLayout(INSTRUMENTS.${name}))`,context));
     assert.deepEqual(layout.map(p=>p[0]).sort(),[...Array(count).keys()],`${name}: every string has one peg`);
     assert.equal(new Set(layout.map(p=>p[1]+'/'+p[2])).size,count,`${name}: no two pegs share a spot`);
   }
