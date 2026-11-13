@@ -134,9 +134,9 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--muted); }
 .legend span { display: flex; align-items: center; gap: 6px; }
 .key { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: var(--note); border: 1px solid var(--fret); }
-.fret-panel .key { background: var(--neck-tone-soft); border: 0; }
+.fret-panel .key { background: var(--neck-tone-soft); }
 .fret-panel .key.root { background: var(--root-soft); }
-.fret-panel .key.current { background: var(--green); }
+.fret-panel .key.current { background: var(--green); border: 0; }
 .scroll { overflow-x: auto; overscroll-behavior-x: contain; margin-top: 12px; padding: 8px 16px; scrollbar-color: var(--control) var(--soft); }
 .scroll:focus-visible { outline-offset: -4px; }
 .neck { display: block; width: 100%; min-width: 640px; height: auto; }
@@ -342,9 +342,9 @@ const line=(a,b,c,d,stroke,width)=>{
 const [x1,y1]=point(a,b),[x2,y2]=point(c,d);
 return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${stroke}" stroke-width="${width}"/>`;
 };
-const dot=(along,across,r,fill)=>{
+const dot=(along,across,r,fill,outlined=false)=>{
 const [cx,cy]=point(along,across);
-return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}"/>`;
+return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}"${outlined?' stroke="var(--fret)" stroke-width="1"':''}/>`;
 };
 let s='';
 for(let f=0;f<=15;f++)s+=text(fret(f),vertical?22:13,f);
@@ -362,7 +362,7 @@ for(let f=0;f<=15;f++){const pc=mod(tuning[i]+f),selected=v&&v.frets[i]===f;if(!
 const fill=selected?(root?'var(--orange)':'var(--green)'):(root?'var(--root-soft)':'var(--neck-tone-soft)');
 const ink=selected?'var(--on-green)':(root?'var(--root-ink)':'var(--note-ink)');
 const label=noteName(current,pc);
-s+=dot(fret(f),string(i),12,fill)+text(fret(f),string(i),label,label.length>2?9:11,ink,600);
+s+=dot(fret(f),string(i),12,fill,!selected)+text(fret(f),string(i),label,label.length>2?9:11,ink,600);
 }}
 return svg(s,vertical?'0 0 280 652':'0 0 650 237',vertical?'neck neck-vertical':'neck',`${current.label} 코드 구성음의 전체 지판 위치. 근음은 주황 계열, 현재 운지는 진한 색으로 표시.`);
 }
