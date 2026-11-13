@@ -338,11 +338,12 @@ function paintPendulum(){
   pendulum.setAttribute('transform',`rotate(${27*direction*Math.sin(Math.PI*phase)} 126 178)`);
 }
 // Auto match: while listening, my clicks become 2 kHz chirps half a beat later (see metronome-calibrate.js).
-let calibrating=null,lastCalibration=null,autoWait=false,autoWaitTimer=null;
+let calibrating=null,lastCalibration=null,lastRecording=null,autoWait=false,autoWaitTimer=null;
 function playChirp(time){
   const oscillator=audioContext.createOscillator(),gain=audioContext.createGain();
   oscillator.type='sine';oscillator.frequency.setValueAtTime(window.metronomeCalibrate.CHIRP_HZ,time);
-  gain.gain.setValueAtTime(.0001,time);gain.gain.exponentialRampToValueAtTime(.35,time+.002);gain.gain.exponentialRampToValueAtTime(.0001,time+.04);
+  const shape=window.metronomeCalibrate.SHAPES.chirp;
+  gain.gain.setValueAtTime(.0001,time);gain.gain.exponentialRampToValueAtTime(shape.peak,time+.002);gain.gain.exponentialRampToValueAtTime(.0001,time+.002+shape.fall);
   oscillator.connect(gain);gain.connect(audioContext.destination);sources.add(oscillator);oscillator.onended=()=>sources.delete(oscillator);oscillator.start(time);oscillator.stop(time+.045);
 }
 function playClick(time,beat){
@@ -775,6 +776,9 @@ async function autoMatch(){
   try{
     mic=await window.metronomeCalibrate.openMic(audioContext);
     if(audioContext.state!=='running')await window.metronomeAudio.resume(audioContext);
+    // Opening the mic switches the phone's audio route; give it a moment before timing anything.
+    await wait(800);
+    if(audioContext.state!=='running')await window.metronomeAudio.resume(audioContext);
     const interval=sync.intervalMs(grid.bpm)/1000;
     // Opening the mic can move the phone onto a different (often slower) audio path. Note the latency
     // the browser reports while recording, to correct for it once the normal path is back.
@@ -788,7 +792,10 @@ async function autoMatch(){
     const recording=mic.take();
     mic.close();mic=null;
     window.metronomeAudio.setAudioSession('playback');
-    const result=recording?window.metronomeCalibrate.analyze({...recording,...data,interval}):{ok:false,reason:'own'};
+    let level=0;if(recording){const x=recording.samples;for(let i=0;i<x.length;i+=8)level=Math.max(level,Math.abs(x[i]));}
+    const result=!recording||level<1e-4?{ok:false,reason:'silent',level}:window.metronomeCalibrate.analyze({...recording,...data,interval});
+    result.level=level;
+    lastRecording=recording?{...recording,...data,interval,result,recLatency:[...recLatency],offsetBefore:offsetMs,ua:navigator.userAgent,at:new Date().toISOString()}:null;
     if(result.ok&&recLatency.length){
       await wait(800); // the normal path settles
       const play=[];for(let i=0;i<4;i++){const v=reportedLatency();if(v!==null)play.push(v);await wait(80);}
@@ -802,12 +809,14 @@ async function autoMatch(){
     clock.reset();
     lastCalibration=result;
     if(result.ok){
-      text.textContent=applyMatch(result.delta*1000);
+      text.textContent=applyMatch(result.delta*1000)+` (${result.heard}/${result.total}박 확인)`;
     }else{
+      const of=(n)=>`${n||0}/${result.total||0}박`;
       text.textContent={
-        own:'내 폰 소리를 마이크로 듣지 못했어요. 음량을 올리고 다시 해 보세요.',
-        leader:'리더 폰 소리가 들리지 않았어요. 리더 폰 가까이에서 다시 해 보세요.',
-        noisy:'주변 소리 때문에 잘 들리지 않았어요. 조용한 곳에서 다시 해 보세요.',
+        silent:'마이크로 아무 소리도 들어오지 않았어요. 다른 앱이 마이크를 쓰고 있지 않은지 확인하고 다시 해 보세요.',
+        own:`내 폰 소리가 마이크에 잘 안 잡혔어요(${of(result.ownHeard)}). 이 폰 음량을 올리고 다시 해 보세요.`,
+        leader:`리더 폰 소리가 잘 안 들렸어요(${of(result.leaderHeard)}). 리더 폰 음량을 올리고, 가까이에서 다시 해 보세요.`,
+        noisy:`박마다 들린 시간이 들쭉날쭉했어요(${of(result.leaderHeard)}). 조용한 곳에서 다시 해 보세요.`,
       }[result.reason]||'다시 해 보세요.';
     }
   }catch(error){
@@ -911,6 +920,17 @@ renderButtons();
 if(new URLSearchParams(location.search).has('debug')){
   const debug=document.createElement('pre');debug.className='sync-debug';debug.setAttribute('translate','no');
   document.querySelector('.sync-panel').append(debug);
+  // Debug only: save the last auto-match recording (mic samples + timing) to look at offline.
+  const save=document.createElement('button');save.type='button';save.className='btn';save.textContent='자동 맞추기 녹음 저장';
+  save.addEventListener('click',()=>{
+    if(!lastRecording){debug.dataset.note='저장할 녹음이 없어요. 자동 맞추기를 먼저 해 주세요.';return;}
+    const x=lastRecording.samples,pcm=new Int16Array(x.length);for(let i=0;i<x.length;i++)pcm[i]=Math.max(-32768,Math.min(32767,Math.round(x[i]*32767)));
+    let bin='';const bytes=new Uint8Array(pcm.buffer);for(let i=0;i<bytes.length;i+=0x8000)bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));
+    const {samples,...meta}=lastRecording;
+    const blob=new Blob([JSON.stringify({...meta,pcm16:btoa(bin)})],{type:'application/json'});
+    const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=`gm-automatch-${Date.now()}.json`;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);
+  });
+  document.querySelector('.sync-panel').append(save);
   setInterval(()=>{
     const c=audioContext;
     debug.textContent=[

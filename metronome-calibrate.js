@@ -12,11 +12,13 @@
 // both sounds go through the same microphone path, so only consistent timestamps are needed.
 (function (root) {
   const CHIRP_HZ = 2000;
+  // The leader's square-wave clicks; their 3rd harmonics are listened to as well, since small phone
+  // speakers barely play 880 Hz but 2640 Hz comes through.
   const LEADER_HZ = [880, 1320];
   // The sounds as the app plays them (metronome.html playClick / playChirp): exponential 2 ms rise to
   // the peak, then an exponential fall to 0.0001.
   const SHAPES = {
-    chirp: { hz: CHIRP_HZ, peak: 0.35, fall: 0.038, square: false },
+    chirp: { hz: CHIRP_HZ, peak: 0.5, fall: 0.038, square: false },
     accent: { hz: 1320, peak: 0.2, fall: 0.043, square: true },
     beat: { hz: 880, peak: 0.13, fall: 0.043, square: true },
   };
@@ -72,8 +74,11 @@
     if (i1 - i0 < sampleRate * 0.01) return null;
     let peak = 0, p = i0;
     for (let i = i0; i < i1; i++) if (env[i] > peak) { peak = env[i]; p = i; }
-    const floor = median(Array.from(env.subarray(i0, i1)).filter((_, i) => i % 16 === 0));
-    if (!(peak > floor * 6 && peak > 1e-4)) return null;
+    // Noise floor: a quiet slice of the window (a loud click's own reverb can fill half of it).
+    const levels = Array.from(env.subarray(i0, i1)).filter((_, i) => i % 16 === 0).sort((a, b) => a - b);
+    const floor = levels[Math.floor(levels.length * 0.15)] || 0, typical = levels[levels.length >> 1] || 0;
+    // A real click stands well clear of the window's typical level (noise alone doesn't).
+    if (!(peak > typical * 6 && peak > 2e-5)) return null;
     // Back down the rising edge; small wiggles (under 4% of the peak) don't count as the dip.
     let m = p, low = peak;
     for (let i = p - 1; i >= i0; i--) {
@@ -97,38 +102,41 @@
   function analyze({ samples, sampleRate, startTime, ownTimes, beatTimes, beatKinds, interval }) {
     const Q = 10;
     const chirpPath = signal => envelope(bandpass(signal, sampleRate, CHIRP_HZ, Q), sampleRate);
-    const leaderPath = signal => {
-      const raw = LEADER_HZ.map(f => envelope(bandpass(signal, sampleRate, f, Q), sampleRate));
+    // Each kind of click is looked for in its own bands (accent: 1320 + 3960 Hz, other beats: 880 +
+    // 2640 Hz). Wider than the chirp's band, so they ring up fast and agree on timing.
+    const leaderPath = (signal, accent) => {
+      const raw = (accent ? [1320, 3960] : [880, 2640]).map(f => envelope(bandpass(signal, sampleRate, f, 4), sampleRate));
       const out = new Float32Array(signal.length);
-      for (let i = 0; i < signal.length; i++) out[i] = Math.max(raw[0][i], raw[1][i]);
+      for (let i = 0; i < signal.length; i++) { let m = 0; for (const band of raw) if (band[i] > m) m = band[i]; out[i] = m; }
       return out;
     };
     // How late each kind of sound reads after going through its filter and envelope, measured on a
     // clean copy of the sound itself, so the chirp and the leader's clicks are timed the same way.
-    const lead = 0.02;
+    const lead = 0.12; // mostly silence, so the noise floor reads as silence
     const pathDelay = (shape, path) => {
       const clean = synth(shape, sampleRate, lead);
       for (let i = 0; i < clean.length; i++) clean[i] += 1e-6 * Math.sin(i * 0.37); // a whisper of floor
       const at = onset(path(clean), sampleRate, 0, 0, clean.length / sampleRate, 0);
       return at === null ? 0 : at - lead;
     };
-    const chirpEnv = chirpPath(samples), leaderEnv = leaderPath(samples);
+    const chirpEnv = chirpPath(samples), leaderEnvs = [leaderPath(samples, true), leaderPath(samples, false)];
     const delayChirp = pathDelay(SHAPES.chirp, chirpPath);
-    const delayLeader = [pathDelay(SHAPES.accent, leaderPath), pathDelay(SHAPES.beat, leaderPath)];
+    const delayLeader = [pathDelay(SHAPES.accent, s => leaderPath(s, true)), pathDelay(SHAPES.beat, s => leaderPath(s, false))];
 
     const loop = [];
     for (const t of ownTimes) {
       const heard = onset(chirpEnv, sampleRate, startTime, t, t + Math.min(0.4, interval * 0.9), delayChirp);
       if (heard !== null) loop.push(heard - t);
     }
-    if (loop.length < 3) return { ok: false, reason: 'own' };
+    const total = ownTimes.length;
+    if (loop.length < 3) return { ok: false, reason: 'own', ownHeard: loop.length, total };
     const loopback = median(loop);
     // My chirps are loud and close; blank them (and their echo) out before looking for the leader.
     const blankEnds = [];
     for (const t of ownTimes) {
       const i0 = Math.max(0, Math.floor((t + loopback - 0.005 - startTime) * sampleRate));
-      const i1 = Math.min(leaderEnv.length, Math.ceil((t + loopback + 0.11 - startTime) * sampleRate));
-      if (i1 > i0) { leaderEnv.fill(0, i0, i1); blankEnds.push(startTime + i1 / sampleRate); }
+      const i1 = Math.min(samples.length, Math.ceil((t + loopback + 0.11 - startTime) * sampleRate));
+      if (i1 > i0) { for (const env of leaderEnvs) env.fill(0, i0, i1); blankEnds.push(startTime + i1 / sampleRate); }
     }
     // A leader click hidden under my chirp would show up as a rise right where the blank ends: not trusted.
     const atBlankEdge = heard => blankEnds.some(end => heard + delayLeader[1] - end >= -0.001 && heard + delayLeader[1] - end < 0.004);
@@ -136,19 +144,19 @@
     const offsets = [];
     beatTimes.forEach((t, k) => {
       const centre = t + loopback, accent = beatKinds ? beatKinds[k] === 0 : false;
-      const heard = onset(leaderEnv, sampleRate, startTime, centre - interval * 0.45, centre + interval * 0.45, delayLeader[accent ? 0 : 1]);
+      const heard = onset(leaderEnvs[accent ? 0 : 1], sampleRate, startTime, centre - interval * 0.45, centre + interval * 0.45, delayLeader[accent ? 0 : 1]);
       if (heard !== null && !atBlankEdge(heard)) offsets.push(heard - t);
     });
-    if (offsets.length < 3) return { ok: false, reason: 'leader', loopback };
+    if (offsets.length < 3) return { ok: false, reason: 'leader', loopback, ownHeard: loop.length, leaderHeard: offsets.length, total };
     // Median first, then the mean of the beats that agree with it (a stray knock or a missed beat
     // is dropped instead of dragging the answer).
     const d0 = median(offsets);
     const spread = median(offsets.map(v => Math.abs(v - d0)));
-    if (spread > 0.015) return { ok: false, reason: 'noisy', loopback, spread };
+    if (spread > 0.015) return { ok: false, reason: 'noisy', loopback, spread, ownHeard: loop.length, leaderHeard: offsets.length, total };
     const keep = offsets.filter(v => Math.abs(v - d0) <= Math.max(0.002, spread * 3));
-    if (keep.length < 3) return { ok: false, reason: 'noisy', loopback, spread };
+    if (keep.length < 3) return { ok: false, reason: 'noisy', loopback, spread, ownHeard: loop.length, leaderHeard: keep.length, total };
     const d = keep.reduce((a, b) => a + b, 0) / keep.length;
-    return { ok: true, delta: d - loopback, loopback, spread, heard: keep.length };
+    return { ok: true, delta: d - loopback, loopback, spread, heard: keep.length, ownHeard: loop.length, leaderHeard: keep.length, total };
   }
 
   // ---- Browser side: record the microphone with sample-accurate audio-clock timestamps ----
