@@ -229,7 +229,8 @@ return svg(s,'-8 0 272 330','diagram diagram-editor',`운지 입력, ${base}–$
 }
 return svg(s,'0 0 290 310','diagram',`${current.label} 운지, 6번 줄부터 ${f.map(n=>n<0?'뮤트':n+'프렛').join(', ')}`);
 }
-function syncFilters(chord){const kind=filterKinds.find(k=>k.quality===chord.quality),bass=chord.bassNote||'none';if(!kind||!filterRoots.includes(chord.root)||(bass!=='none'&&!filterRoots.includes(bass)))return;if(!chordFilterResults(filterRoot,filterKind,filterBass).includes(chord.label)){filterRoot=chord.root;filterKind=kind.label;filterBass=bass;}if(document.getElementById('root-filter'))renderFilters();}
+// The chord search page refreshes its step filter when another chord is shown.
+function syncFilters(){if(typeof renderSteps==='function'&&document.getElementById('chord-steps'))renderSteps();}
 function find(value){try{const parsed=parse(value);const shapes=makeVoicings(parsed);current=parsed;voicings=shapes;position=0;syncFilters(parsed);$('error').textContent='';$('chord-input').removeAttribute('aria-invalid');render();}catch(error){$('error').textContent=error.message;$('chord-input').setAttribute('aria-invalid','true');}}
 // Chord filter functions:
 const filterRoots=['C','D','E','F','G','A','B','C#','D#','F#','G#','A#'];
@@ -247,32 +248,6 @@ function chordFilterResults(root,kind,bass='none'){
   return names;
 }
 // End chord filter functions.
-let filterRoot='C',filterKind='M',filterBass='none';
-const filterListLimit=96;
-function filterButton(text,pressed,onClick,label){const b=document.createElement('button');b.type='button';b.textContent=text;b.setAttribute('aria-pressed',String(pressed));if(label)b.setAttribute('aria-label',label);b.addEventListener('click',onClick);return b;}
-function fillSelect(id,options,value,onChange){
-  const select=$(id);
-  if(!select.options.length){for(const [v,text] of options){const o=document.createElement('option');o.value=v;o.textContent=text;if(v==='none')o.title='슬래시 없는 일반 코드';if(v==='all'&&id==='bass-filter')o.title='일반 코드와 모든 슬래시 베이스';select.append(o);}select.addEventListener('change',()=>onChange(select.value));}
-  select.value=value;
-}
-function renderFilters(){
-  const word=value=>value==='all'?'전체':value==='none'?'일반(슬래시 없음)':value;
-  fillSelect('root-filter',[['all','전체'],...filterRoots.map(r=>[r,r])],filterRoot,v=>setFilters(v,filterKind,filterBass));
-  fillSelect('kind-filter',[['all','전체'],...filterKinds.map(k=>[k.label,k.label])],filterKind,v=>setFilters(filterRoot,v,filterBass));
-  fillSelect('bass-filter',[['none','일반'],['all','전체'],...filterRoots.map(n=>[n,n])],filterBass,v=>setFilters(filterRoot,filterKind,v));
-  const names=chordFilterResults(filterRoot,filterKind,filterBass),shown=names.slice(0,filterListLimit);
-  $('quick').replaceChildren(...shown.map(name=>filterButton(name,current&&current.label===name,()=>{$('chord-input').value=name;find(name);})));
-  $('filter-empty').hidden=names.length>0;$('quick').hidden=!names.length;
-  const status=$('filter-status');status.textContent='';
-  status.append(`기본음 ${word(filterRoot)} · 종류 ${word(filterKind)} · 베이스 ${word(filterBass)} → ${names.length}개`);
-  if(names.length===1){const strong=document.createElement('strong');strong.textContent=names[0];status.append(' · ',strong);}
-  if(names.length>shown.length)status.append(` (앞의 ${shown.length}개만 표시 · 필터를 좁혀 보세요)`);
-  return names;
-}
-function setFilters(root,kind,bass=filterBass){
-  filterRoot=root;filterKind=kind;filterBass=bass;const names=renderFilters();
-  if(names.length&&!(current&&names.includes(current.label))){$('chord-input').value=names[0];find(names[0]);}
-}
 let audioContext=null,playing=[],captureActive=()=>false;
 // iOS Web Audio can stay suspended/interrupted after backgrounding and is routed as "ambient" by default; prepare it on every explicit tap and fail visibly instead of reporting playback.
 function setAudioSession(type){try{if(navigator.audioSession&&navigator.audioSession.type!==type)navigator.audioSession.type=type;}catch(_){}}
