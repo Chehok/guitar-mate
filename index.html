@@ -154,8 +154,8 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 @media (min-width: 760px) {
   .tuner-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: center; }
   .tuner-gauge { max-width: 360px; }
-  .headstock { grid-template-columns: 60px 170px 60px; grid-template-rows: repeat(3, 76px); }
-  .headstock button { width: 58px; height: 58px; }
+  .headstock { grid-template-columns: 58px 150px 58px; grid-template-rows: repeat(3, 62px); }
+  .headstock button { width: 54px; height: 54px; }
 }
 #identify-play { flex: none; padding-inline: 12px; font-size: 13px; white-space: nowrap; }
 #identify-reset { flex: none; }
@@ -262,13 +262,13 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <div class="tuner-head">
 <div id="string-select" class="headstock" role="group" aria-label="줄 선택">
 <svg class="headstock-art" viewBox="0 0 160 174" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-<path d="M2 29h40M118 29h40M2 87h40M118 87h40M2 145h40M118 145h40" stroke="var(--fret)" stroke-width="8" stroke-linecap="round"/>
-<path d="M4 29h8M148 29h8M4 87h8M148 87h8M4 145h8M148 145h8" stroke="var(--neck)" stroke-width="1.5" stroke-linecap="round" opacity=".8"/>
-<path d="M42 6Q80 1 118 6Q134 9 134 22V40Q134 52 127 58L125 62Q132 70 132 84V96Q132 110 125 116L123 120Q128 128 128 140V146Q126 160 106 170H54Q34 160 32 146V140Q32 128 37 120L35 116Q28 110 28 96V84Q28 70 35 62L33 58Q26 52 26 40V22Q26 9 42 6Z" fill="var(--green)" stroke="var(--fret)" stroke-width="1.5"/>
-<path d="M36 22Q36 14 46 13Q80 9 114 13Q124 14 124 22M38 150Q40 160 58 164M122 150Q120 160 102 164" fill="none" stroke="var(--neck)" stroke-opacity=".38"/>
-<g fill="none" stroke="var(--neck)" stroke-opacity=".85"><path d="M44 29 L74 168" stroke-width="1.2"/><path d="M116 29 L86 168" stroke-width="1.8"/><path d="M44 87 L67 168" stroke-width="1.5"/><path d="M116 87 L93 168" stroke-width="1.5"/><path d="M44 145 L60 168" stroke-width="1.8"/><path d="M116 145 L100 168" stroke-width="1.2"/></g>
-<g fill="var(--neck)" stroke="var(--fret)" stroke-width="1.5"><circle cx="44" cy="29" r="6"/><circle cx="116" cy="29" r="6"/><circle cx="44" cy="87" r="6"/><circle cx="116" cy="87" r="6"/><circle cx="44" cy="145" r="6"/><circle cx="116" cy="145" r="6"/></g>
-<rect x="52" y="166" width="56" height="7" rx="2" fill="var(--neck)" stroke="var(--fret)"/>
+<rect x="58" y="164" width="44" height="12" fill="var(--fret)"/>
+<path d="M46 29H12M114 29H148" stroke="var(--fret)" stroke-width="3"/><rect x="0" y="21" width="14" height="16" rx="7" fill="var(--neck)" stroke="var(--fret)" stroke-width="1.5"/><rect x="146" y="21" width="14" height="16" rx="7" fill="var(--neck)" stroke="var(--fret)" stroke-width="1.5"/><path d="M46 87H12M114 87H148" stroke="var(--fret)" stroke-width="3"/><rect x="0" y="79" width="14" height="16" rx="7" fill="var(--neck)" stroke="var(--fret)" stroke-width="1.5"/><rect x="146" y="79" width="14" height="16" rx="7" fill="var(--neck)" stroke="var(--fret)" stroke-width="1.5"/><path d="M46 145H12M114 145H148" stroke="var(--fret)" stroke-width="3"/><rect x="0" y="137" width="14" height="16" rx="7" fill="var(--neck)" stroke="var(--fret)" stroke-width="1.5"/><rect x="146" y="137" width="14" height="16" rx="7" fill="var(--neck)" stroke="var(--fret)" stroke-width="1.5"/>
+<path d="M30 20Q32 7 54 4Q72 2 80 11Q88 2 106 4Q128 7 130 20L125 128Q123 150 104 161H56Q37 150 35 128Z" fill="var(--green)" stroke="var(--fret)" stroke-width="1.5"/>
+<path d="M40 22Q42 13 56 11Q71 9 80 17Q89 9 104 11Q118 13 120 22" fill="none" stroke="var(--neck)" stroke-opacity=".35"/>
+<g fill="none" stroke="var(--neck)" stroke-opacity=".85"><path d="M46 29L72 161V174" stroke-width="1.1"/><path d="M114 29L88 161V174" stroke-width="1.8"/><path d="M46 87L66 161V174" stroke-width="1.4"/><path d="M114 87L94 161V174" stroke-width="1.5"/><path d="M46 145L60 161V174" stroke-width="1.8"/><path d="M114 145L100 161V174" stroke-width="1.1"/></g>
+<circle cx="46" cy="29" r="6.5" fill="var(--neck)" stroke="var(--fret)" stroke-width="1.5"/><circle cx="46" cy="29" r="2.5" fill="var(--fret)"/><circle cx="114" cy="29" r="6.5" fill="var(--neck)" stroke="var(--fret)" stroke-width="1.5"/><circle cx="114" cy="29" r="2.5" fill="var(--fret)"/><circle cx="46" cy="87" r="6.5" fill="var(--neck)" stroke="var(--fret)" stroke-width="1.5"/><circle cx="46" cy="87" r="2.5" fill="var(--fret)"/><circle cx="114" cy="87" r="6.5" fill="var(--neck)" stroke="var(--fret)" stroke-width="1.5"/><circle cx="114" cy="87" r="2.5" fill="var(--fret)"/><circle cx="46" cy="145" r="6.5" fill="var(--neck)" stroke="var(--fret)" stroke-width="1.5"/><circle cx="46" cy="145" r="2.5" fill="var(--fret)"/><circle cx="114" cy="145" r="6.5" fill="var(--neck)" stroke="var(--fret)" stroke-width="1.5"/><circle cx="114" cy="145" r="2.5" fill="var(--fret)"/>
+<rect x="55" y="159" width="50" height="6" rx="1.5" fill="var(--neck)" stroke="var(--fret)"/>
 </svg>
 </div>
 <p id="reference-status" class="headstock-hint" role="status">줄을 누르면 그 줄에 맞추고 기준음을 들려줘요.</p>
