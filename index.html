@@ -115,7 +115,8 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .empty { padding: 48px 8px; text-align: center; color: var(--muted); }
 #audio-status { min-height: 18px; margin-top: 8px; font-size: 12px; color: var(--muted); }
 /* Tuner: one screen — reading on top, a headstock whose pegs pick the string, then the mic */
-.tuner-display { --wood: #a8763f; --wood-dark: #74502a; --peg: #ebe6d8; --peg-string: #d9d2bf; text-align: center; }
+/* Same headstock colours as the sheet transposer's neck: green head, fret-grey edges and tuners, light strings and posts. */
+.tuner-display { --wood: var(--green); --wood-dark: var(--fret); --peg: var(--neck); --peg-string: var(--neck); text-align: center; }
 .tuner-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; text-align: left; }
 .tuner-target { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
 .auto-switch { flex: none; display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 4px 12px 4px 6px; border-radius: 20px; border-color: var(--line); font-size: 13px; font-weight: 650; }
@@ -192,7 +193,6 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
     --fret: #83977e; --string: #92a58d; --neck: #242c24; --inlay: #67755f;
     --note: #3c513d; --note-ink: #ecf1e5; --hit: #a2d2b524;
   }
-  .tuner-display { --wood: #7a5530; --wood-dark: #4f3519; --peg: #cfc8b6; --peg-string: #a99f88; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
@@ -263,7 +263,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <div id="string-select" class="headstock" role="group" aria-label="줄 선택">
 <svg class="headstock-art" viewBox="0 0 160 192" aria-hidden="true" focusable="false">
 <path d="M52 192 L46 150 C40 108 18 88 14 58 C10 30 18 10 46 6 L114 6 C142 10 150 30 146 58 C142 88 120 108 114 150 L108 192 Z" fill="var(--wood)" stroke="var(--wood-dark)" stroke-width="2"/>
-<path d="M66 18 C72 40 70 70 74 100 M94 18 C88 46 92 80 86 110" fill="none" stroke="var(--wood-dark)" stroke-width="1" opacity=".35"/>
+<path d="M66 18 C72 40 70 70 74 100 M94 18 C88 46 92 80 86 110" fill="none" stroke="var(--neck)" stroke-width="1" opacity=".3"/>
 <g fill="var(--wood-dark)"><rect x="0" y="29" width="26" height="6" rx="3"/><rect x="0" y="93" width="26" height="6" rx="3"/><rect x="0" y="157" width="26" height="6" rx="3"/><rect x="134" y="29" width="26" height="6" rx="3"/><rect x="134" y="93" width="26" height="6" rx="3"/><rect x="134" y="157" width="26" height="6" rx="3"/></g>
 <g stroke="var(--peg-string)" stroke-width="1.2"><path d="M26 160 L58 192 M26 96 L67 192 M26 32 L76 192 M134 32 L84 192 M134 96 L93 192 M134 160 L102 192"/></g>
 <g fill="var(--peg)" stroke="var(--wood-dark)" stroke-width="1.5"><circle cx="26" cy="32" r="8"/><circle cx="26" cy="96" r="8"/><circle cx="26" cy="160" r="8"/><circle cx="134" cy="32" r="8"/><circle cx="134" cy="96" r="8"/><circle cx="134" cy="160" r="8"/></g>
