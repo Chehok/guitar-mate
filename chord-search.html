@@ -88,25 +88,19 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .find-mode { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin-bottom: 12px; padding: 3px; border-radius: 12px; background: var(--soft); }
 .find-mode button { min-height: 38px; padding: 4px 8px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); font-size: 14px; font-weight: 650; }
 .find-mode button[aria-selected=true] { background: var(--panel); color: var(--ink); box-shadow: 0 0 0 1px var(--line); }
-.step-label { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin: 0 0 8px; font-size: 14px; font-weight: 700; }
-.step-label span { color: var(--muted); font-size: 12px; font-weight: 500; }
 .step-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
-.step-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
-.step-grid button, .step-wrap button { min-height: 40px; padding: 4px 10px; border-color: var(--line); font-size: 15px; font-weight: 600; }
+.step-grid button { min-height: 40px; padding: 4px 10px; border-color: var(--line); font-size: 15px; font-weight: 600; }
 .step-grid button { padding-inline: 2px; }
-.step-grid button[aria-pressed=true], .step-wrap button[aria-pressed=true] { background: var(--soft); border-color: var(--green); color: var(--green); }
-.step-wrap .step-skip { color: var(--muted); font-weight: 500; font-size: 13px; }
-.step-wrap .step-more { color: var(--muted); font-weight: 500; font-size: 13px; border-style: dashed; }
-.step-picked { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
-.step-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-.step-tags button { display: inline-flex; align-items: center; gap: 4px; min-height: 32px; padding: 2px 10px; border: 0; border-radius: 16px; background: var(--soft); color: var(--green); font-size: 13px; font-weight: 700; }
-.step-tags button::after { content: "×"; font-size: 15px; font-weight: 500; opacity: .7; }
+.step-grid button[aria-pressed=true] { background: var(--soft); border-color: var(--green); color: var(--green); }
+.step-picked { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 36px; margin-bottom: 8px; }
+.step-current { min-width: 0; margin: 0; color: var(--muted); font-size: 13px; }
+.step-current strong { display: inline-block; padding: 3px 12px; border-radius: 16px; background: var(--soft); color: var(--green); font-size: 15px; font-weight: 700; }
+.step-reset:disabled { opacity: .4; background: transparent; cursor: default; }
 .step-reset { flex: none; display: inline-flex; align-items: center; gap: 4px; min-height: 36px; padding: 4px 8px; border: 0; background: transparent; color: var(--muted); font-size: 13px; }
 .step-results { display: flex; align-items: center; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
 .step-count { flex: none; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
 .chord-filter .quick.results { flex: 1; min-width: 0; flex-wrap: nowrap; margin: 0; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; padding-bottom: 2px; }
 .chord-filter .quick.results button { flex: none; min-height: 40px; }
-.step-empty { margin: 0; color: var(--muted); font-size: 13px; }
 .chord-filter .search { max-width: none; }
 .chord-filter .search input { min-height: 44px; padding-block: 6px; font-size: 16px; }
 .chord-filter .error:empty { min-height: 0; margin: 0; }
@@ -250,14 +244,14 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <section id="chords-panel">
 <h1 class="sr-only">코드 검색</h1>
 <section id="chord-filter" class="chord-filter" aria-label="코드 찾기">
-<div class="find-mode" role="tablist" aria-label="찾는 방법"><button id="mode-name" type="button" role="tab" aria-selected="true" aria-controls="find-name">이름으로 검색</button><button id="mode-steps" type="button" role="tab" aria-selected="false" aria-controls="chord-steps">조건으로 찾기</button></div>
+<div class="find-mode" role="tablist" aria-label="찾는 방법"><button id="mode-name" type="button" role="tab" aria-selected="true" aria-controls="find-name">검색</button><button id="mode-steps" type="button" role="tab" aria-selected="false" aria-controls="chord-steps">필터</button></div>
 <div id="find-name" role="tabpanel" aria-labelledby="mode-name">
 <form id="search" class="search"><label class="sr-only" for="chord-input">코드 이름</label><input id="chord-input" value="C" placeholder="F#m, Bb7, C/G, C6/9" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="48"><button class="primary" type="submit">코드 찾기</button></form>
 <p id="error" class="error" role="alert"></p>
 </div>
 <div id="chord-steps" class="chord-steps" role="tabpanel" aria-labelledby="mode-steps" hidden>
-<div id="step-picked" class="step-picked" hidden><div id="step-tags" class="step-tags"></div><button id="filter-reset" class="step-reset" type="button"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>처음부터</button></div>
-<div id="step-body"></div>
+<div class="step-picked"><p id="step-current" class="step-current"></p><button id="filter-reset" class="step-reset" type="button" disabled><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>처음부터</button></div>
+<div id="step-roots" class="step-grid" role="group" aria-label="기본음"></div>
 <div id="step-results" class="step-results" hidden><span id="filter-status" class="step-count" role="status" aria-live="polite"></span><nav id="quick" class="quick results" aria-label="조건에 맞는 코드"></nav></div>
 </div>
 </section>
@@ -380,55 +374,25 @@ $('tones').replaceChildren(...current.tones.map(t=>{const div=document.createEle
 renderNeck();$('audio-status').textContent='';document.querySelectorAll('#quick button').forEach(b=>b.setAttribute('aria-pressed',String(b.textContent===current.label)));}
 let identifyPlaybackRequest=0;
 if(ready(['chords']))$('search').addEventListener('submit',e=>{e.preventDefault();find($('chord-input').value);});
-// Find by conditions, one step at a time: root → kind → slash bass. Each step can be left open
-// ("선택 안 함"); results show from the first step on, and picked steps fold into removable tags.
+// Filter: pick a root, then any chord on that root from the result row.
 const stepRootOrder=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-const commonKinds=['M','m','7','M7','m7','sus4','sus2','dim'];
-let stepRoot=null,stepKind=null,stepBass=null,allKinds=false;
-const kindText=label=>label==='M7'?'maj7':label;
-function stepButton(text,pressed,onClick,className=''){const b=document.createElement('button');b.type='button';b.textContent=text;b.setAttribute('aria-pressed',String(pressed));if(className)b.className=className;b.addEventListener('click',onClick);return b;}
-function stepSection(label,hint,buttons,grid){
-const section=document.createElement('div');section.className='step';
-const heading=document.createElement('p');heading.className='step-label';heading.textContent=label;
-if(hint){const small=document.createElement('span');small.textContent=hint;heading.append(small);}
-const list=document.createElement('div');list.className=grid?'step-grid':'step-wrap';list.setAttribute('role','group');list.setAttribute('aria-label',label);list.append(...buttons);
-section.append(heading,list);return section;
-}
-function stepResults(){
-if(!stepRoot)return [];
-return chordFilterResults(stepRoot,stepKind||'all',stepKind?(stepBass||'all'):'none');
-}
-function setStep(root,kind,bass){
-stepRoot=root;stepKind=root?kind:null;stepBass=root&&kind?bass:null;
+let stepRoot=null;
+function stepButton(text,pressed,onClick){const b=document.createElement('button');b.type='button';b.textContent=text;b.setAttribute('aria-pressed',String(pressed));b.addEventListener('click',onClick);return b;}
+function stepResults(){return stepRoot?chordFilterResults(stepRoot,'all','none'):[];}
+function setStep(root){
+stepRoot=root;
 const names=stepResults();
 if(names.length&&!(current&&names.includes(current.label))){$('chord-input').value=names[0];find(names[0]);}else renderSteps();
 }
 function renderSteps(){
-const body=$('step-body'),sections=[];
-const rootGrid=()=>stepSection('① 기본음','',stepRootOrder.map(r=>stepButton(r,r===stepRoot,()=>setStep(r,null,null))),true);
-if(!stepRoot)sections.push(rootGrid());
-else if(!stepKind){
-sections.push(rootGrid());
-const kinds=filterKinds.filter(k=>allKinds||commonKinds.includes(k.label));
-const buttons=[stepButton('선택 안 함',true,()=>setStep(stepRoot,null,null),'step-skip'),...kinds.map(k=>stepButton(kindText(k.label),false,()=>setStep(stepRoot,k.label,null)))];
-if(!allKinds)buttons.push(stepButton('더보기',false,()=>{allKinds=true;renderSteps();},'step-more'));
-sections.push(stepSection('② 코드 종류','선택 안 해도 돼요',buttons,false));
-}else{
-const basses=stepRootOrder.filter(n=>filterPc[n]!==filterPc[stepRoot]);
-const buttons=[stepButton('선택 안 함',!stepBass,()=>setStep(stepRoot,stepKind,null),'step-skip'),...basses.map(n=>stepButton('/'+n,n===stepBass,()=>setStep(stepRoot,stepKind,n)))];
-sections.push(stepSection('③ 베이스음','선택 안 해도 돼요',buttons,false));
-}
-body.replaceChildren(...sections);
-// Picked steps that are folded away become tags; × removes that step and the ones after it.
-const tags=[];
-if(stepKind){tags.push(stepButton(stepRoot,false,()=>setStep(null,null,null)),stepButton(kindText(stepKind),false,()=>setStep(stepRoot,null,null)));}
-if(stepBass)tags.push(stepButton('/'+stepBass,false,()=>setStep(stepRoot,stepKind,null)));
-tags.forEach(t=>{t.removeAttribute('aria-pressed');t.setAttribute('aria-label',`${t.textContent} 지우기`);});
-$('step-tags').replaceChildren(...tags);$('step-picked').hidden=!stepRoot;
-const names=stepResults();
+$('step-roots').replaceChildren(...stepRootOrder.map(r=>stepButton(r,r===stepRoot,()=>setStep(r))));
+const names=stepResults(),picked=stepRoot&&current&&names.includes(current.label);
+const label=$('step-current');
+if(picked){const chip=document.createElement('strong');chip.textContent=current.label;label.replaceChildren(chip);}else label.textContent='기본음을 골라 주세요';
+$('filter-reset').disabled=!stepRoot;
 $('step-results').hidden=!stepRoot;
 $('filter-status').textContent=`${names.length}개`;
-$('quick').replaceChildren(...names.map(name=>{const b=stepButton(name,current&&current.label===name,()=>{$('chord-input').value=name;find(name);});return b;}));
+$('quick').replaceChildren(...names.map(name=>stepButton(name,current&&current.label===name,()=>{$('chord-input').value=name;find(name);})));
 const active=$('quick').querySelector('[aria-pressed=true]');if(active)active.scrollIntoView({block:'nearest',inline:'nearest'});
 }
 function setFindMode(steps){
@@ -439,7 +403,7 @@ if(steps)renderSteps();
 if(ready(['chords'])){
 $('mode-name').addEventListener('click',()=>setFindMode(false));
 $('mode-steps').addEventListener('click',()=>setFindMode(true));
-$('filter-reset').addEventListener('click',()=>{allKinds=false;setStep(null,null,null);});
+$('filter-reset').addEventListener('click',()=>setStep(null));
 $('prev').addEventListener('click',()=>{if(voicings.length){position=modIndex(position-1);render();}});$('next').addEventListener('click',()=>{if(voicings.length){position=modIndex(position+1);render();}});}
 function modIndex(n){return(n+voicings.length)%voicings.length;}
 function scheduleChord(ctx,fretsList,at){return scheduleStrum(ctx,fretsList.map((f,i)=>f>=0?tuning[i]+f:null).filter(midi=>midi!==null),at);}
