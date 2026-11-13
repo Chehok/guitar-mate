@@ -1,6 +1,6 @@
 'use strict';
 // Increment when changing any app-shell file so installed copies refresh together.
-const VERSION='v135-headstock-score';
+const VERSION='v136-headstock-neck';
 // Keep the storage namespace so activation also removes pre-rebrand caches.
 const CACHE_PREFIX=`six-strings:${self.registration.scope}:`;
 const CACHE_NAME=CACHE_PREFIX+VERSION;
