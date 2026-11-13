@@ -33,7 +33,8 @@ body { margin:0; background:var(--paper); color:var(--ink); font-family:"Pretend
 button,input { font:inherit; }
 :where(button,input,a):focus-visible { outline:3px solid var(--focus); outline-offset:3px; }
 h1 { margin:0 0 8px; font-size:clamp(24px,3vw,30px); font-weight:700; line-height:1.4; letter-spacing:-.9px; }
-.intro { margin:0 0 24px; color:var(--muted); font-size:14px; line-height:1.7; }
+/* The tab already names the page; the heading stays for screen readers only. */
+.visually-hidden { position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0; }
 .panel { padding:24px; border:1px solid var(--line); border-radius:var(--radius); background:var(--panel); }
 .metronome-layout { display:grid; gap:20px; align-items:center; }
 .metronome-figure { display:block; width:100%; max-width:210px; height:auto; margin:auto; }
@@ -173,8 +174,7 @@ h1 { margin:0 0 8px; font-size:clamp(24px,3vw,30px); font-weight:700; line-heigh
 <div class="wrap">
 <gm-header active="metronome"></gm-header>
 <main>
-<h1>메트로놈</h1>
-<p class="intro">첫 박은 조금 더 강하게 들립니다.</p>
+<h1 class="visually-hidden">메트로놈</h1>
 <section id="metronome-panel" class="panel" aria-label="메트로놈 설정">
 <button class="strum-open" id="strum-open" type="button" aria-haspopup="dialog"><span class="arrows" aria-hidden="true">↓↑</span>스트로크</button>
 <div class="metronome-layout">
