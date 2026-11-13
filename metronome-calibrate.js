@@ -18,9 +18,9 @@
   // The sounds as the app plays them (metronome.html playClick / playChirp): exponential 2 ms rise to
   // the peak, then an exponential fall to 0.0001.
   const SHAPES = {
-    chirp: { hz: CHIRP_HZ, peak: 0.5, fall: 0.038, square: false },
-    accent: { hz: 1320, peak: 0.2, fall: 0.043, square: true },
-    beat: { hz: 880, peak: 0.13, fall: 0.043, square: true },
+    chirp: { hz: CHIRP_HZ, peak: 0.9, fall: 0.038, square: false },
+    accent: { hz: 1320, peak: 0.75, fall: 0.043, square: true },
+    beat: { hz: 880, peak: 0.6, fall: 0.043, square: true },
   };
   function synth(shape, sampleRate, lead) {
     const n = Math.round((lead + 0.06) * sampleRate), out = new Float32Array(n), i0 = Math.round(lead * sampleRate);
