@@ -145,6 +145,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 /* Basses: tuners in one line on a sideways head (nut on the left), string buttons above the keys. */
 .headstock.inline { width: 100%; max-width: var(--head-w); margin: 0 auto; grid-template-rows: 46px auto; column-gap: 0; row-gap: 2px; }
 .headstock.inline .bass-art { grid-column: 1 / -1; grid-row: 2; height: auto; aspect-ratio: var(--head-ratio); }
+.headstock.inline.four-plus-one { grid-template-rows: 46px auto 44px; }
 .headstock.inline button { width: min(44px, 100%); }
 .headstock.inline .guitar-art { display: none; }
 .headstock button { width: 44px; height: 44px; justify-self: center; padding: 0; border: 0; border-radius: 50%; background: transparent; display: grid; place-content: center; }
@@ -163,6 +164,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .mic-sensitivity output { text-align: right; color: var(--ink); font-weight: 600; }
 @media (min-width: 760px) {
   .headstock.inline { grid-template-rows: 50px auto; }
+  .headstock.inline.four-plus-one { grid-template-rows: 50px auto 46px; }
   .tuner-display { --tuner-space: clamp(0px, calc(14svh - 96px), 36px); }
   .tuner-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: center; padding-block: var(--tuner-space); }
   .tuner-gauge { max-width: calc(360px + 2 * var(--tuner-space)); }
@@ -384,8 +386,8 @@ return frequency>=range.min/edgeTolerance&&frequency<=range.max*edgeTolerance?Ma
 // Basses: in one line on a sideways head, lowest string nearest the nut.
 const INSTRUMENTS={
   guitar:{notes:[40,45,50,55,59,64],names:['E2','A2','D3','G3','B3','E4'],layout:[[2,1,1],[1,1,2],[0,1,3],[3,3,1],[4,3,2],[5,3,3]],range:GUITAR_RANGE,widths:[1.9,1.65,1.4,1.2,1,.9]},
-  bass4:{notes:[28,33,38,43],names:['E1','A1','D2','G2'],inline:true,pegWidth:48,range:BASS_RANGE,widths:[2.6,2.3,2,1.7]},
-  bass5:{notes:[23,28,33,38,43],names:['B0','E1','A1','D2','G2'],inline:true,pegWidth:44,range:BASS_RANGE,widths:[2.8,2.5,2.2,1.9,1.6]},
+  bass4:{notes:[28,33,38,43],names:['E1','A1','D2','G2'],inline:true,range:BASS_RANGE,widths:[2.6,2.3,2,1.7]},
+  bass5:{notes:[23,28,33,38,43],names:['B0','E1','A1','D2','G2'],inline:true,range:BASS_RANGE,widths:[2.8,2.5,2.2,1.9,1.6]},
 };
 let instrument='guitar',tunerNotes=INSTRUMENTS.guitar.notes,stringNames=INSTRUMENTS.guitar.names;
 const stringCount=()=>tunerNotes.length;
@@ -464,26 +466,39 @@ stopMicrophone(messages[error.name]||'마이크를 시작하지 못했습니다.
 // Headstock drawing: posts at each peg position (column 1 = left, 3 = right; rows top to bottom),
 // tuner keys at the edges, and strings from each post to its nut slot (lowest string on the left).
 const HEAD_POSTS={1:{1:[40.5,25],2:[38.1,75],3:[46.4,125]},3:{1:[109.5,25],2:[111.9,75],3:[103.6,125]}};
-function pegLayout(spec){return spec.inline?spec.notes.map((_,i)=>[i,2+i,1]):spec.layout;}
-// Sideways bass head: neck and nut on the left, a rounded head, tuner posts in a row with their keys
-// sticking out over the top edge (under the string buttons). Drawn in pixels to match the grid.
-function bassHeadArt(spec){
-const n=spec.notes.length,pw=spec.pegWidth,W=60+n*pw+28,H=78,post=k=>60+pw*k+pw/2,postY=38,slot=k=>36+k*(26/(n-1));
-let s=`<rect x="0" y="32" width="44" height="34" fill="var(--fret)"/>`;
-s+=`<path d="M44 32C51 32 52 24 60 24H${W-30}Q${W-3} 24 ${W-3} 46Q${W-3} 72 ${W-32} 72H74C62 72 56 66 44 66Z" fill="var(--green)" stroke="var(--fret)" stroke-width="1.5"/>`;
-s+=`<path d="M60 30H${W-30}Q${W-9} 30 ${W-9} 46Q${W-9} 66 ${W-32} 66H76" fill="none" stroke="var(--neck)" stroke-opacity=".38"/>`;
-let shafts='',keys='',shine='',strings='',posts='',slots='';
-for(let k=0;k<n;k++){
-const x=post(k);
-shafts+=`M${x} ${postY}V14`;
-keys+=`<rect x="${x-11}" y="1" width="22" height="14" rx="6"/>`;shine+=`M${x-6} 5h12`;
-strings+=`<path d="M0 ${slot(k).toFixed(1)}H44L${x} ${postY+5.5}" stroke-width="${spec.widths[k]}"/>`;
-posts+=`<circle cx="${x}" cy="${postY}" r="6"/>`;slots+=`M${x-3} ${postY}h6`;
+function pegLayout(spec){
+if(!spec.inline)return spec.layout;
+const n=spec.notes.length;
+return spec.notes.map((_,i)=>n===5&&i===4?[i,2,3]:[i,2+i,1]); // 5-string: highest string on the lone tuner below
 }
-s+=`<path d="${shafts}" stroke="var(--fret)" stroke-width="4"/><g fill="var(--fret)">${keys}</g><path d="${shine}" stroke="var(--neck)" stroke-width="1.6" stroke-linecap="round" opacity=".8"/>`;
-s+=`<g fill="none" stroke="var(--neck)" stroke-opacity=".85">${strings}</g><g fill="var(--neck)" stroke="var(--fret)">${posts}</g><path d="${slots}" stroke="var(--fret)" stroke-linecap="round"/>`;
-s+=`<rect x="40" y="31" width="5" height="36" rx="1.5" fill="var(--neck)" stroke="var(--fret)"/>`;
-return {width:W,height:H,markup:s};
+// Sideways bass head (nut on the left), drawn in pixels to match the grid: clover keys over the top
+// edge, slotted posts, a string retainer for the high strings, a truss-rod scoop by the nut, and a
+// lower edge that drops into a belly and sweeps up into a big rounded tip. 5-string: 4+1, with the
+// highest string's tuner under the head next to the nut.
+function bassHeadArt(spec){
+const n=spec.notes.length,five=n===5,pw=46,X=k=>84+pw*k,top=five?4:n;
+const NT=five?42:44,NB=five?78:76,H=five?110:94,W=X(top-1)+62,e=W,postY=36;
+const low=five?94:90,lowX=five?118:112;
+let s=`<rect x="0" y="${NT}" width="52" height="${NB-NT}" fill="var(--fret)"/><line x1="16" x2="16" y1="${NT}" y2="${NB}" stroke="var(--neck)" stroke-opacity=".55" stroke-width="2"/>`;
+s+=`<path d="M52 ${NT}C60 ${NT} 62 25 80 25L${e-60} 21C${e-40} 19 ${e-28} 9 ${e-12} 12C${e+2} 15 ${e+2} 40 ${e-12} 50C${e-26} 59 ${e-60} 58 ${e-96} 66C${e-130} 74 ${lowX+30} ${low} ${lowX} ${low}C${lowX-26} ${low} 68 ${NB+6} 52 ${NB}Z" fill="var(--green)" stroke="var(--fret)" stroke-width="1.5"/>`;
+s+=`<path d="M${e-14} 46C${e-28} 54 ${e-62} 54 ${e-98} 62C${e-132} 70 ${lowX+30} ${low-6} ${lowX} ${low-6}C${lowX-20} ${low-6} 74 ${NB+2} 62 ${NB-2}" fill="none" stroke="var(--neck)" stroke-opacity=".28"/><ellipse cx="66" cy="${NB-8}" rx="7.5" ry="3.6" fill="var(--green-hover)"/>`;
+const key=(x,y,down)=>{const d=down?-1:1;return `<g fill="var(--fret)" stroke="var(--fret)" stroke-width="1"><rect x="${x-2.5}" y="${down?y-16:y+6}" width="5" height="11"/><rect x="${x-4.5}" y="${down?y-9:y+3}" width="9" height="7" rx="2"/><circle cx="${x-6.5}" cy="${y+d}" r="6.3"/><circle cx="${x+6.5}" cy="${y+d}" r="6.3"/><circle cx="${x}" cy="${y-5*d}" r="6"/></g><g fill="var(--neck)" opacity=".55"><circle cx="${x-7.5}" cy="${y}" r="2"/><circle cx="${x+5.5}" cy="${y}" r="2"/><circle cx="${x-1}" cy="${y-6*d}" r="1.8"/></g>`;};
+const post=(x,y)=>`<circle cx="${x}" cy="${y}" r="8" fill="var(--neck)" stroke="var(--fret)" stroke-width="1.5"/><circle cx="${x}" cy="${y}" r="4.2" fill="var(--inlay)" stroke="var(--fret)"/><path d="M${x-3.4} ${y+1.6}L${x+3.4} ${y-1.6}" stroke="var(--fret)" stroke-width="1.6" stroke-linecap="round"/>`;
+let keys='',posts='',strings='';
+for(let k=0;k<top;k++){keys+=key(X(k),10,false);posts+=post(X(k),postY);}
+const bottom=five?{x:X(0),y:72}:null;
+if(bottom){keys+=key(bottom.x,H-10,true);posts+=post(bottom.x,bottom.y);}
+const slot=i=>NT+5+i*((NB-NT-10)/(n-1)),tree={x:(X(1)+X(2))/2,y:48};
+for(let i=0;i<n;i++){
+let path=`M0 ${slot(i).toFixed(1)}H52`;
+if(bottom&&i===n-1)path+=`L${bottom.x-2} ${bottom.y-6}`;
+else{const viaTree=five?i===3:i>=2;path+=viaTree?`L${tree.x} ${tree.y+(i-2.5)*2}L${X(i)-4} ${postY+5}`:`L${X(i)-4} ${postY+6}`;}
+strings+=`<path d="${path}" stroke-width="${spec.widths[i]}"/>`;
+}
+s+=keys+`<g fill="none" stroke="var(--neck)" stroke-opacity=".9" stroke-linejoin="round">${strings}</g>`+posts;
+s+=`<circle cx="${tree.x}" cy="${tree.y}" r="4.5" fill="var(--neck)" stroke="var(--fret)" stroke-width="1.3"/><circle cx="${tree.x}" cy="${tree.y}" r="1.4" fill="var(--fret)"/>`;
+s+=`<rect x="48" y="${NT-1}" width="5" height="${NB-NT+2}" rx="1.5" fill="var(--neck)" stroke="var(--fret)"/>`;
+return {width:W,height:H,markup:s,columns:[61,...Array(top).fill(pw),W-61-top*pw]};
 }
 function headstockParts(spec){
 const n=spec.notes.length,slot=i=>36.9+(113.1-36.9)*(n>1?i/(n-1):.5),keyX={1:14.3,3:135.7},bass=n<6;
@@ -526,10 +541,11 @@ if(spec.inline){
 const art=bassHeadArt(spec);
 // Columns as shares of the drawing's width, so the whole head scales down on narrow phones.
 const pct=v=>(v/art.width*100).toFixed(3)+'%';
-box.style.gridTemplateColumns=`${pct(60)} repeat(${spec.notes.length},${pct(spec.pegWidth)}) ${pct(28)}`;
+box.style.gridTemplateColumns=art.columns.map(pct).join(' ');
+box.classList.toggle('four-plus-one',spec.notes.length===5);
 box.style.setProperty('--head-w',art.width+'px');box.style.setProperty('--head-ratio',`${art.width} / ${art.height}`);
 bassArt.setAttribute('viewBox',`0 0 ${art.width} ${art.height}`);bassArt.innerHTML=art.markup;bassArt.removeAttribute('hidden');
-}else{bassArt.setAttribute('hidden','');box.style.gridTemplateColumns='';$('headstock-parts').innerHTML=headstockParts(spec);}
+}else{bassArt.setAttribute('hidden','');box.style.gridTemplateColumns='';box.classList.remove('four-plus-one');$('headstock-parts').innerHTML=headstockParts(spec);}
 for(const [index,column,row] of pegLayout(spec)){
 const label=spec.names[index],peg=document.createElement('button');peg.type='button';peg.dataset.string=index;
 const note=document.createElement('strong');note.textContent=label[0];peg.append(note);peg.setAttribute('aria-label',`${spec.notes.length-index}번 줄 ${label}`);peg.setAttribute('aria-pressed','false');
