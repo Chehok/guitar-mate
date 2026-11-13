@@ -300,6 +300,8 @@ text: {
   '베이스음': 'Bass note',
   '없음': 'None',
   '종류': 'Type',
+  '입력 방법': 'How to enter',
+  '후보 순서': 'How candidates are ordered',
   '처음부터': 'Start over',
   '조건에 맞는 코드': 'Matching chords',
   // Sheet transposer
