@@ -180,9 +180,12 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
   .identify-hit:hover rect { fill: var(--hit); stroke: var(--green); stroke-width: 2; }
 }
 @media (min-width: 760px) {
-  .chord-results { grid-template-columns: minmax(290px, 1fr) minmax(0, 2fr); }
+  .chord-results { grid-template-columns: minmax(290px, 1fr) minmax(0, 2fr); align-items: stretch; }
+  .chord-results > .panel { display: flex; flex-direction: column; }
+  .voicing-panel #diagram { margin-block: auto; }
+  .fret-panel .scroll { margin-block: auto; padding-top: 20px; }
   .panel { padding: 24px; }
-  .fret-panel { padding: 24px 0 16px; }
+  .fret-panel { padding: 24px 0; }
   .fret-header { padding-inline: 24px; }
 }
 @media (min-width: 760px) and (max-width: 1023px) {

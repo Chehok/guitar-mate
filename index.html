@@ -151,9 +151,15 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .mic-sensitivity input { width: 100%; margin: 0; accent-color: var(--green); }
 .mic-sensitivity output { text-align: right; color: var(--ink); font-weight: 600; }
 @media (min-width: 760px) {
-  .tuner-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: center; }
-  .tuner-gauge { max-width: 360px; }
-  .headstock { grid-template-columns: 58px 162px 58px; grid-template-rows: repeat(3, 54px) 24px; }
+  .tuner-display { --tuner-space: clamp(0px, calc(14svh - 96px), 36px); }
+  .tuner-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: center; padding-block: var(--tuner-space); }
+  .tuner-gauge { max-width: calc(360px + 2 * var(--tuner-space)); }
+  .headstock {
+    --peg-row: calc(54px + .35 * var(--tuner-space));
+    grid-template-columns: 58px calc(3 * var(--peg-row)) 58px;
+    grid-template-rows: repeat(3, var(--peg-row)) calc(4 / 9 * var(--peg-row));
+  }
+  .tuner-mic { padding-top: calc(12px + .35 * var(--tuner-space)); }
 }
 #identify-play { flex: none; padding-inline: 12px; font-size: 13px; white-space: nowrap; }
 #identify-reset { flex: none; }

@@ -161,7 +161,10 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
   .identify-hit:hover rect { fill: var(--hit); stroke: var(--green); stroke-width: 2; }
 }
 @media (min-width: 760px) {
-  .layout { grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); }
+  .layout { grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); align-items: stretch; }
+  .layout > .panel { display: flex; flex-direction: column; }
+  .layout .help { margin-top: auto; }
+  #identify-frets { margin-bottom: 8px; }
   .panel { padding: 24px; }
 }
 @media (min-width: 760px) and (max-width: 1023px) {
