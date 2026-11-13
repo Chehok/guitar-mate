@@ -81,3 +81,6 @@ gm-footer a { color: var(--green); text-underline-offset: 3px; }
   .mode-tabs a { flex: 1 1 auto; padding-inline: 4px; }
   .install-action .badge { display: none; }
 }
+
+/* Tool pages keep their <h1> for screen readers and search only; the active tab already names the page. */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }

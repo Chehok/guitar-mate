@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
-const html=fs.readFileSync('index.html','utf8'),c=vm.createContext({});
+const html=fs.readFileSync('score-key-transposer.html','utf8'),c=vm.createContext({});
 vm.runInContext(html.slice(html.indexOf('// Score music functions:'),html.indexOf('// End score music functions.')),c);
 const dictionary=c.scoreRecognizerDictionary('C\nm\n7\n');
 const steps=[1,1,0,1,2,2,3],classes=dictionary.length,data=new Float32Array(steps.length*classes);

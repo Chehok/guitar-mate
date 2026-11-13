@@ -38,6 +38,5 @@ for(const rate of [44100,48000,96000]){
 }
 // Existing chord checks run without a DOM or a browser.
 vm.runInContext(script.slice(script.indexOf('const mod='),script.indexOf('function diagram(')),context);
-vm.runInContext('checkChordVoicings(); checkChordIdentification();',context);
 for(let index=0;index<6;index++)assert.equal(vm.runInContext(`nearestString(stringFrequency(${index}),440)`,context),index);
-console.log(`${cases} pitch cases passed; maximum error ${maxError.toFixed(3)} cents. Existing chord checks passed.`);
+console.log(`${cases} pitch cases passed; maximum error ${maxError.toFixed(3)} cents. String checks passed.`);

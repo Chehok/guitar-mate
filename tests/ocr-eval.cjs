@@ -1,7 +1,7 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const {evaluate}=require('../scripts/ocr-eval.cjs');
-const html=fs.readFileSync('index.html','utf8'),c=vm.createContext({});
+const html=fs.readFileSync('score-key-transposer.html','utf8'),c=vm.createContext({});
 vm.runInContext(html.slice(html.indexOf('// Score music functions:'),html.indexOf('// End score music functions.')),c);
 const files=fs.readdirSync('tests/fixtures/scores').filter(n=>n.endsWith('.json')).sort();
 assert.equal(files.length,11);

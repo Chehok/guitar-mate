@@ -40,7 +40,7 @@ if(!output||!['development','evaluation','hold'].includes(split))throw Error('Us
 const Tesseract=require('tesseract.js');
 if(require('tesseract.js/package.json').version!=='5.1.1')throw Error('Use tesseract.js@5.1.1');
 const splitFile=fs.readFileSync(path.join(labelRoot,'split.json'));
-const appFile=process.env.OCR_APP_HTML||path.join(__dirname,'../index.html');
+const appFile=process.env.OCR_APP_HTML||path.join(__dirname,'../score-key-transposer.html');
 fs.mkdirSync(output,{recursive:true});
 const identity={split,splitSHA256:crypto.createHash('sha256').update(splitFile).digest('hex'),appSHA256:crypto.createHash('sha256').update(fs.readFileSync(appFile)).digest('hex'),tesseract:'5.1.1',langSHA256:crypto.createHash('sha256').update(fs.readFileSync(path.join(process.env.OCR_LANG_PATH,'eng.traineddata'))).digest('hex')};
 if(process.env.OCR_REGION_MODEL){
