@@ -182,21 +182,24 @@ assert(paint.find(p=>p[0]==='text')[3]<200,'Above mode draws above original chor
   click('score-capo-plus');assert.deepEqual(state(),[1,0]);assert.equal(shown('G'),'F#');
   click('score-capo-minus');assert.deepEqual(state(),[0,0]);click('score-capo-minus');assert.deepEqual(state(),[0,1]);
   $('score-frets').children[2].handlers.click();assert.deepEqual(state(),[3,1],'a fret keeps the song key change');
-  assert.equal($('score-capo-value').textContent,'카포 3');
+  assert.equal($('score-capo-value').textContent,'카포 3 · −1키');
   click('score-capo-minus');click('score-capo-minus');click('score-capo-minus');click('score-capo-minus');assert.deepEqual(state(),[0,2]);
-  // The sheet −/+ are the neck −/+: same state, same steps, same labels
+  // The sheet −/+ move the drawn key down/up; down uses the capo first, up takes it off first.
   vm.runInContext("scoreState.capo=0;scoreState.keyShift=0;",context);context.renderScore();
   assert.equal($('score-shift-value').textContent,'G (원래 키)');assert($('score-shift-reset').disabled&&$('score-capo-reset').disabled,'reset stays in place, disabled at the original key');
-  click('score-shift-up');assert.deepEqual(state(),[1,0],'sheet + puts the capo on, like the neck +');assert.equal(shown('G'),'F#');
+  click('score-shift-down');assert.deepEqual(state(),[1,0],'sheet − puts the capo on');assert.equal(shown('G'),'F#');
   assert.equal($('score-shift-value').textContent,'G → F#');assert.equal($('score-capo-value').textContent,'카포 1');
   assert.equal(vm.runInContext("scoreKeyStampText({pc:7,minor:false,name:'G'})",context),'F#폼 (Capo 1) / G키');
-  click('score-shift-down');click('score-shift-down');assert.deepEqual(state(),[0,1],'sheet − takes the capo off, then lowers the key');
-  assert.equal($('score-shift-value').textContent,'G → F#');assert.equal($('score-capo-value').textContent,'카포 X · −1키');
-  click('score-capo-plus');assert.deepEqual(state(),[0,0]);click('score-capo-plus');click('score-capo-plus');
-  assert.equal($('score-shift-value').textContent,'G → F','neck + moves the sheet label too');
+  click('score-shift-up');assert.deepEqual(state(),[0,0],'sheet + takes the capo off');assert.equal(shown('G'),'G');
+  click('score-shift-up');assert.deepEqual(state(),[0,-1],'sheet + then raises the key');assert.equal(shown('G'),'Ab');
+  assert.equal($('score-shift-value').textContent,'G → Ab');assert.equal($('score-capo-value').textContent,'카포 X · +1키');
+  click('score-shift-down');assert.deepEqual(state(),[0,0]);
+  click('score-capo-minus');click('score-shift-down');assert.deepEqual(state(),[0,2],'after the neck lowered the key, sheet − keeps lowering it');
+  assert.equal($('score-shift-value').textContent,'G → F');
   assert(!$('score-capo-reset').disabled&&!$('score-shift-reset').disabled);
   click('score-shift-reset');assert.deepEqual(state(),[0,0]);
-  for(let i=0;i<20;i++)click('score-shift-up');assert.deepEqual(state(),[11,0]);assert($('score-shift-up').disabled&&$('score-capo-plus').disabled);
+  for(let i=0;i<20;i++)click('score-shift-down');assert.deepEqual(state(),[11,0]);assert($('score-shift-down').disabled&&$('score-capo-plus').disabled);
+  click('score-capo-reset');for(let i=0;i<20;i++)click('score-shift-up');assert.deepEqual(state(),[0,-11]);assert($('score-shift-up').disabled);
   click('score-capo-reset');assert.deepEqual(state(),[0,0]);
   vm.runInContext("scoreState.capo=1;scoreState.keyShift=0;",context);
 }

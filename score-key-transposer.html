@@ -1497,7 +1497,8 @@ const {capo,keyShift}=scoreState,keyName=k=>k?k.name:'미정';
 $('score-result-key').textContent=keyShift&&capo?`카포 ${capo} · 소리의 키 ${keyName(key)} → ${keyName(sound)} · 코드 모양의 키 ${keyName(destination)}`
   :keyShift?`카포 없음 · 소리의 키 ${keyName(key)} → ${keyName(sound)}`
   :capo?`카포 ${capo} · 원래 키 ${keyName(key)} 유지 · 코드 모양의 키 ${keyName(destination)}`:'카포 없이 키를 낮추려면 −를 누르세요.';
-$('score-capo-value').textContent=capo?'카포 '+capo:keyShift<0?`카포 X · −${-keyShift}키`:'카포 없음';
+const keyStep=keyShift?` · ${keyShift>0?'+':'−'}${Math.abs(keyShift)}키`:'';
+$('score-capo-value').textContent=capo?'카포 '+capo+keyStep:keyShift?'카포 X'+keyStep:'카포 없음';
 $('score-capo-minus').disabled=capo===0&&keyShift===-11;$('score-capo-plus').disabled=capo===11;
 for(const [i,button] of [...$('score-frets').children].entries())button.setAttribute('aria-pressed',String(i+1===capo));
 // Sheet-side key control (same state as the neck's "−" below capo 0)
@@ -1506,7 +1507,7 @@ const drawn=keyShift-capo,step=`${drawn>0?'+':'−'}${Math.abs(drawn)}`;
 // Only the drawn key here; the capo shows on the neck.
 $('score-shift-value').textContent=!drawn?(key?`${key.name} (원래 키)`:'원래 키')
   :key?`${key.name} → ${destination.name}`:`${step}키`;
-$('score-shift-down').disabled=$('score-capo-minus').disabled;$('score-shift-up').disabled=$('score-capo-plus').disabled;
+$('score-shift-down').disabled=keyShift===-11||keyShift===0&&capo===11;$('score-shift-up').disabled=capo===0&&keyShift===11;
 $('score-shift-reset').disabled=$('score-capo-reset').disabled=!(keyShift||capo);
 if(!scoreState.image)return;
 $('score-stage').classList.toggle('adding',scoreState.adding);
@@ -1746,10 +1747,11 @@ const scoreKeyDown=()=>{if(scoreState.capo>0)scoreState.capo--;else scoreState.k
 $('score-capo-minus').addEventListener('click',scoreKeyDown);
 const scoreKeyUp=()=>{if(!scoreState.capo&&scoreState.keyShift<0)scoreState.keyShift++;else scoreState.capo=Math.min(11,scoreState.capo+1);renderScore();};
 $('score-capo-plus').addEventListener('click',scoreKeyUp);
-// Sheet −/+ move the drawn chords a semitone; the capo stays where it is.
-// The sheet's −/+ are the same controls as the neck's −/+, just closer to the sheet.
-$('score-shift-down').addEventListener('click',scoreKeyDown);
-$('score-shift-up').addEventListener('click',scoreKeyUp);
+// Sheet −/+ move the drawn chords down/up a semitone, sharing state with the neck.
+// Down puts a capo on so the sound stays (G → F# with capo 1); once the key itself was moved it keeps moving it.
+// Up takes the capo off first, then raises the key.
+$('score-shift-down').addEventListener('click',()=>{const st=scoreState;if(st.keyShift>0)st.keyShift--;else if(st.keyShift<0)st.keyShift=Math.max(-11,st.keyShift-1);else st.capo=Math.min(11,st.capo+1);renderScore();});
+$('score-shift-up').addEventListener('click',()=>{const st=scoreState;if(st.capo>0)st.capo--;else st.keyShift=Math.min(11,st.keyShift+1);renderScore();});
 const resetScoreKey=()=>{scoreState.keyShift=0;scoreState.capo=0;renderScore();};
 $('score-shift-reset').addEventListener('click',resetScoreKey);
 $('score-capo-reset').addEventListener('click',resetScoreKey);
