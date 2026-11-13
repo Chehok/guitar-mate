@@ -191,6 +191,22 @@ assert(paint.find(p=>p[0]==='text')[3]<200,'Above mode draws above original chor
   assert.deepEqual(JSON.parse(vm.runInContext('JSON.stringify(scoreListenChords())',context)),['C','G','Am','F']);
   context.renderScore();assert.equal($('score-listen').disabled,false);
   vm.runInContext("scoreState.codes=[];",context);context.renderScore();assert.equal($('score-listen').disabled,true,'nothing to play without chords');
+  // 운지표: the sheet's lines, chords as drawn, each with a fingering.
+  vm.runInContext("scoreState.capo=2;scoreState.keyShift=0;scoreState.codes=[{text:'A',bbox:{x0:300,y0:102,x1:330,y1:118}},{text:'D',bbox:{x0:40,y0:100,x1:70,y1:120}},{text:'G',bbox:{x0:40,y0:300,x1:70,y1:320}},{text:'Bm',bbox:{x0:500,y0:98,x1:540,y1:121}}];",context);
+  assert.deepEqual(JSON.parse(vm.runInContext('JSON.stringify(scoreChartRows())',context)),[['C','G','Am'],['F']],'lines kept, shapes with the capo');
+  {
+    const chart=vm.runInContext("chartSvg(scoreChartRows(),4,CHART_LIGHT,'C폼 (Capo 2) / D키')",context);
+    assert.equal(chart.width,12*2+4*96);
+    assert(/<svg[^>]*role="img"[^>]*aria-label="운지표: C, G, Am, F"/.test(chart.markup));
+    assert(/>Am<\/text>/.test(chart.markup)&&/>C폼 \(Capo 2\) \/ D키</.test(chart.markup));
+    assert(!/var\(--/.test(chart.markup),'the PNG copy carries real colours');
+    assert.equal((chart.markup.match(/<circle /g)||[]).length>=6,true,'dots drawn for the fingerings');
+  }
+  vm.runInContext('setScoreMode(true)',context);
+  assert.equal($('score-chart').hidden,false);assert.equal($('score-add').hidden,true);assert.equal($('score-edit-hint').hidden,true);
+  assert.match($('score-chart').innerHTML,/운지표: C, G, Am, F/);
+  vm.runInContext('setScoreMode(false)',context);
+  assert.equal($('score-chart').hidden,true);assert.equal($('score-add').hidden,false);
   // The key is set in one place only: the neck under the sheet.
   assert(!/id="score-shift-/.test(html),'no second key control on the sheet');
   vm.runInContext("scoreState.capo=1;scoreState.keyShift=0;",context);

@@ -257,7 +257,7 @@ button,input { font:inherit; }
 <p class="hint" id="sync-offset-hint">내 소리가 다른 폰보다 늦게 들리면 빠르게 쪽으로, 일찍 들리면 느리게 쪽으로 옮기세요. 블루투스 이어폰은 많이 빠르게 해야 할 수 있어요. 이 기기에 저장돼요.</p>
 <div class="sync-auto" id="sync-auto" hidden>
 <button id="sync-calibrate" class="btn wide" type="button"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span id="sync-calibrate-label">자동 맞추기</span></button>
-<p class="hint" id="sync-match-text" role="status" aria-live="polite">어긋나게 들리면 리더 폰 가까이에서 자동 맞추기를 눌러 보세요. 4초 동안 마이크로 듣고 내 소리 타이밍을 맞춰요.</p>
+<p class="hint" id="sync-match-text" role="status" aria-live="polite">어긋나게 들리면 리더 폰 가까이에서 자동 맞추기를 눌러 보세요. 6초 동안 마이크로 듣고 내 소리 타이밍을 맞춰요.</p>
 </div>
 </div>
 </div>
@@ -338,17 +338,22 @@ function paintPendulum(){
   pendulum.setAttribute('transform',`rotate(${27*direction*Math.sin(Math.PI*phase)} 126 178)`);
 }
 // Auto match: while listening, my clicks become 2 kHz chirps half a beat later (see metronome-calibrate.js).
-let calibrating=null,lastCalibration=null;
+let calibrating=null,lastCalibration=null,lastRecording=null,autoWait=false,autoWaitTimer=null;
+// Clicks play near full scale (peaks below 1, so nothing clips): the phone's own volume buttons decide
+// how loud they are, and the mic can hear them for auto match. Shapes are shared with the auto-match
+// analysis (metronome-calibrate.js SHAPES).
 function playChirp(time){
   const oscillator=audioContext.createOscillator(),gain=audioContext.createGain();
   oscillator.type='sine';oscillator.frequency.setValueAtTime(window.metronomeCalibrate.CHIRP_HZ,time);
-  gain.gain.setValueAtTime(.0001,time);gain.gain.exponentialRampToValueAtTime(.35,time+.002);gain.gain.exponentialRampToValueAtTime(.0001,time+.04);
+  const shape=window.metronomeCalibrate.SHAPES.chirp;
+  gain.gain.setValueAtTime(.0001,time);gain.gain.exponentialRampToValueAtTime(shape.peak,time+.002);gain.gain.exponentialRampToValueAtTime(.0001,time+.002+shape.fall);
   oscillator.connect(gain);gain.connect(audioContext.destination);sources.add(oscillator);oscillator.onended=()=>sources.delete(oscillator);oscillator.start(time);oscillator.stop(time+.045);
 }
 function playClick(time,beat){
   const oscillator=audioContext.createOscillator(),gain=audioContext.createGain();
-  oscillator.type='square';oscillator.frequency.setValueAtTime(beat===0?1320:880,time);
-  gain.gain.setValueAtTime(.0001,time);gain.gain.exponentialRampToValueAtTime(beat===0?.2:.13,time+.002);gain.gain.exponentialRampToValueAtTime(.0001,time+.045);
+  const shape=window.metronomeCalibrate.SHAPES[beat===0?'accent':'beat'];
+  oscillator.type='square';oscillator.frequency.setValueAtTime(shape.hz,time);
+  gain.gain.setValueAtTime(.0001,time);gain.gain.exponentialRampToValueAtTime(shape.peak,time+.002);gain.gain.exponentialRampToValueAtTime(.0001,time+.002+shape.fall);
   oscillator.connect(gain);gain.connect(audioContext.destination);sources.add(oscillator);oscillator.onended=()=>sources.delete(oscillator);oscillator.start(time);oscillator.stop(time+.05);
 }
 let lastResumeTry=0;
@@ -369,7 +374,7 @@ function schedule(){
       if(time>=now+.12)break;
       const beat=sync.beatInBar(nextK),interval=sync.intervalMs(grid.bpm)/1000;
       if(time>=now-.005){
-        if(calibrating){calibrating.beatTimes.push(time);calibrating.ownTimes.push(time+interval/2);playChirp(time+interval/2);}
+        if(calibrating){calibrating.beatTimes.push(time);calibrating.beatKinds.push(beat);calibrating.ownTimes.push(time+interval/2);playChirp(time+interval/2);}
         else playClick(time,beat);
         scheduledBeats.push({time,beat,interval});
       }
@@ -413,7 +418,10 @@ async function ensureAudio(){
 }
 function renderButtons(){
   const following=role==='follower';
-  $('sync-auto').hidden=!(following&&running&&grid);
+  // Shown whenever I'm in a room as a follower; pressed before the leader starts, it waits.
+  $('sync-auto').hidden=!(following&&joined);
+  if(!(following&&joined)&&autoWait)cancelAutoWait();
+  if(autoWait&&following&&running&&grid&&!calibrating){autoWait=false;clearTimeout(autoWaitTimer);autoWaitTimer=setTimeout(autoMatch,1500);} // a beat or two to settle first
   $('sync-tune').hidden=!(role==='leader'||following&&joined);
   if(following){
     // Followers join from here too, so the main button is never a dead end.
@@ -739,32 +747,94 @@ function applyRoomState(state){
   if(!running)startLoop();
 }
 const calibrateButton=$('sync-calibrate'),calibrateLabel=$('sync-calibrate-label');
+const AUTO_HINT='어긋나게 들리면 리더 폰 가까이에서 자동 맞추기를 눌러 보세요. 6초 동안 마이크로 듣고 내 소리 타이밍을 맞춰요.';
+function cancelAutoWait(){
+  autoWait=false;clearTimeout(autoWaitTimer);
+  calibrateLabel.textContent='자동 맞추기';$('sync-match-text').textContent=AUTO_HINT;
+}
+// The output path's own latency as the browser reports it (null where unsupported).
+function reportedLatency(){
+  const out=audioContext?.outputLatency;
+  return Number.isFinite(out)?out+(audioContext.baseLatency||0):null;
+}
+const wait=ms=>new Promise(done=>setTimeout(done,ms));
+calibrateButton.addEventListener('click',async()=>{
+  if(calibrating)return;
+  if(autoWait){cancelAutoWait();return;}
+  if(role==='follower'&&running&&grid&&audioContext){autoMatch();return;}
+  // The leader hasn't started yet: ask for the mic now (while the tap counts as a gesture), let it go
+  // again, and wait; listening starts as soon as the beat comes in.
+  try{await ensureAudio();}catch(_){}
+  if(navigator.mediaDevices?.getUserMedia){
+    calibrateButton.disabled=true;calibrateLabel.textContent='마이크 확인 중…';
+    try{
+      const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+      stream.getTracks().forEach(track=>track.stop());
+    }catch(error){
+      calibrateButton.disabled=false;calibrateLabel.textContent='자동 맞추기';
+      $('sync-match-text').textContent=error&&error.name==='NotAllowedError'?'마이크 권한이 필요해요. 브라우저 설정에서 마이크를 허용해 주세요.':'마이크를 시작하지 못했어요. 다시 해 보세요.';
+      return;
+    }finally{window.metronomeAudio.setAudioSession('playback');}
+    calibrateButton.disabled=false;
+    if(role==='follower'&&running&&grid&&audioContext){autoMatch();return;} // the leader started meanwhile
+  }
+  autoWait=true;
+  calibrateLabel.textContent='리더 시작 기다리는 중… (누르면 취소)';
+  $('sync-match-text').textContent='리더가 메트로놈을 시작하면 바로 들을게요. 리더 폰 가까이에 있어 주세요.';
+  renderButtons();
+});
 async function autoMatch(){
   if(!(role==='follower'&&running&&grid&&audioContext)||calibrating)return;
   const text=$('sync-match-text');
-  if(!(navigator.mediaDevices?.getUserMedia&&window.AudioWorkletNode)){text.textContent='이 브라우저에서는 자동 맞추기를 쓸 수 없어요. 내 소리 타이밍을 직접 조절해 주세요.';return;}
+  if(!(navigator.mediaDevices?.getUserMedia&&window.AudioWorkletNode)){text.textContent='이 브라우저에서는 자동 맞추기를 쓸 수 없어요. 내 소리 타이밍을 직접 조절해 주세요.';calibrateLabel.textContent='자동 맞추기';return;}
   calibrateButton.disabled=true;calibrateLabel.textContent='듣는 중…';
-  text.textContent='리더 폰 소리를 듣는 중이에요… 4초만 조용히 해 주세요.';
+  text.textContent='리더 폰 소리를 듣는 중이에요… 6초만 조용히 해 주세요.';
   window.metronomeAudio.setAudioSession('play-and-record');
   let mic=null;
   try{
     mic=await window.metronomeCalibrate.openMic(audioContext);
     if(audioContext.state!=='running')await window.metronomeAudio.resume(audioContext);
+    // Opening the mic switches the phone's audio route; give it a moment before timing anything.
+    await wait(800);
+    if(audioContext.state!=='running')await window.metronomeAudio.resume(audioContext);
     const interval=sync.intervalMs(grid.bpm)/1000;
-    calibrating={beatTimes:[],ownTimes:[]};
-    await new Promise(done=>setTimeout(done,Math.max(4000,interval*7000)+400));
+    // Opening the mic can move the phone onto a different (often slower) audio path. Note the latency
+    // the browser reports while recording, to correct for it once the normal path is back.
+    const recLatency=[];
+    const latencyTimer=setInterval(()=>{const v=reportedLatency();if(v!==null)recLatency.push(v);},250);
+    calibrating={beatTimes:[],beatKinds:[],ownTimes:[]};
+    await wait(Math.max(6000,interval*10000)+400); // at least ~10 beats, more at slow tempos
     const data=calibrating;calibrating=null;
-    await new Promise(done=>setTimeout(done,Math.min(600,interval*1000)+300)); // let the last chirps be heard
+    await wait(Math.min(600,interval*1000)+300); // let the last chirps be heard
+    clearInterval(latencyTimer);
     const recording=mic.take();
-    const result=recording?window.metronomeCalibrate.analyze({...recording,...data,interval}):{ok:false,reason:'own'};
+    mic.close();mic=null;
+    window.metronomeAudio.setAudioSession('playback');
+    let level=0;if(recording){const x=recording.samples;for(let i=0;i<x.length;i+=8)level=Math.max(level,Math.abs(x[i]));}
+    const result=!recording||level<1e-4?{ok:false,reason:'silent',level}:window.metronomeCalibrate.analyze({...recording,...data,interval});
+    result.level=level;
+    lastRecording=recording?{...recording,...data,interval,result,recLatency:[...recLatency],offsetBefore:offsetMs,ua:navigator.userAgent,at:new Date().toISOString()}:null;
+    if(result.ok&&recLatency.length){
+      await wait(800); // the normal path settles
+      const play=[];for(let i=0;i<4;i++){const v=reportedLatency();if(v!==null)play.push(v);await wait(80);}
+      const mid=list=>[...list].sort((a,b)=>a-b)[list.length>>1];
+      if(play.length){
+        const shift=mid(recLatency)-mid(play);
+        // Trust only a plausible difference; a wild reading is ignored rather than applied.
+        if(Math.abs(shift)<0.12){result.pathShift=shift;result.delta+=shift;}
+      }
+    }
+    clock.reset();
     lastCalibration=result;
     if(result.ok){
-      text.textContent=applyMatch(result.delta*1000);
+      text.textContent=applyMatch(result.delta*1000)+` (${result.heard}/${result.total}박 확인)`;
     }else{
+      const of=(n)=>`${n||0}/${result.total||0}박`;
       text.textContent={
-        own:'내 폰 소리를 마이크로 듣지 못했어요. 음량을 올리고 다시 해 보세요.',
-        leader:'리더 폰 소리가 들리지 않았어요. 리더 폰 가까이에서 다시 해 보세요.',
-        noisy:'주변 소리 때문에 잘 들리지 않았어요. 조용한 곳에서 다시 해 보세요.',
+        silent:'마이크로 아무 소리도 들어오지 않았어요. 다른 앱이 마이크를 쓰고 있지 않은지 확인하고 다시 해 보세요.',
+        own:`내 폰 소리가 마이크에 잘 안 잡혔어요(${of(result.ownHeard)}). 이어폰은 빼고, 이 폰 음량을 올려 다시 해 보세요.`,
+        leader:`리더 폰 소리가 잘 안 들렸어요(${of(result.leaderHeard)}). 리더 폰 음량을 올리고, 가까이에서 다시 해 보세요.`,
+        noisy:`박마다 들린 시간이 들쭉날쭉했어요(${of(result.leaderHeard)}). 조용한 곳에서 다시 해 보세요.`,
       }[result.reason]||'다시 해 보세요.';
     }
   }catch(error){
@@ -777,7 +847,6 @@ async function autoMatch(){
     calibrateButton.disabled=false;calibrateLabel.textContent='자동 맞추기';
   }
 }
-calibrateButton.addEventListener('click',autoMatch);
 
 function applyMatch(deltaMs){
   const before=offsetMs;
@@ -869,6 +938,17 @@ renderButtons();
 if(new URLSearchParams(location.search).has('debug')){
   const debug=document.createElement('pre');debug.className='sync-debug';debug.setAttribute('translate','no');
   document.querySelector('.sync-panel').append(debug);
+  // Debug only: save the last auto-match recording (mic samples + timing) to look at offline.
+  const save=document.createElement('button');save.type='button';save.className='btn';save.textContent='자동 맞추기 녹음 저장';
+  save.addEventListener('click',()=>{
+    if(!lastRecording){debug.dataset.note='저장할 녹음이 없어요. 자동 맞추기를 먼저 해 주세요.';return;}
+    const x=lastRecording.samples,pcm=new Int16Array(x.length);for(let i=0;i<x.length;i++)pcm[i]=Math.max(-32768,Math.min(32767,Math.round(x[i]*32767)));
+    let bin='';const bytes=new Uint8Array(pcm.buffer);for(let i=0;i<bytes.length;i+=0x8000)bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));
+    const {samples,...meta}=lastRecording;
+    const blob=new Blob([JSON.stringify({...meta,pcm16:btoa(bin)})],{type:'application/json'});
+    const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=`gm-automatch-${Date.now()}.json`;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);
+  });
+  document.querySelector('.sync-panel').append(save);
   setInterval(()=>{
     const c=audioContext;
     debug.textContent=[

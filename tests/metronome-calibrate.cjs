@@ -79,4 +79,13 @@ for (const delta of [-0.24, -0.27]) {
 const silent = record({}); silent.samples.fill(0);
 assert.equal(analyze(silent).ok, false);
 
+// Rooms closer to real phones: speaker roll-off, reverb, other phones clicking nearby, AGC.
+{
+  const sim = require('./support/room-sim.cjs');
+  for (const sc of sim.scenarios) {
+    const r = analyze(sim.record(sc));
+    assert(r.ok, `${sc.name}: not ok (${r.reason})`);
+    close(r.delta, sc.delta, 0.004, `room: ${sc.name}`);
+  }
+}
 console.log(`Metronome auto match: ${cases.length} synthetic rooms within 3 ms; missing sounds reported.`);

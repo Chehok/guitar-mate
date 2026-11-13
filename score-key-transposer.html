@@ -187,6 +187,12 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 }
 .score-top-row { flex-basis:100%; flex-wrap:nowrap; justify-content:space-between; gap:8px; }
 .score-top-row p { margin:0; font-size:15px; font-weight:650; }
+.score-mode-row { flex-basis:100%; }
+.score-mode { display:grid; width:100%; }
+@media (min-width:760px) { .score-mode { width:240px; } }
+.score-chart { margin:16px 0; padding:8px 4px; border:1px solid var(--line); border-radius:10px; background:var(--panel); }
+.score-chart svg { display:block; width:100%; height:auto; margin:0 auto; }
+.score-chart .empty { margin:24px 12px; color:var(--muted); text-align:center; }
 .score-view-row { flex-basis:100%; flex-wrap:nowrap; justify-content:space-between; gap:8px; }
 .score-view { display:inline-grid; grid-auto-flow:column; grid-auto-columns:1fr; padding:3px; border-radius:12px; background:var(--soft); }
 #score-panel .score-view label { justify-content:center; min-width:52px; min-height:36px; padding:4px 10px; border-radius:9px; color:var(--muted); font-size:14px; font-weight:650; cursor:pointer; }
@@ -344,12 +350,14 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <div id="score-work" hidden>
 <div class="panel score-controls">
 <div class="score-preview-tools">
+<div class="score-row score-mode-row"><div class="score-view score-mode" role="radiogroup" aria-label="보기"><label><input type="radio" name="score-page" value="sheet" checked><span>악보</span></label><label><input type="radio" name="score-page" value="chart"><span>운지표</span></label></div></div>
 <div class="score-row score-top-row"><p id="score-key" role="status">감지 키: —</p><button id="score-reselect" class="score-reselect" type="button"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>다른 악보</button></div>
-<div class="score-row score-view-row"><div class="score-view" role="radiogroup" aria-label="코드 표시"><label><input type="radio" name="score-overlay" value="replace" checked><span>교체</span></label><label><input type="radio" name="score-overlay" value="above"><span>위에</span></label><label><input type="radio" name="score-overlay" value="original"><span>원본</span></label></div><label class="score-chip"><input id="score-key-stamp" type="checkbox" checked> 키 표시</label></div>
+<div id="score-view-row" class="score-row score-view-row"><div class="score-view" role="radiogroup" aria-label="코드 표시"><label><input type="radio" name="score-overlay" value="replace" checked><span>교체</span></label><label><input type="radio" name="score-overlay" value="above"><span>위에</span></label><label><input type="radio" name="score-overlay" value="original"><span>원본</span></label></div><label class="score-chip"><input id="score-key-stamp" type="checkbox" checked> 키 표시</label></div>
 <div class="score-row score-preview-actions"><button id="score-add" type="button">코드 직접 추가</button><button id="score-intro-open" type="button" aria-haspopup="dialog" data-i18n-en="Intros" hidden>추천 전주</button><button id="score-download" type="button" class="primary">PNG 다운로드</button></div>
 </div>
 <div id="score-manual-position" tabindex="-1" hidden><p id="score-position-hint" class="hint"></p><div class="score-row"><label>가로 % <input id="score-pos-x" type="number" min="0" max="100" value="10" style="width:80px"></label><label>세로 % <input id="score-pos-y" type="number" min="0" max="100" value="10" style="width:80px"></label><button id="score-position-add" type="button">이 위치에 추가</button></div></div>
-<div class="score-preview-scroll"><div id="score-stage" class="score-stage"><canvas id="score-canvas" aria-label="변환한 악보. 아래 코드 목록에서 인식 결과를 수정할 수 있습니다."></canvas><div id="score-hit-layer"></div></div></div>
+<div id="score-preview-scroll" class="score-preview-scroll"><div id="score-stage" class="score-stage"><canvas id="score-canvas" aria-label="변환한 악보. 아래 코드 목록에서 인식 결과를 수정할 수 있습니다."></canvas><div id="score-hit-layer"></div></div></div>
+<div id="score-chart" class="score-chart" hidden></div>
 <p id="score-work-status" class="hint score-work-status" role="status" aria-live="polite"></p>
 <p id="score-edit-hint" class="hint">악보 위의 코드를 눌러 수정하세요. 직접 추가한 코드와 전주는 끌어서 옮길 수 있어요. 아래 목록에서도 편집할 수 있어요.<br><span id="score-size"></span></p>
 </div>
@@ -1180,7 +1188,7 @@ return true;
 // End score music functions.
 
 // Score editor: images and OCR results stay in memory on this device.
-const scoreState={showKey:true,introTempo:100,introMeter:'4/4',image:null,codes:[],capo:0,keyShift:0,overlay:'replace',original:false,busy:false,adding:false,intro:null,drag:null,editIndex:null,pending:null,run:0};
+const scoreState={chart:false,showKey:true,introTempo:100,introMeter:'4/4',image:null,codes:[],capo:0,keyShift:0,overlay:'replace',original:false,busy:false,adding:false,intro:null,drag:null,editIndex:null,pending:null,run:0};
 let scoreIntroPlayback=null;
 let scoreLibraryPromise=null,scoreRuntimePromise=null;
 function scoreStatus(message){$('score-status').textContent=message;$('score-work-status').textContent=message;}
@@ -1402,14 +1410,80 @@ confirmPlayback(ctx,()=>scoreIntroPlayback===playback,fail);
 }
 // The sheet's chords in reading order: lines top to bottom (a chord joins a line when its centre
 // sits within that line's height), then left to right.
-function scoreReadingOrder(codes){
+function scoreReadingRows(codes){
 const rows=[];
 for(const code of [...codes].filter(c=>c.text&&c.bbox).sort((a,b)=>a.bbox.y0-b.bbox.y0)){
 const cy=(code.bbox.y0+code.bbox.y1)/2,h=Math.max(1,code.bbox.y1-code.bbox.y0);
 const row=rows.find(r=>Math.abs(r.cy-cy)<Math.max(r.h,h)*.6);
 if(row)row.codes.push(code);else rows.push({cy,h,codes:[code]});
 }
-return rows.flatMap(row=>row.codes.sort((a,b)=>a.bbox.x0-b.bbox.x0)).map(code=>code.text);
+return rows.map(row=>row.codes.sort((a,b)=>a.bbox.x0-b.bbox.x0).map(code=>code.text));
+}
+function scoreReadingOrder(codes){return scoreReadingRows(codes).flat();}
+// 운지표: the sheet's chords as drawn (key and capo applied), each with its fingering, in the
+// sheet's line order. One SVG serves the screen (theme colours) and the PNG (fixed light colours).
+const CHART_LIGHT={ink:'#203a33',muted:'#596b62',green:'#245b47',onGreen:'#fffef9',fret:'#72816e',string:'#71816d',panel:'#fffef9',line:'#d9dfd3'};
+const CHART_THEME={ink:'var(--ink)',muted:'var(--muted)',green:'var(--green)',onGreen:'var(--on-green)',fret:'var(--fret)',string:'var(--string)',panel:'var(--panel)',line:'var(--line)'};
+const chartVoicings=new Map();
+function chartVoicing(text){
+if(!chartVoicings.has(text)){let v=null;try{v=makeVoicings(parse(text))[0]||null;}catch(_){}chartVoicings.set(text,v);}
+return chartVoicings.get(text);
+}
+function scoreChartRows(){
+const key=detectScoreKey(scoreState.codes);
+return scoreReadingRows(scoreState.codes).map(row=>row.map(text=>transformedScoreChord(text,key)).filter(Boolean)).filter(row=>row.length);
+}
+const escapeSvg=text=>String(text).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function chartCell(text,ox,oy,C){
+const W=96,v=chartVoicing(text);
+let s=`<text x="${ox+W/2}" y="${oy+20}" text-anchor="middle" font-size="${text.length>6?13:16}" font-weight="700" fill="${C.ink}">${escapeSvg(text)}</text>`;
+if(!v)return s+`<text x="${ox+W/2}" y="${oy+70}" text-anchor="middle" font-size="11" fill="${C.muted}">운지 없음</text>`;
+const f=v.frets,positive=f.filter(n=>n>0),max=positive.length?Math.max(...positive):0,base=max<=5?1:Math.min(...positive);
+const gx=ox+20,gy=oy+44,sx=11,fy=11,rows=5,x=i=>gx+i*sx,y=n=>gy+(n-base+.5)*fy;
+if(base>1)s+=`<text x="${gx-8}" y="${gy+fy*.5+3.5}" text-anchor="end" font-size="9" fill="${C.muted}">${base}fr</text>`;
+for(let n=0;n<=rows;n++)s+=`<line x1="${x(0)}" x2="${x(5)}" y1="${gy+n*fy}" y2="${gy+n*fy}" stroke="${C.fret}" stroke-width="${n===0&&base===1?3:1}"/>`;
+for(let i=0;i<6;i++){
+s+=`<line x1="${x(i)}" x2="${x(i)}" y1="${gy}" y2="${gy+rows*fy}" stroke="${C.string}" stroke-width="${1.3-i*.08}"/>`;
+if(f[i]<=0)s+=`<text x="${x(i)}" y="${gy-4}" text-anchor="middle" font-size="9" fill="${C.ink}">${f[i]===0?'O':'X'}</text>`;
+}
+for(const b of v.barres||[])if(b.fret>=base&&b.fret<base+rows)s+=`<line x1="${x(b.from)}" x2="${x(b.to)}" y1="${y(b.fret)}" y2="${y(b.fret)}" stroke="${C.green}" stroke-width="9" stroke-linecap="round"/>`;
+f.forEach((n,i)=>{if(n>0&&n<base+rows)s+=`<circle cx="${x(i)}" cy="${y(n)}" r="4.6" fill="${C.green}"/>`;});
+return s;
+}
+function chartSvg(rows,cols,C,title){
+const W=96,H=112,pad=12,gap=10,head=title?30:0;
+const lines=[];
+rows.forEach((row,r)=>{for(let i=0;i<row.length;i+=cols)lines.push({chords:row.slice(i,i+cols),gapBefore:r>0&&i===0});});
+let y=pad+head,body='';
+for(const line of lines){
+if(line.gapBefore)y+=gap;
+line.chords.forEach((text,i)=>{body+=chartCell(text,pad+i*W,y,C);});
+y+=H;
+}
+const width=pad*2+cols*W,height=y+pad;
+const label='운지표: '+rows.flat().slice(0,40).join(', ')+(rows.flat().length>40?' …':'');
+const titleText=title?`<text x="${pad}" y="${pad+18}" font-size="15" font-weight="700" fill="${C.ink}">${escapeSvg(title)}</text>`:'';
+return {width,height,markup:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="img" aria-label="${escapeSvg(label)}" font-family="Pretendard Variable, Apple SD Gothic Neo, Noto Sans KR, sans-serif">${titleText}${body}</svg>`};
+}
+function chartTitle(key){return key?scoreKeyStampText(key):scoreState.capo?`Capo ${scoreState.capo}`:'';}
+// Four to a line on phones; on wide screens as many as the sheet's longest line (up to eight).
+function chartColumns(rows){const wide=($('score-chart').clientWidth||0)>=640;return wide?Math.min(8,Math.max(4,...rows.map(row=>row.length))):4;}
+function renderScoreChart(key){
+const box=$('score-chart'),rows=scoreChartRows();
+if(!rows.length){box.innerHTML='<p class="empty">인식된 코드가 없어요. 악보 보기에서 코드를 추가해 주세요.</p>';return;}
+const chart=chartSvg(rows,chartColumns(rows),CHART_THEME,chartTitle(key));
+box.innerHTML=chart.markup;
+const drawn=box.querySelector?.('svg');if(drawn)drawn.style.maxWidth=Math.round(chart.width*1.2)+'px';
+}
+function setScoreMode(chart){
+scoreState.chart=chart;
+$('score-view-row').hidden=chart;
+$('score-add').hidden=chart;
+$('score-preview-scroll').hidden=chart;
+$('score-edit-hint').hidden=chart;
+$('score-chart').hidden=!chart;
+if(chart){$('score-manual-position').hidden=true;scoreState.adding=false;}
+renderScore();
 }
 // "들어보기": the whole sheet, one chord per bar at the intro tempo and meter, in the shapes shown
 // and with the capo on — so it sounds like playing the converted sheet.
@@ -1445,7 +1519,7 @@ renderScore();
 scoreStatus(`전주 크기를 ${Math.round(next*100)}%로 바꿨어요.`);
 }
 function renderScoreIntros(key){
-$('score-intro-open').hidden=!scoreState.image;
+$('score-intro-open').hidden=!scoreState.image||scoreState.chart;
 $('score-intro-empty').hidden=Boolean(key);
 for(const id of ['easy','opening','ending'])for(const part of ['-title','','-actions'])$(`score-intro-${id}${part}`).hidden=!key;
 if(!key)$('score-intro-more').hidden=true;
@@ -1539,11 +1613,12 @@ ctx.fillStyle='#3c513d';ctx.fillText(stampText,stamp.x+stamp.pad,stamp.y+stamp.p
 }
 return hits;
 }
-function syncScoreView(){for(const input of document.querySelectorAll?.('input[name="score-overlay"]')||[])input.checked=scoreState.original?input.value==='original':input.value===scoreState.overlay;}
+function syncScoreView(){for(const input of document.querySelectorAll?.('input[name="score-overlay"]')||[])input.checked=scoreState.original?input.value==='original':input.value===scoreState.overlay;for(const input of document.querySelectorAll?.('input[name="score-page"]')||[])input.checked=(input.value==='chart')===Boolean(scoreState.chart);}
 function renderScore(){
 stopScoreIntro();syncScoreView();
 const key=detectScoreKey(scoreState.codes);
 renderScoreIntros(key);
+if(scoreState.chart)renderScoreChart(key);
 $('score-key').textContent=key?`감지 키: ${key.name} (추정)`:'감지 키: —';
 const {capo,keyShift}=scoreState;
 const keyStep=keyShift?` · ${keyShift>0?'+':'−'}${Math.abs(keyShift)}키`:'';
@@ -1798,11 +1873,15 @@ $('score-listen').addEventListener('click',()=>playScoreIntro($('score-listen'),
 // "다른 악보": drop this sheet (and any recognition still running) and show the upload area again.
 $('score-reselect').addEventListener('click',()=>{
 scoreState.run++;stopScoreIntro();scoreScan.stop();scoreBusy(false);
-Object.assign(scoreState,{image:null,source:null,codes:[],capo:0,keyShift:0,intro:null,adding:false,drag:null,editIndex:null,pending:null,original:false});
+if(scoreState.chart)setScoreMode(false);
+Object.assign(scoreState,{image:null,source:null,codes:[],capo:0,keyShift:0,intro:null,adding:false,drag:null,editIndex:null,pending:null,original:false,chart:false});
 $('score-work').hidden=true;$('score-upload').hidden=false;renderScore();
 scoreStatus('악보 이미지를 선택하거나 붙여넣어 주세요.');
 $('score-upload').scrollIntoView?.({block:'start'});
 });
+// 악보 | 운지표
+for(const input of document.querySelectorAll('input[name="score-page"]'))input.addEventListener('change',()=>setScoreMode(input.value==='chart'));
+let chartResize=null;window.addEventListener?.('resize',()=>{if(!scoreState.chart)return;clearTimeout(chartResize);chartResize=setTimeout(renderScore,150);});
 // One switch for how chords are drawn: 교체 / 위에 (overlay modes) or 원본 (the untouched image).
 for(const input of document.querySelectorAll('input[name="score-overlay"]'))input.addEventListener('change',()=>{if(input.value==='original')scoreState.original=true;else{scoreState.original=false;scoreState.overlay=input.value;}renderScore();});
 $('score-key-stamp').addEventListener('change',()=>{scoreState.showKey=$('score-key-stamp').checked;renderScore();});
@@ -1871,8 +1950,32 @@ scoreState.intro=null;
 $('score-intro-dialog').close();renderScore();
 scoreStatus('전주를 악보에서 뺐어요.');
 });
+function saveScorePng(canvas,name){
+canvas.toBlob(blob=>{
+if(!blob){scoreStatus('PNG를 만들지 못했어요. 이미지 크기를 줄여 다시 시도해 주세요.');return;}
+const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=name;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+scoreStatus('PNG를 저장합니다. 다운로드 목록을 확인해 주세요.');
+},'image/png');
+}
+// The 운지표 as a PNG: always the light colours, four chords to a line (fits a phone or a printout).
+function downloadScoreChart(){
+const rows=scoreChartRows();
+if(!rows.length){scoreStatus('운지표에 넣을 코드가 없어요.');return;}
+const chart=chartSvg(rows,4,CHART_LIGHT,chartTitle(detectScoreKey(scoreState.codes))),scale=3;
+const image=new Image();
+image.onload=()=>{
+try{
+const canvas=document.createElement('canvas');canvas.width=chart.width*scale;canvas.height=chart.height*scale;
+const ctx=canvas.getContext('2d');ctx.fillStyle=CHART_LIGHT.panel;ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(image,0,0,canvas.width,canvas.height);
+saveScorePng(canvas,'guitarmate-chords.png');
+}catch(_){scoreStatus('PNG 저장을 완료하지 못했어요. 다시 시도해 주세요.');}
+};
+image.onerror=()=>scoreStatus('PNG 저장을 완료하지 못했어요. 다시 시도해 주세요.');
+image.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(chart.markup);
+}
 $('score-download').addEventListener('click',()=>{
 if(!scoreState.source)return;
+if(scoreState.chart){downloadScoreChart();return;}
 try{
 const canvas=document.createElement('canvas');drawScore(canvas);
 canvas.toBlob(blob=>{
