@@ -52,7 +52,7 @@
   --fret: #72816e;
   --string: #71816d;
   --neck: #f1eee3;
-  --inlay: #b0b39f;
+  --inlay: #596455;
   --note: #dce4d3;
   --note-ink: #314a3c;
   --hit: #245b4718;
@@ -195,7 +195,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
     --green: #a2d2b5; --on-green: #172c21; --green-hover: #b9e0c8;
     --lime: #dfea9c; --orange: #efb17f; --error: #ffa392; --focus: #e8c879;
     --root-soft: #624637; --root-ink: #f2d5bf; --neck-tone-soft: #344238;
-    --fret: #83977e; --string: #92a58d; --neck: #242c24; --inlay: #67755f;
+    --fret: #83977e; --string: #92a58d; --neck: #242c24; --inlay: #a7b49f;
     --note: #3c513d; --note-ink: #ecf1e5; --hit: #a2d2b524;
   }
 }
@@ -353,7 +353,7 @@ s+=`<rect x="${x}" y="${y}" width="${width}" height="${height}" rx="4" fill="var
 for(let f=0;f<=15;f++){const at=start+f*step;s+=line(at,side,at,edge,'var(--fret)',f===0?5:1);}
 const between=(a,b)=>(string(a)+string(b))/2;
 for(const f of [3,5,7,9,12,15]){
-for(const across of f===12?[between(4,3),between(2,1)]:[between(3,2)])s+=dot(fret(f),across,4,'var(--inlay)');
+for(const across of f===12?[between(4,3),between(2,1)]:[between(3,2)])s+=dot(fret(f),across,5,'var(--inlay)');
 }
 for(let i=0;i<6;i++){
 s+=text(vertical?15:12,string(i),['E','A','D','G','B','e'][i]);
