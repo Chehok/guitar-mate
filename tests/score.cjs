@@ -7,7 +7,8 @@ assert.doesNotMatch(html,/name="score-mode"/);
 const script=html.match(/<script data-main-app[^>]*>([\s\S]*?)<\/script>/)[1];
 new vm.Script(script);
 const pure=script.slice(script.indexOf('// Score music functions:'),script.indexOf('// End score music functions.'));
-const context=vm.createContext({});vm.runInContext(pure,context);
+const {core}=require('./support/page-source.cjs');
+const context=vm.createContext({});vm.runInContext(core,context);vm.runInContext(pure,context);
 const {parseScoreChord:parse,transposeScoreChord:transpose,capoScoreChord:capo,detectScoreKey:detect,filterScoreWords:filter}=context;
 const selectImage=context.selectScoreClipboardImage;
 const textItem={kind:'string',type:'text/plain'},pngItem={kind:'file',type:'image/png'},jpegItem={kind:'file',type:'image/jpeg'};
@@ -146,8 +147,8 @@ const painter={drawImage(...a){paint.push(['image',...a]);},getImageData(_x,_y,w
 const elements=new Map(),$=id=>{if(!elements.has(id))elements.set(id,new Element());return elements.get(id);};
 const documentHandlers={};
 const head=new Element(),start=script.indexOf('// Score editor: images');
-const ui=script.slice(start,script.indexOf("if(ready(['chords']))",start));
-Object.assign(context,{painter,$,ready:modes=>modes.includes('score'),document:{addEventListener:(name,handler)=>{documentHandlers[name]=handler;},createElement:()=>new Element(),head,querySelectorAll:()=>[],activeElement:null},window:{},navigator:{onLine:true},setTimeout,clearTimeout,requestAnimationFrame:callback=>{callback();return 1;},cancelAnimationFrame(){},localStorage:{getItem:()=>null}});
+const ui=script.slice(start,script.indexOf('// Stop sound when the page goes away.',start));
+Object.assign(context,{painter,$,ready:modes=>modes.includes('score'),document:{getElementById:id=>$(id),querySelector:selector=>selector==='[data-main-app]'?{dataset:{mode:'score'}}:null,addEventListener:(name,handler)=>{documentHandlers[name]=handler;},createElement:()=>new Element(),head,querySelectorAll:()=>[],activeElement:null},window:{},navigator:{onLine:true},setTimeout,clearTimeout,requestAnimationFrame:callback=>{callback();return 1;},cancelAnimationFrame(){},localStorage:{getItem:()=>null}});
 vm.runInContext(ui,context);
 context.loadScoreRecognizer=async()=>{throw Error('Exercise legacy fallback in DOM doubles');};
 assert.equal(head.children.length,0,'OCR must not download at app startup');
@@ -166,9 +167,9 @@ paint.length=0;vm.runInContext("scoreState.overlay='above'",context);context.dra
 assert(paint.find(p=>p[0]==='text')[3]<200,'Above mode draws above original chord');
 // Capo view: "−" below capo 0 lowers the key (never a negative fret); + returns the same way.
 {
-  const click=id=>$(id).handlers.click(),state=()=>JSON.parse(vm.runInContext('JSON.stringify([scoreState.capo,scoreState.keyDown])',context));
+  const click=id=>$(id).handlers.click(),state=()=>JSON.parse(vm.runInContext('JSON.stringify([scoreState.capo,-scoreState.keyShift])',context));
   const shown=chord=>vm.runInContext(`transformedScoreChord(${JSON.stringify(chord)},{pc:7,minor:false,name:'G'})`,context);
-  vm.runInContext("scoreState.capo=0;scoreState.keyDown=0;",context);
+  vm.runInContext("scoreState.capo=0;scoreState.keyShift=0;",context);
   context.renderScore();assert(!$('score-capo-minus').disabled,'− is available at capo 0');
   assert.equal(shown('G'),'G');
   click('score-capo-minus');assert.deepEqual(state(),[0,1]);
@@ -180,17 +181,31 @@ assert(paint.find(p=>p[0]==='text')[3]<200,'Above mode draws above original chor
   for(let i=0;i<11;i++)click('score-capo-plus');assert.deepEqual(state(),[0,0]);assert.equal(shown('G'),'G');
   click('score-capo-plus');assert.deepEqual(state(),[1,0]);assert.equal(shown('G'),'F#');
   click('score-capo-minus');assert.deepEqual(state(),[0,0]);click('score-capo-minus');assert.deepEqual(state(),[0,1]);
-  $('score-frets').children[2].handlers.click();assert.deepEqual(state(),[3,0],'fret button resets the key shift');
+  $('score-frets').children[2].handlers.click();assert.deepEqual(state(),[3,1],'a fret keeps the song key change');
   assert.equal($('score-capo-value').textContent,'카포 3');
-  click('score-capo-minus');click('score-capo-minus');click('score-capo-minus');click('score-capo-minus');assert.deepEqual(state(),[0,1]);
-  vm.runInContext("scoreState.capo=1;scoreState.keyDown=0;",context);
+  click('score-capo-minus');click('score-capo-minus');click('score-capo-minus');click('score-capo-minus');assert.deepEqual(state(),[0,2]);
+  // The sheet −/+ are the neck −/+: same state, same steps, same labels
+  vm.runInContext("scoreState.capo=0;scoreState.keyShift=0;",context);context.renderScore();
+  assert.equal($('score-shift-value').textContent,'G (원래 키)');assert($('score-shift-reset').hidden);
+  click('score-shift-up');assert.deepEqual(state(),[1,0],'sheet + puts the capo on, like the neck +');assert.equal(shown('G'),'F#');
+  assert.equal($('score-shift-value').textContent,'G → F# · 카포 1');assert.equal($('score-capo-value').textContent,'카포 1');
+  assert.equal(vm.runInContext("scoreKeyStampText({pc:7,minor:false,name:'G'})",context),'F#폼 (Capo 1) / G키');
+  click('score-shift-down');click('score-shift-down');assert.deepEqual(state(),[0,1],'sheet − takes the capo off, then lowers the key');
+  assert.equal($('score-shift-value').textContent,'G → F# (−1)');assert.equal($('score-capo-value').textContent,'카포 없음 · 키 −1반음');
+  click('score-capo-plus');assert.deepEqual(state(),[0,0]);click('score-capo-plus');click('score-capo-plus');
+  assert.equal($('score-shift-value').textContent,'G → F · 카포 2','neck + moves the sheet label too');
+  assert(!$('score-capo-reset').hidden&&!$('score-shift-reset').hidden);
+  click('score-shift-reset');assert.deepEqual(state(),[0,0]);
+  for(let i=0;i<20;i++)click('score-shift-up');assert.deepEqual(state(),[11,0]);assert($('score-shift-up').disabled&&$('score-capo-plus').disabled);
+  click('score-capo-reset');assert.deepEqual(state(),[0,0]);
+  vm.runInContext("scoreState.capo=1;scoreState.keyShift=0;",context);
 }
 // Recommendations follow the actual score controls and keep four bars per progression.
 {
   const bars=id=>$(id).children.map(item=>item.children[1].textContent);
   const easy='score-intro-easy',opening='score-intro-opening';
   vm.runInContext("scoreState.codes=[];scoreState.capo=0;",context);
-  context.renderScore();assert($('score-intro-open').hidden,'No key, no intro button');
+  context.renderScore();assert(!$('score-intro-open').hidden,'Intro button is there before any chord is found');assert(!$('score-intro-empty').hidden,'Without a key the dialog explains what is coming');
   vm.runInContext("scoreState.codes=['C','G','Am','F','C'].map((text,i)=>({text,bbox:{x0:50+i*90,y0:200,x1:85+i*90,y1:218}}));",context);
   context.renderScore();
   assert(!$('score-intro-open').hidden,'Recommended intros open from a button beside manual add');
@@ -204,7 +219,7 @@ assert(paint.find(p=>p[0]==='text')[3]<200,'Above mode draws above original chor
   for(let i=0;i<3;i++)$('score-capo-minus').handlers.click();
   assert.deepEqual(bars(easy),['B','G#m','C#m','F#7']);
   assert.deepEqual(bars(opening),['B','F#','G#m','F#7']);
-  vm.runInContext("scoreState.codes.length=2;scoreState.keyDown=0;",context);
+  vm.runInContext("scoreState.codes.length=2;scoreState.keyShift=0;",context);
   context.renderScore();assert.deepEqual(bars(opening),['C','G','Am','G7']);
   assert($('score-intro-ending').hidden);assert($('score-intro-ending-title').hidden);assert(!$('score-intro-more').hidden);
   vm.runInContext("scoreState.codes.length=1;scoreState.capo=1;",context);
@@ -277,27 +292,29 @@ async function checkIntroActions(){
   // Key stamp: top-left corner, follows capo/key changes, can be turned off, never in original view.
   {
     const stampOf=()=>{paint.length=0;context.drawScore(new Element(),false);return paint.filter(c=>c[0]==='text').map(c=>c[1]).find(t=>t.match(/(폼|키)/));};
-    const capo=vm.runInContext('scoreState.capo',context),keyDown=vm.runInContext('scoreState.keyDown',context);
-    vm.runInContext('scoreState.capo=0;scoreState.keyDown=0;',context);
+    const capo=vm.runInContext('scoreState.capo',context),keyShift=vm.runInContext('scoreState.keyShift',context);
+    vm.runInContext('scoreState.capo=0;scoreState.keyShift=0;',context);
     assert.equal(stampOf(),'C키','Stamp shows the detected key');
     const call=paint.find(c=>c[0]==='text'&&c[1]==='C키');assert.deepEqual([call[2],call[3]],[22,22],'Stamp sits in the top-left corner');
     vm.runInContext('scoreState.capo=2;',context);
     assert.equal(stampOf(),'Bb폼 (Capo 2) / C키','Capo stamp keeps the sounding key and names the chord shapes');
-    vm.runInContext('scoreState.capo=0;scoreState.keyDown=2;',context);
+    vm.runInContext('scoreState.capo=0;scoreState.keyShift=-2;',context);
     assert.equal(stampOf(),'Bb키','Lowering the key stamps the new key');
-    vm.runInContext('scoreState.keyDown=0;',context);
+    vm.runInContext('scoreState.capo=3;scoreState.keyShift=2;',context);
+    assert.equal(stampOf(),'B폼 (Capo 3) / D키','Key change and capo together');
+    vm.runInContext('scoreState.capo=0;scoreState.keyShift=0;',context);
     $('score-key-stamp').checked=false;$('score-key-stamp').handlers.change();
     assert.equal(stampOf(),undefined,'Stamp can be turned off');
     $('score-key-stamp').checked=true;$('score-key-stamp').handlers.change();
     paint.length=0;context.drawScore(new Element(),true);assert.deepEqual(paint.map(p=>p[0]),['image'],'Original view stays untouched');
-    vm.runInContext(`scoreState.capo=${capo};scoreState.keyDown=${keyDown};`,context);paint.length=0;context.drawScore(new Element(),false);
+    vm.runInContext(`scoreState.capo=${capo};scoreState.keyShift=${keyShift};`,context);paint.length=0;context.drawScore(new Element(),false);
   }
   assert(paint.some(call=>call[0]==='text'&&call[1]==='|  B  |  F#  |  G#m  |  F#7  |'),'Intro is drawn without a label');
   assert(!paint.some(call=>call[0]==='text'&&String(call[1]).includes('전주')));
   $('score-frets').children[1].handlers.click();
   paint.length=0;context.drawScore(new Element(),false);
   const intro=paint.find(call=>call[0]==='text'&&call[1].startsWith('|  '));
-  assert.equal(intro[1],'|  Bb  |  F  |  Gm  |  F7  |','PNG drawing uses current capo shapes');
+  assert.equal(intro[1],'|  A  |  E  |  F#m  |  E7  |','PNG drawing uses the current key change and capo shapes');
   assert(intro[2]+intro[4]<=1000,'Placed intro stays inside the image');
   paint.length=0;context.drawScore(new Element(),true);assert.deepEqual(paint.map(p=>p[0]),['image']);
   context.renderScore();

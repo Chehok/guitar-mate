@@ -71,8 +71,6 @@ input[type=range] { accent-color: var(--green); cursor: pointer; }
 p { margin: 0; }
 /* 1100px canvas: twelve 77px columns + eleven 16px gutters.
    Main row spans 4 / 8: 356px + 16px + 728px = 1100px. */
-h1 { margin: 0 0 8px; font-size: clamp(24px, 3vw, 30px); font-weight: 700; line-height: 1.4; letter-spacing: -.9px; text-wrap: balance; }
-.intro { margin-bottom: 24px; color: var(--muted); font-size: 14px; line-height: 1.7; }
 .search { display: flex; gap: 8px; max-width: 728px; }
 .search input { min-width: 0; flex: 1; width: 100%; min-height: 52px; padding: 10px 14px; font-size: 20px; font-weight: 550; }
 .search button { flex: none; padding-inline: 14px; }
@@ -83,22 +81,11 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .quick { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 24px; }
 .quick button { min-width: 44px; padding: 8px 13px; font-size: 14px; border-color: var(--line); }
 .quick button[aria-pressed=true] { background: var(--soft); border-color: var(--green); color: var(--green); }
-.chord-filter { margin: 12px 0 20px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
-.filter-selects { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.filter-select { display: block; min-width: 0; font-size: 12px; font-weight: 650; color: var(--muted); }
-.filter-select span { display: block; margin-bottom: 3px; }
-.filter-select select { width: 100%; min-width: 0; min-height: 44px; padding: 6px 4px 6px 8px; font: inherit; font-size: 16px; font-weight: 650; color: var(--ink); background: var(--panel); border: 1px solid var(--control); border-radius: 10px; text-overflow: ellipsis; }
-.filter-select select:focus-visible { outline: 3px solid var(--green); outline-offset: 1px; }
-.filter-summary { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
 .filter-status { margin: 0; flex: 1; min-width: 0; font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
 .filter-status strong { color: var(--ink); font-size: 15px; }
 .filter-reset { flex: none; min-height: 44px; padding: 4px 12px; font-size: 13px; }
-.chord-filter .quick.results { margin: 8px 0 0; max-height: 220px; overflow-y: auto; overscroll-behavior: contain; }
-.chord-filter .quick.results button { min-height: 44px; }
-.layout, .tuner-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start; }
+.layout{ display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start; }
 .panel { min-width: 0; padding: 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
-.diagram-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
-.diagram-head > div { min-width: 0; flex: 1; }
 .chord-title { font-size: 36px; font-weight: 500; line-height: 1.2; letter-spacing: -1px; margin: 0; overflow-wrap: anywhere; }
 .quality { color: var(--muted); font-size: 13px; margin-top: 6px; }
 .play { flex: none; padding: 8px 10px; font-size: 13px; }
@@ -108,7 +95,6 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .nav { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
 .nav button { padding-inline: 12px; }
 .counter { color: var(--muted); text-align: center; font-size: 13px; font-variant-numeric: tabular-nums; }
-.overline { margin: 0 0 20px; color: var(--muted); font-size: 14px; font-weight: 600; letter-spacing: 0; }
 .tones { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
 .tone { min-width: 64px; padding: 12px 16px; background: var(--soft); border-radius: 10px; text-align: center; }
 .tone.root { background: var(--green); color: var(--on-green); }
@@ -117,10 +103,6 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .details { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 12px; border-top: 1px solid var(--line); padding-top: 20px; }
 .details span { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
 .details strong { font-size: 14px; font-weight: 550; font-variant-numeric: tabular-nums; }
-.explain { margin-top: 24px; color: var(--muted); font-size: 13px; line-height: 1.9; }
-.fret-panel { margin-top: 16px; padding: 20px 0 12px; overflow: hidden; }
-.fret-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 0 20px; }
-.fret-header h2, .tuner-controls h2 { font-size: 16px; font-weight: 650; margin: 0; }
 .legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--muted); }
 .legend span { display: flex; align-items: center; gap: 6px; }
 .key { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: var(--note); border: 1px solid var(--fret); }
@@ -129,43 +111,25 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .scroll { overflow-x: auto; overscroll-behavior-x: contain; margin-top: 12px; padding: 8px 16px; scrollbar-color: var(--control) var(--soft); }
 .scroll:focus-visible { outline-offset: -4px; }
 .neck { display: block; width: 100%; min-width: 1010px; height: auto; }
-.scroll-note { padding: 8px 20px 0; font-size: 12px; color: var(--muted); }
 .empty { padding: 48px 8px; text-align: center; color: var(--muted); }
-.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 #audio-status { min-height: 18px; margin-top: 8px; font-size: 12px; color: var(--muted); }
 .tuner-display { text-align: center; }
 .tuner-target { color: var(--muted); font-size: 14px; }
 .tuner-note { font-size: 64px; font-weight: 550; line-height: 1.2; margin: 16px 0 4px; letter-spacing: -2px; }
 .tuner-frequency { min-height: 24px; color: var(--muted); font-size: 14px; }
-.tuner-gauge { display: block; width: 100%; max-width: 430px; margin: 24px auto 8px; color: var(--orange); overflow: visible; }
-.tuner-gauge text { font-family: inherit; font-weight: 600; }
-.tuner-display.in-tune .tuner-gauge, .tuner-display.in-tune .tuner-advice { color: var(--green); }
-.tuner-display.waiting .tuner-gauge, .tuner-display.waiting .tuner-advice { color: var(--muted); }
+.tuner-display.in-tune .tuner-advice{ color: var(--green); }
+.tuner-display.waiting .tuner-advice{ color: var(--muted); }
 #tuner-needle { transform-origin: 200px 172px; transition: transform .12s ease-out; }
 .tuner-cents { font-size: 24px; font-weight: 500; }
-.tuner-note, .tuner-frequency, .tuner-cents, .calibration input, .mic-sensitivity output { font-variant-numeric: tabular-nums; }
+.tuner-note, .tuner-frequency, .tuner-cents, .mic-sensitivity output{ font-variant-numeric: tabular-nums; }
 .tuner-advice { min-height: 24px; margin: 8px 0 24px; color: var(--orange); font-size: 14px; font-weight: 650; }
 #mic-toggle { width: 100%; max-width: 280px; min-height: 48px; }
 #mic-status { min-height: 40px; max-width: 420px; margin: 12px auto 0; color: var(--muted); font-size: 12px; line-height: 1.8; }
 #auto-string { width: 100%; margin-top: 16px; }
-.string-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 12px 0; }
-.string-grid button { padding: 10px 4px; border-color: var(--line); }
-.string-grid strong { display: block; font-size: 22px; font-weight: 500; }
-.string-grid small { font-size: 12px; }
-.string-grid button[aria-pressed=true], #auto-string[aria-pressed=true] { color: var(--green); background: var(--soft); border-color: var(--green); }
-.string-grid button.detected { outline: 2px solid var(--orange); outline-offset: 2px; }
-.string-grid button:focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }
-.reference-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
-.reference-grid button { padding: 8px 4px; font-size: 13px; }
-.tuner-settings { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); }
-.calibration { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 14px; }
-.calibration input { width: 88px; padding: 8px 10px; }
+#auto-string[aria-pressed=true]{ color: var(--green); background: var(--soft); border-color: var(--green); }
 #reference-status { min-height: 20px; margin-top: 10px; color: var(--muted); font-size: 12px; }
 .mic-sensitivity { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; font-size: 14px; }
 .mic-sensitivity input { grid-column: 1 / -1; width: 100%; margin: 0; }
-.identify-controls { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
-.identify-controls label { display: flex; align-items: center; gap: 8px; font-size: 14px; flex: 1 1 auto; min-width: 0; }
-.identify-controls input { width: 65px; padding: 8px; }
 #identify-play { flex: none; padding-inline: 12px; font-size: 13px; white-space: nowrap; }
 #identify-reset { flex: none; }
 #identify-audio-status { min-height: 22px; margin: 6px 0 0; font-size: 13px; color: var(--muted); }
@@ -185,16 +149,11 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 }
 @media (min-width: 760px) {
   .layout { grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); }
-  .tuner-layout { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
   .panel { padding: 24px; }
-  .fret-panel { padding: 24px 0 16px; }
-  .fret-header { padding-inline: 24px; }
-  .intro { font-size: 15px; }
 }
 @media (min-width: 760px) and (max-width: 1023px) {
   .layout { grid-template-columns: minmax(300px, 1fr) minmax(0, 1fr); }
   .panel { padding: 20px; }
-  .tuner-layout { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -215,6 +174,25 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .score-row { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-top:12px; }
 .score-preview-tools { display:flex; flex-wrap:wrap; align-items:center; gap:8px 16px; }
 .score-preview-tools .score-row { margin-top:0; }
+.score-shift, .score-capo-row { flex-basis:100%; flex-wrap:nowrap; gap:4px; }
+.score-shift > strong { flex:none; margin-right:2px; white-space:nowrap; }
+.score-shift > button:not(.score-reset), .score-capo-row > button:not(.score-reset) { flex:none; width:40px; min-width:40px; padding-inline:0; }
+#score-panel .score-shift output, #score-panel .score-capo-row output { flex:1 1 auto; min-width:0; text-align:center; font-weight:650; font-variant-numeric:tabular-nums; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+@media (min-width:700px) {
+  /* Keep −, value, + and reset side by side instead of spread across the card */
+  #score-panel .score-shift output, #score-panel .score-capo-row output { flex:0 0 auto; min-width:8em; padding-inline:12px; }
+}
+.score-reset { flex:none; margin-left:4px; padding-inline:8px; font-size:12px; white-space:nowrap; }
+/* Recognition shown on the preview */
+.score-scan { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+.score-scan-label { position:absolute; top:8px; right:8px; padding:4px 10px; border-radius:12px; background:var(--green); color:var(--on-green, #fffef9); font-size:12px; font-weight:650; }
+.score-scan-sweep { position:absolute; left:0; right:0; height:18%; background:linear-gradient(to bottom,transparent,rgba(36,91,71,.16),transparent); animation:score-sweep 2.4s ease-in-out infinite; }
+.score-scan.regions .score-scan-sweep { display:none; }
+@keyframes score-sweep { from { top:-18%; } to { top:100%; } }
+.score-scan-box { position:absolute; border:1.5px dashed rgba(36,91,71,.35); border-radius:4px; }
+.score-scan-box.current { border:2px solid #c8891d; background:rgba(232,200,121,.22); }
+.score-scan-box.done { border-style:solid; border-color:rgba(36,91,71,.25); background:rgba(36,91,71,.06); }
+.score-scan-box.found::after { content:attr(data-text); position:absolute; left:0; bottom:100%; padding:0 5px; border-radius:4px; background:#245b47; color:#fffef9; font:700 11px/1.5 system-ui,sans-serif; white-space:nowrap; }
 .score-preview-actions { margin-left:auto; justify-content:flex-end; }
 @media (max-width: 759px) {
   /* Keep the three preview actions on one line on phones (e.g. 393px iPhone). */
@@ -222,7 +200,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
   .score-preview-actions button { flex:1 1 0; min-width:0; padding-inline:4px; font-size:14px; white-space:nowrap; }
 }
 #score-panel label { display:inline-flex; align-items:center; gap:6px; }
-.score-key-row { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:4px 12px; }
+.score-key-row { display:flex; flex-wrap:wrap; align-items:center; gap:4px 16px; }
 .score-key-row p { margin:0; }
 .score-key-row label { font-size:14px; color:var(--muted); }
 .score-drop { display:grid; justify-items:center; gap:8px; padding:28px 12px; border:2px dashed var(--control); border-radius:12px; background:var(--soft); text-align:center; }
@@ -338,7 +316,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 </div>
 <div class="panel score-controls">
 <div class="score-key-row"><p id="score-key" role="status">감지 키: —</p><label><input id="score-key-stamp" type="checkbox" checked> 악보에 표시</label></div>
-<div id="score-capo-controls"><div class="score-row"><button id="score-capo-minus" type="button" aria-label="카포 한 프렛 내리기 (카포 없음에서는 키를 반음 내림)">−</button><output id="score-capo-value" aria-live="polite">카포 없음</output><button id="score-capo-plus" type="button" aria-label="카포 한 프렛 올리기">+</button></div>
+<div id="score-capo-controls"><div class="score-row score-capo-row"><button id="score-capo-minus" type="button" aria-label="카포 한 프렛 내리기 (카포 없음에서는 키를 반음 내림)">−</button><output id="score-capo-value" aria-live="polite">카포 없음</output><button id="score-capo-plus" type="button" aria-label="카포 한 프렛 올리기">+</button><button id="score-capo-reset" class="score-reset" type="button" hidden>원래 키로</button></div>
 <div class="score-fret-scroll" tabindex="0" role="region" aria-label="카포 1부터 11프렛 선택, 좌우로 스크롤"><div class="score-neck">
 <svg class="score-headstock" viewBox="0 0 96 126" preserveAspectRatio="none" aria-hidden="true" focusable="false">
 <path d="M16 22 37 18q4-1 8 1l18 9 20-11 13-4v100l-13-4-20-11-18 9q-4 2-8 1l-21-4q-6-4-6-12V34q0-8 6-12Z" fill="var(--green)" stroke="var(--fret)"/>
@@ -360,6 +338,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <div id="score-work" hidden>
 <div class="panel score-controls">
 <div class="score-preview-tools">
+<div class="score-row score-shift" role="group" aria-labelledby="score-shift-label"><strong id="score-shift-label">곡의 키</strong><button id="score-shift-down" type="button" aria-label="곡의 키를 반음 내리기">−</button><output id="score-shift-value" aria-live="polite">원래 키</output><button id="score-shift-up" type="button" aria-label="곡의 키를 반음 올리기">+</button><button id="score-shift-reset" class="score-reset" type="button" hidden>원래 키로</button></div>
 <div class="score-row" role="group" aria-labelledby="score-overlay-label"><strong id="score-overlay-label">코드 표시</strong><label><input type="radio" name="score-overlay" value="replace" checked> 교체</label><label><input type="radio" name="score-overlay" value="above"> 위에</label><label><input id="score-original" type="checkbox"> 원본 보기</label></div>
 <div class="score-row score-preview-actions"><button id="score-add" type="button">코드 직접 추가</button><button id="score-intro-open" type="button" aria-haspopup="dialog" data-i18n-en="Intros" hidden>추천 전주</button><button id="score-download" type="button" class="primary">PNG 다운로드</button></div>
 </div>
@@ -377,6 +356,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <input id="score-intro-tempo-range" type="range" min="50" max="180" step="1" value="120" aria-label="재생 템포 조절">
 <fieldset class="score-intro-meter"><legend>박자</legend><label><input type="radio" name="score-intro-meter" value="4/4" checked> 4/4</label><label><input type="radio" name="score-intro-meter" value="3/4"> 3/4</label><label><input type="radio" name="score-intro-meter" value="6/8"> 6/8</label></fieldset>
 <p id="score-intro-tempo-note" class="hint">4/4박자 · 한 마디 2.0초</p></div>
+<p id="score-intro-empty" class="hint" hidden>악보에서 코드를 찾으면 곡의 키에 맞는 전주를 추천해요. 인식이 끝나면 여기에 나와요.</p>
 <h3 id="score-intro-easy-title">쉬운 전주</h3>
 <ol id="score-intro-easy" class="score-intro-bars" aria-labelledby="score-intro-easy-title" role="list"></ol>
 <div id="score-intro-easy-actions" class="score-row score-intro-actions" role="group" aria-labelledby="score-intro-easy-title"><button id="score-intro-easy-play" type="button">소리 듣기</button><button id="score-intro-easy-place" type="button">악보에 넣기</button></div>
@@ -403,332 +383,10 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 </main>
 <gm-footer></gm-footer>
 </div>
+<script src="./app-core.js"></script>
 <script data-main-app data-mode="score">
 
 'use strict';
-const $=id=>document.getElementById(id);
-const ready=names=>names.includes(document.querySelector('[data-main-app]').dataset.mode);
-const mod=n=>((n%12)+12)%12;
-const tuning=[40,45,50,55,59,64], letters=['C','D','E','F','G','A','B'], natural=[0,2,4,5,7,9,11];
-// Each tone stores semitones, interval label and diatonic distance for correct spelling.
-const types={
-'':{name:'메이저 · 장3화음',tones:[[0,'R',0],[4,'3',2],[7,'5',4]]},
-m:{name:'마이너 · 단3화음',tones:[[0,'R',0],[3,'♭3',2],[7,'5',4]]},
-'7':{name:'도미넌트 세븐',tones:[[0,'R',0],[4,'3',2],[7,'5',4],[10,'♭7',6]]},
-maj7:{name:'메이저 세븐',tones:[[0,'R',0],[4,'3',2],[7,'5',4],[11,'7',6]]},
-m7:{name:'마이너 세븐',tones:[[0,'R',0],[3,'♭3',2],[7,'5',4],[10,'♭7',6]]},
-sus2:{name:'서스펜디드 세컨드',tones:[[0,'R',0],[2,'2',1],[7,'5',4]]},
-sus4:{name:'서스펜디드 포스',tones:[[0,'R',0],[5,'4',3],[7,'5',4]]},
-dim:{name:'디미니시드 · 감3화음',tones:[[0,'R',0],[3,'♭3',2],[6,'♭5',4]]},
-aug:{name:'어그먼티드 · 증3화음',tones:[[0,'R',0],[4,'3',2],[8,'♯5',4]]},
-dim7:{name:'디미니시드 세븐',tones:[[0,'R',0],[3,'♭3',2],[6,'♭5',4],[9,'♭♭7',6]]},
-m7b5:{name:'하프 디미니시드',tones:[[0,'R',0],[3,'♭3',2],[6,'♭5',4],[10,'♭7',6]]},
-'6':{name:'메이저 식스',tones:[[0,'R',0],[4,'3',2],[7,'5',4],[9,'6',5]]},
-m6:{name:'마이너 식스',tones:[[0,'R',0],[3,'♭3',2],[7,'5',4],[9,'6',5]]},
-'9':{name:'도미넌트 나인',tones:[[0,'R',0],[4,'3',2],[7,'5',4],[10,'♭7',6],[2,'9',1]]},
-add9:{name:'애드 나인',tones:[[0,'R',0],[4,'3',2],[7,'5',4],[2,'9',1]]}
-};
-function parse(text){
-const s=text.trim().replace(/♯/g,'#').replace(/♭/g,'b').replace(/[−–]/g,'-').replace(/\s+/g,'');
-const match=/^([A-Ga-g])([#b]?)(.*)$/.exec(s);
-if(!match)throw Error('코드 이름을 확인해 주세요. A–G로 시작해 주세요. 예: C, F#m, Bb7');
-const root=match[1].toUpperCase()+match[2];
-const pitch=n=>mod(natural[letters.indexOf(n[0].toUpperCase())]+(n[1]==='#'?1:n[1]==='b'?-1:0));
-let raw=match[3],bassNote=null;
-raw=raw.replace(/\/([A-Ga-g][#b]?)$/,(_,n)=>{bassNote=n[0].toUpperCase()+n.slice(1);return '';});
-// Parentheses and commas group tokens without changing their meaning.
-let tokens=raw.replace(/[(),]/g,'').replace(/^69$/, '6add9').replace(/^6\/9$/, '6add9');
-tokens=tokens.replace(/^minor|^min/,'m').replace(/^major|^maj|^M(?!$)/,'maj').replace(/^-/, 'm');
-if(tokens==='M')tokens='';
-if(/^ø7?$/.test(tokens))tokens='m7b5';
-tokens=tokens.replace(/^[°o]/,'dim').replace(/^\+/,'aug');
-let triad='major',seventh=0,top=0,six=false,majorSeventh=false;
-if(tokens.startsWith('m')&&!tokens.startsWith('maj')){triad='minor';tokens=tokens.slice(1);}
-else if(tokens.startsWith('dim')){triad='dim';tokens=tokens.slice(3);}
-else if(tokens.startsWith('aug')){triad='aug';tokens=tokens.slice(3);}
-if(tokens.startsWith('maj')||tokens.startsWith('M')){majorSeventh=true;tokens=tokens.replace(/^(maj|M)/,'');if(!tokens&&triad==='major')majorSeventh=false;else if(!tokens)seventh=11;}
-const extension=/^(13|11|9|7|6)/.exec(tokens);
-if(extension){top=Number(extension[1]);tokens=tokens.slice(extension[0].length);if(top===6)six=true;else seventh=majorSeventh?11:triad==='dim'?9:10;}
-const tones=new Map([[1,[0,'R',0]],[3,[triad==='major'||triad==='aug'?4:3,triad==='major'||triad==='aug'?'3':'b3',2]],[5,[triad==='dim'?6:triad==='aug'?8:7,triad==='dim'?'b5':triad==='aug'?'#5':'5',4]]]);
-const intervals={2:2,3:4,4:5,5:7,6:9,7:10,9:2,11:5,13:9};
-const put=(degree,alter=0,label)=>{const d=(degree-1)%7;tones.set(degree,[mod(intervals[degree]+alter),label||(alter<0?'b':alter>0?'#':'')+degree,d]);};
-if(seventh)tones.set(7,[seventh,seventh===11?'7':seventh===9?'bb7':'b7',6]);
-if(six)put(6);
-if(top>=9)put(9);if(top>=11)put(11);if(top>=13)put(13);
-const protectedDegrees=new Set();let suspended=false;
-while(tokens){
-const token=/^(sus[24]?|add[#b]?(?:13|11|9|[2-7])|(?:omit|no)(?:13|11|9|[1-7])|[#b](?:13|11|9|[2-7]))/.exec(tokens);
-if(!token)throw Error('코드 종류를 확인해 주세요. 예: F#m11, C7b9b13, Cm(maj7), C6/9, D/F#');
-const t=token[0];tokens=tokens.slice(t.length);
-if(t.startsWith('sus')){tones.delete(3);const d=t==='sus2'?2:4;put(d);protectedDegrees.add(d);suspended=true;}
-else if(/^(omit|no)/.test(t))tones.delete(Number(t.replace(/^(omit|no)/,'')));
-else {const part=t.replace(/^add/,'');const a=part[0]==='b'?-1:part[0]==='#'?1:0;const d=Number(part.replace(/^[#b]/,''));put(d,a);protectedDegrees.add(d);}
-}
-if(top>=9)protectedDegrees.add(top);
-const quality=raw.replace(/[(),]/g,'').replace(/^minor|^min/,'m').replace(/^major|^M(?=\d)/,'maj').replace(/^-/,'m').replace(/^[°o]/,'dim').replace(/^\+/,'aug');
-const aliases={'major':'','maj':'','M':'','maj6':'6','sus':'sus4','ø':'m7b5','ø7':'m7b5','mmaj7':'m(maj7)','mM7':'m(maj7)'};
-const canonical=Object.prototype.hasOwnProperty.call(aliases,quality)?aliases[quality]:quality;
-const ordered=[...tones.entries()].sort((a,b)=>a[0]-b[0]);
-const optional=[];
-// Retain the original seventh/sixth grips that omit the perfect fifth.
-if(tones.size>=4&&tones.has(5)&&tones.get(5)[0]===7&&!protectedDegrees.has(5))optional.push(5);
-if(tones.size>4){
-if(!bassNote&&tones.has(3)&&tones.has(7))optional.push(1);
-if(top===13&&tones.has(11)&&!protectedDegrees.has(11))optional.push(11);
-if(top>=11&&tones.has(9)&&!protectedDegrees.has(9))optional.push(9);}
-return {root,pc:pitch(root),quality:canonical,label:root+canonical+(bassNote?'/'+bassNote:''),tones:ordered.map(e=>e[1]),degrees:ordered.map(e=>e[0]),optional,bassNote,bassPc:bassNote?pitch(bassNote):null,name:types[canonical]?.name||'확장 · 변화 코드',suspended};
-}
-function toneName(chord,interval){const [semitones,,degree]=interval;const i=(letters.indexOf(chord.root[0])+degree)%7;let delta=mod(chord.pc+semitones-natural[i]);if(delta>6)delta-=12;return letters[i]+(delta>0?'#'.repeat(delta):'b'.repeat(-delta));}
-function noteName(chord,pc){const tone=chord.tones.find(t=>mod(chord.pc+t[0])===pc);return tone?toneName(chord,tone):chord.bassNote||'';}
-// Hand-checked shapes, low E to high e. A negative fret means a muted string.
-const open={
-A:[['x02220','001230']],Am:[['x02210','002310']],A7:[['x02020','001020']],Amaj7:[['x02120','002130']],Am7:[['x02010','002010']],Asus2:[['x02200','001200']],Asus4:[['x02230','001240']],
-B:[['x24442','013331']],Bm:[['x24432','013421']],B7:[['x21202','021304']],
-C:[['x32010','032010']],C7:[['x32310','032410']],Cmaj7:[['x32000','032000']],Cadd9:[['x32033','021034']],
-D:[['xx0232','000132']],Dm:[['xx0231','000231']],D7:[['xx0212','000213']],Dmaj7:[['xx0222','000111']],Dsus2:[['xx0230','000130']],Dsus4:[['xx0233','000134']],
-E:[['022100','023100']],Em:[['022000','023000']],E7:[['020100','020100']],Em7:[['020000','020000']],Esus4:[['022200','023400']],
-F:[['133211','134211'],['xx3211','003211']],Fmaj7:[['xx3210','003210']],
-G:[['320003','210003'],['320033','210034']],G7:[['320001','320001']],
-'C/E':[['032010','032010']],'C/G':[['332010','432010']],
-'D/A':[['x00232','000132']],'D/F#':[['2x0232','100243']],
-'G/B':[['x20033','010034']],'Am/C':[['x32210','042310']]
-};
-const eShapes={'':[0,2,2,1,0,0],m:[0,2,2,0,0,0],'7':[0,2,0,1,0,0],m7:[0,2,0,0,0,0],maj7:[0,2,1,1,0,0],sus4:[0,2,2,2,0,0],sus2:[0,2,4,4,0,0]};
-const aShapes={'':[-1,0,2,2,2,0],m:[-1,0,2,2,1,0],'7':[-1,0,2,0,2,0],m7:[-1,0,2,0,1,0],maj7:[-1,0,2,1,2,0],sus2:[-1,0,2,2,0,0],sus4:[-1,0,2,2,3,0]};
-function fingering(frets){
-const positive=frets.filter(f=>f>0), fingers=frets.map(()=>0);if(!positive.length)return {fingers,barres:[]};
-const min=Math.min(...positive), at=frets.map((f,i)=>f===min?i:-1).filter(i=>i>=0);let barres=[],next=1;
-if(at.length>=2&&frets.slice(at[0],at.at(-1)+1).every(f=>f>=min)){
-barres.push({fret:min,from:at[0],to:at.at(-1),finger:1});at.forEach(i=>fingers[i]=1);next=2;
-}
-const indexBarre=barres.length>0;
-const rest=frets.map((f,i)=>({f,i})).filter(o=>o.f>0&&!fingers[o.i]).sort((a,b)=>a.f-b.f||a.i-b.i);
-// Same-fret adjacent notes may share a finger as a small barre.
-for(let k=0;k<rest.length;){let j=k+1;while(j<rest.length&&rest[j].f===rest[k].f&&rest[j].i===rest[j-1].i+1)j++;
-// Above an index barre, leave room for the middle finger and use ring/pinky for paired notes.
-if(indexBarre)next=Math.max(next,Math.min(4,rest[k].f-min+1));
-if(indexBarre&&j-k===2&&next===3)j=k+1;
-const group=rest.slice(k,j);if(next>4)return null;group.forEach(o=>fingers[o.i]=next);if(group.length>1)barres.push({fret:group[0].f,from:group[0].i,to:group.at(-1).i,finger:next});next++;k=j;}
-return {fingers,barres};
-}
-function legacyVoicings(chord){
-const pcs=chord.tones.map(t=>mod(chord.pc+t[0])),seen=new Set(),result=[];
-function add(frets,name,manual){
-const played=frets.map((f,i)=>f<0?null:mod(tuning[i]+f)).filter(p=>p!==null);
-if(played.length<3||played.some(p=>!pcs.includes(p))||!chord.tones.filter(t=>!(chord.tones.length>=4&&t[0]===7)).every(t=>played.includes(mod(chord.pc+t[0]))))return;
-const key=frets.join(',');if(seen.has(key))return;
-const fing=fingering(frets);if(!fing)return;
-if(manual){fing.fingers=manual.split('').map(Number);fing.barres=[];for(let finger=1;finger<=4;finger++){const indices=frets.map((f,i)=>f>0&&fing.fingers[i]===finger?i:-1).filter(i=>i>=0);if(indices.length>1){const start=indices[0],end=indices.at(-1),fret=frets[start];if(indices.every(i=>frets[i]===fret)&&frets.slice(start,end+1).every(f=>f>=fret))fing.barres.push({fret,from:start,to:end,finger});}}}
-seen.add(key);const first=frets.findIndex(f=>f>=0),positive=frets.filter(f=>f>0);const max=Math.max(...frets),span=positive.length?max-Math.min(...positive):0;
-result.push({frets,...fing,name,bass:mod(tuning[first]+frets[first]),score:(played[0]===chord.pc?0:100)+(manual?-30:0)+(name.includes('폼')?-10:0)+max*2+span+frets.filter(f=>f<0).length});
-}
-// Match open shapes by pitch too, so enharmonic roots retain useful open voicings.
-for(const [name,shapes] of Object.entries(open)){const c=parse(name);if(c.pc===chord.pc&&c.quality===chord.quality&&c.bassPc===chord.bassPc)shapes.forEach(([shape,fingers])=>add([...shape].map(f=>f==='x'?-1:Number(f)),'기본 운지',fingers));}
-if(chord.bassPc!==null)return result;
-for(const [shapeSet,rootPc,name] of [[eShapes,4,'E폼'],[aShapes,9,'A폼']]){
-const shape=shapeSet[chord.quality];if(!shape)continue;const first=mod(chord.pc-rootPc);for(const base of [first,first+12])if(Math.max(...shape)+base<=15)add(shape.map(f=>f<0?-1:f+base),base?name+' 바레':name+' 개방형');
-}
-// Additional movable triads and diminished/augmented forms, all checked above.
-const special={dim:[-1,0,1,2,1,-1],dim7:[-1,0,1,-1,1,2],aug:[-1,3,2,1,1,-1],m7b5:[-1,0,1,0,1,-1],'6':[-1,0,2,2,2,2],m6:[-1,0,2,2,1,2],'9':[-1,2,1,2,2,2],add9:[-1,0,2,4,2,0]};
-if(special[chord.quality]){const shape=special[chord.quality],reference=chord.quality==='aug'?0:chord.quality==='9'?11:9;const offset=mod(chord.pc-reference);for(const base of [offset,offset+12])if(Math.max(...shape)+base<=15)add(shape.map(f=>f<0?-1:f+base),'이동형 운지');}
-result.sort((a,b)=>a.score-b.score);return result.slice(0,12);
-}
-// A barre can cross higher frets, but never an open or muted string.
-function generatedFingering(frets){
-const fingers=Array(6).fill(0),barres=[];let finger=0;
-for(const fret of [...new Set(frets.filter(f=>f>0))].sort((a,b)=>a-b)){
-for(let i=0;i<6;i++){
-if(frets[i]!==fret||fingers[i])continue;
-let end=i;for(let j=i+1;j<6&&frets[j]>=fret;j++)if(frets[j]===fret)end=j;
-if(++finger>4)return null;
-for(let j=i;j<=end;j++)if(frets[j]===fret)fingers[j]=finger;
-if(end>i)barres.push({fret,from:i,to:end,finger});
-}}
-// shortcut: skip crowded four-finger grips until finger reach and barre angles can be modeled.
-const splitsOpenString=frets.some((f,i)=>f>0&&frets.slice(i+1,frets.lastIndexOf(f)).includes(0));
-if(finger===4&&(splitsOpenString||barres.some(barre=>barre.finger!==1)))return null;
-return {fingers,barres};
-}
-function voicingSubset(a,b){return a.every((fret,i)=>fret<0||fret===b[i]);}
-const maxFretSpan=3;
-function makeVoicings(chord){
-// Preserve the established grips and their ordering for the original vocabulary.
-const legacy=types[chord.quality]?legacyVoicings(chord):[];
-const pcs=chord.tones.map(t=>mod(chord.pc+t[0])),allowed=new Set(pcs);
-if(chord.bassPc!==null)allowed.add(chord.bassPc);
-const seen=new Set(),result=[];
-function add(frets,name,manual){
-const key=frets.join(',');if(seen.has(key))return;seen.add(key);
-const sounded=frets.flatMap((f,i)=>f<0?[]:[tuning[i]+f]);if(sounded.length<3)return;
-const positive=frets.filter(f=>f>0),low=positive.length?Math.min(...positive):0,high=positive.length?Math.max(...positive):0;
-const span=high-low;
-if(span>maxFretSpan||high>15||sounded.some(n=>!allowed.has(mod(n))))return;
-const bass=mod(Math.min(...sounded));if(chord.bassPc!==null&&bass!==chord.bassPc)return;
-const played=new Set(sounded.map(mod));const missing=chord.tones.map((t,i)=>played.has(pcs[i])?-1:i).filter(i=>i>=0);
-if(missing.some(i=>!chord.optional.includes(chord.degrees[i])))return;
-const fing=manual||generatedFingering(frets);if(!fing)return;
-const omitted=missing.map(i=>chord.tones[i][1]);
-const omissionCost=missing.reduce((n,i)=>n+({5:1,1:2,11:3,9:4}[chord.degrees[i]]||0),0);
-const inside=frets.slice(frets.findIndex(f=>f>=0),frets.findLastIndex(f=>f>=0)+1);
-const mutedInside=inside.filter(f=>f<0).length;
-const fingersUsed=new Set(fing.fingers.filter(Boolean)).size;
-const upperBarres=fing.barres.filter(barre=>barre.finger>1).length;
-const effort=mutedInside*24+span*10+fingersUsed**2*4+fing.barres.length*10+upperBarres*14;
-result.push({frets:[...frets],...fing,name,bass,omitted,span,score:(bass===chord.pc?0:100000)+missing.length*10000+omissionCost*100+low*10+high+effort-sounded.length});
-}
-legacy.forEach(v=>add(v.frets,v.name,{fingers:v.fingers,barres:v.barres}));
-// Windows include open strings at every position; permit one interior muted string.
-for(let base=1;base<=15;base++){
-const choices=tuning.map(n=>[-1,...Array.from({length:Math.min(15,base+maxFretSpan)-base+1},(_,j)=>base+j),0].filter(f=>f<0||allowed.has(mod(n+f))));
-const visit=(i,frets,count,gaps,ended)=>{
-if(i===6){if(count>=3)add(frets,'자동 생성 운지');return;}
-if(count+6-i<3)return;
-for(const f of choices[i]){
-if(f<0){visit(i+1,[...frets,f],count,gaps,count>0?true:ended);continue;}
-const nextGaps=gaps+(ended?1:0);if(nextGaps>1)continue;
-visit(i+1,[...frets,f],count+1,nextGaps,false);
-}};
-visit(0,[],0,0,false);
-}
-result.sort((a,b)=>Number(a.span===maxFretSpan)-Number(b.span===maxFretSpan)||a.score-b.score);
-const preserved=legacy.map(v=>result.find(r=>r.frets.join(',')===v.frets.join(','))).filter(Boolean)
-  .filter((v,i)=>v.span<maxFretSpan&&(i===0||v.name==='기본 운지'));
-const groups=new Map(),distinct=[];
-for(const voicing of [...preserved,...result.filter(v=>!preserved.includes(v))]){
-  const notes=voicing.frets.flatMap((fret,i)=>fret<0?[]:[tuning[i]+fret]);
-  const pitchMask=notes.reduce((mask,note)=>mask|(1<<mod(note)),0);
-  const key=`${voicing.bass}:${pitchMask}`;
-  const group=groups.get(key)||[];
-  // Keep the better-ranked grip when the other only adds or drops doubled notes.
-  if(group.some(frets=>voicingSubset(frets,voicing.frets)||voicingSubset(voicing.frets,frets)))continue;
-  group.push(voicing.frets);
-  groups.set(key,group);
-  distinct.push(voicing);
-  if(distinct.length===10)break;
-}
-return distinct;
-}
-// Optional regression check: run checkChordVoicings() in a console or Node VM.
-function checkChordVoicings(){
-const assert=(ok,message)=>{if(!ok)throw Error(message);};
-const cmaj7=makeVoicings(parse('Cmaj7')).map(v=>v.frets.join(','));
-assert(cmaj7[0]==='-1,3,2,0,0,0'&&!cmaj7.includes('-1,3,2,0,0,-1'),'Cmaj7: keep one open grip');
-assert(!['-1,3,2,0,0,3','-1,3,2,-1,0,3'].every(grip=>cmaj7.includes(grip)),'Cmaj7: doubled G variants');
-assert(cmaj7.length===10,'Cmaj7: keep the ten highest-ranked distinct voicings');
-const d=makeVoicings(parse('D')).map(v=>v.frets.join(','));
-assert(d.includes('-1,-1,0,7,7,5')&&!d.includes('-1,-1,-1,7,7,5'),'D: keep the grip with the open bass');
-for(const [name,standard,awkward] of [
-['Cm','-1,3,5,5,4,3','-1,3,1,0,1,3'],
-['D','-1,-1,0,2,3,2','-1,5,4,7,7,5']
-]){
-const grips=makeVoicings(parse(name));
-assert(grips[0]?.frets.join(',')===standard,name+': standard grip must come first');
-assert(generatedFingering(awkward.split(',').map(Number))===null,name+': awkward grip passed generation');
-assert(!grips.some(v=>v.frets.join(',')===awkward),name+': awkward grip shown');
-}
-const first={A:'-1,0,2,2,2,0',B:'-1,2,4,4,4,2',Am:'-1,0,2,2,1,0',C:'-1,3,2,0,1,0',Cadd9:'-1,3,2,0,3,3',G:'3,2,0,0,0,3',F:'1,3,3,2,1,1',E7:'0,2,0,1,0,0',Bm:'-1,2,4,4,3,2',Dmaj7:'-1,-1,0,2,2,2'};
-Object.assign(first,{'C/E':'0,3,2,0,1,0','C/G':'3,3,2,0,1,0','D/A':'-1,0,0,2,3,2','D/F#':'2,-1,0,2,3,2','G/B':'-1,2,0,0,3,3','Am/C':'-1,3,2,2,1,0'});
-const names=['F#m11','G#m7b13','Am9','Bm11','C#m7','E7#9','C7b9b13','Cm(maj7)','C6/9',...Object.keys(first)];
-for(const name of names){
-const chord=parse(name),grips=makeVoicings(chord),allowed=new Set(chord.tones.map(t=>mod(chord.pc+t[0])));
-if(chord.bassPc!==null)allowed.add(chord.bassPc);
-assert(grips.length>0,name+': no voicings');
-assert(grips.every((v,i)=>v.span!==maxFretSpan||grips.slice(i).every(grip=>grip.span===maxFretSpan)),name+': narrow grips must come first');
-if(first[name])assert(grips[0].frets.join(',')===first[name],name+': first voicing changed');
-assert(new Set(grips.map(v=>v.frets.join(','))).size===grips.length,name+': duplicate');
-for(const v of grips){
-const notes=v.frets.flatMap((f,i)=>f<0?[]:[tuning[i]+f]),fretted=v.frets.filter(f=>f>0);
-assert(notes.every(n=>allowed.has(mod(n))),name+': non-chord tone');
-assert(v.frets.every(f=>f>=-1&&f<=15),name+': fret range');
-assert(!fretted.length||Math.max(...fretted)-Math.min(...fretted)<=3,name+': span');
-assert(v.fingers.every((f,i)=>v.frets[i]>0?f>=1&&f<=4:f===0),name+': fingers');
-for(const finger of new Set(v.fingers.filter(Boolean))){
-const strings=v.fingers.flatMap((f,i)=>f===finger?[i]:[]);
-if(strings.length<2)continue;
-assert(v.barres.some(b=>b.finger===finger&&b.from===strings[0]&&b.to===strings.at(-1)&&strings.every(i=>v.frets[i]===b.fret)&&v.frets.slice(b.from,b.to+1).every(f=>f>=b.fret)),name+': finger assigned to separate strings');
-}
-assert(chord.bassPc===null||mod(Math.min(...notes))===chord.bassPc,name+': slash bass');
-assert(chord.tones.every((t,i)=>notes.some(n=>mod(n)===mod(chord.pc+t[0]))||chord.optional.includes(chord.degrees[i])),name+': required tone omitted');
-}}
-return true;
-}
-// Reuse the search parser for chord formulas, spellings and optional degrees.
-const identifyRoots=['C','C#','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
-const identifyEnharmonics={'C#':'Db','Eb':'D#','F#':'Gb','Ab':'G#','Bb':'A#'};
-const identifyQualities=[...new Set([...Object.keys(types),'m9','maj9','11','m11','maj11','13','m13','maj13','madd9','add11','madd11','6add9','m6add9','m(maj7)','m(maj9)','7sus2','7sus4','9sus4','13sus4','7b5','7#5','7b9','7#9','7b13','7b9b13','7#9b13','9#11','maj7#11','maj9#11','m7b13'])];
-const identifyFormulas=identifyRoots.flatMap(root=>identifyQualities.map(quality=>parse(root+quality)));
-function identifyChord(frets){
-if(!Array.isArray(frets)||frets.length!==6||frets.some(f=>!Number.isInteger(f)||f< -1||f>24))throw Error('6개 줄에 -1부터 24까지의 프렛을 입력해 주세요.');
-const notes=frets.flatMap((f,i)=>f<0?[]:[tuning[i]+f]);
-const pcs=[...new Set(notes.map(mod))];if(pcs.length<2)return [];
-const bass=mod(Math.min(...notes)),result=[];
-for(const chord of identifyFormulas){
-const chordPcs=chord.tones.map(t=>mod(chord.pc+t[0]));
-const extra=pcs.filter(pc=>!chordPcs.includes(pc));
-// A non-chord pedal bass is supported only below a complete chord.
-if(extra.some(pc=>pc!==bass)||extra.length>1)continue;
-const missing=chord.tones.filter((t,i)=>!pcs.includes(chordPcs[i]));
-if(missing.some(t=>!chord.optional.includes(chord.degrees[chord.tones.indexOf(t)])&&t[1]!=='5'))continue;
-if(pcs.filter(pc=>chordPcs.includes(pc)).length<2||(extra.length&&missing.length))continue;
-const omitted=missing.map(t=>t[1]);
-const suffix=missing.map(t=>'no'+chord.degrees[chord.tones.indexOf(t)]).join('');
-const slash=bass!==chord.pc;
-// The search parser accepts single accidentals in slash bass names.
-const bassSpelling=c=>{const name=noteName(c,bass);return chordPcs.includes(bass)&&name.length<=2?name:identifyRoots[bass];};
-const bassName=bassSpelling(chord);
-const label=chord.root+chord.quality+(suffix?'('+suffix+')':'')+(slash?'/'+bassName:'');
-const alternate=identifyEnharmonics[chord.root];
-let alias=null;
-if(alternate){const alt=parse(alternate+chord.quality);const altBass=bassSpelling(alt);alias=alternate+chord.quality+(suffix?'('+suffix+')':'')+(slash?'/'+altBass:'');}
-result.push({label,alias,chord,bass,omitted,notes:pcs,slash,nonChordBass:extra.length>0,score:(slash?1000:0)+missing.length*100+extra.length*30+chord.tones.length});
-}
-return result.sort((a,b)=>a.score-b.score||a.label.localeCompare(b.label)).slice(0,12);
-}
-// Optional pure-function regression check for Node VM: checkChordIdentification().
-function checkChordIdentification(){
-const assert=(ok,message)=>{if(!ok)throw Error(message);};
-for(const [shape,name] of Object.entries({x02220:'A','133211':'F',x32010:'C','022000':'Em',x43121:'C#',x02413:'Am9'})){
-const candidates=identifyChord([...shape].map(f=>f==='x'?-1:Number(f)));
-assert(candidates[0]?.label===name,shape+': expected '+name+', got '+candidates[0]?.label);
-}
-assert(identifyChord([-1,0,2,0,1,0])[0].label==='Am7','bass root preferred over C6/A');
-assert(identifyChord([-1,4,3,1,2,1])[0].alias==='Db','enharmonic name');
-assert(identifyChord([-1,-1,-1,-1,-1,-1]).length===0,'empty input');
-assert(identifyChord([0,-1,-1,-1,-1,0]).length===0,'single pitch class');
-assert(identifyChord([12,3,2,0,1,0])[0].label==='C','actual lowest pitch');
-assert(identifyChord([0,3,2,0,1,0]).some(c=>c.label==='C/E'),'inversion');
-assert(identifyChord([2,3,2,0,1,0]).some(c=>c.label==='C/F#'),'non-chord slash bass');
-assert(identifyChord([-1,0,-1,0,2,-1]).some(c=>c.label==='A7(no5)'),'omitted fifth');
-assert(identifyChord([-1,-1,2,4,1,3]).some(c=>c.label==='Am9(no1)/E'),'omitted root');
-let rejected=false;try{identifyChord([25,0,0,0,0,0]);}catch(_){rejected=true;}assert(rejected,'invalid fret');
-return true;
-}
-let current=null,voicings=[],position=0;
-const svg=(body,view,cls,label)=>`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${view}" class="${cls}" role="img" aria-label="${label}">${body}</svg>`;
-function diagram(v,editBase=null){
-if(!v)return '<p class="empty">4프렛 범위에서 추천할 운지를 찾지 못했습니다.</p>';
-const f=v.frets,max=Math.max(...f),positive=f.filter(n=>n>0),base=editBase??(max<=5?1:Math.min(...positive)),x=i=>editBase===null?59+i*35:22+i*44,rowHeight=editBase===null?40:44,y=n=>67+(n-base+.5)*rowHeight;
-let s='';if(base>1)s+=`<text x="${editBase===null?10:0}" y="${editBase===null?49:16}" font-size="14" fill="var(--muted)">${base}fr</text>`;
-for(let fret=base;fret<base+5;fret++){
-  const position=fret%12;
-  const dots=position===0?[-5,5]:[3,5,7,9].includes(position)?[0]:[];
-  for(const offset of dots)s+=`<circle cx="${x(0)-22}" cy="${y(fret)+offset}" r="3" fill="var(--inlay)" aria-hidden="true" pointer-events="none"/>`;
-}
-for(let n=0;n<=5;n++)s+=`<line x1="${x(0)}" x2="${x(5)}" y1="${67+n*rowHeight}" y2="${67+n*rowHeight}" stroke="var(--fret)" stroke-width="${n===0&&base===1?6:1.3}"/>`;
-for(let i=0;i<6;i++){s+=`<line x1="${x(i)}" x2="${x(i)}" y1="67" y2="${67+5*rowHeight}" stroke="var(--string)" stroke-width="${2-i*.18}"/>`;
-if(f[i]<=0||editBase!==null)s+=`<text x="${x(i)}" y="49" text-anchor="middle" font-size="17" fill="var(--ink)">${f[i]===0?'O':f[i]<0?'X':'—'}</text>`;
-s+=`<text x="${x(i)}" y="${90+5*rowHeight}" text-anchor="middle" font-size="12" fill="var(--muted)">${['E','A','D','G','B','e'][i]}</text>`;}
-for(const b of v.barres.filter(b=>editBase===null||(b.fret>=base&&b.fret<base+5)))s+=`<line x1="${x(b.from)}" x2="${x(b.to)}" y1="${y(b.fret)}" y2="${y(b.fret)}" stroke="var(--green)" stroke-width="25" stroke-linecap="round"/>`;
-f.forEach((n,i)=>{if(n>0&&(editBase===null||(n>=base&&n<base+5)))s+=`<circle cx="${x(i)}" cy="${y(n)}" r="12.5" fill="var(--green)"/><text x="${x(i)}" y="${y(n)+4.5}" text-anchor="middle" font-size="13" font-weight="700" fill="var(--on-green)">${editBase===null?v.fingers[i]:''}</text>`;});
-if(editBase!==null){
-for(let i=0;i<6;i++)for(let row=-1;row<5;row++){
-const fret=row<0?0:base+row,top=row<0?23:67+row*44;
-s+=`<g class="identify-hit" role="button" tabindex="0" data-string="${i}" data-fret="${fret}" aria-label="${6-i}번 줄 ${row<0?'개방현 / 뮤트 전환':fret+'프렛'}" aria-pressed="${row<0?f[i]===0:f[i]===fret}"><rect x="${x(i)-22}" y="${top}" width="44" height="44" fill="transparent"/></g>`;
-}
-return svg(s,'-8 0 272 330','diagram diagram-editor',`운지 입력, ${base}–${base+4}프렛`).replace('role="img"','role="group"');
-}
-return svg(s,'0 0 290 310','diagram',`${current.label} 운지, 6번 줄부터 ${f.map(n=>n<0?'뮤트':n+'프렛').join(', ')}`);
-}
 function neck(v){const x=f=>f===0?59:112+(f-1)*62,y=i=>35+(5-i)*35;let s='';
 for(let f=0;f<=15;f++)s+=`<text x="${x(f)}" y="17" text-anchor="middle" fill="var(--muted)" font-size="12">${f}</text>`;
 s+='<rect x="81" y="30" width="930" height="185" rx="4" fill="var(--neck)"/>';
@@ -743,312 +401,9 @@ return svg(s,'0 0 1040 237','neck',`${current.label} 코드 구성음의 전체 
 function render(){const v=voicings[position];$('chord-title').textContent=current.label;$('quality').textContent=current.name;$('diagram').innerHTML=diagram(v);$('counter').textContent=voicings.length?`보이싱 ${position+1}/${voicings.length}`:'보이싱 없음';$('prev').disabled=$('next').disabled=voicings.length<2;$('play').disabled=!v;
 $('tones').replaceChildren(...current.tones.map(t=>{const div=document.createElement('div');div.className='tone'+(t[0]===0?' root':'');const strong=document.createElement('strong'),small=document.createElement('small');strong.textContent=toneName(current,t);small.textContent=t[1];div.append(strong,small);return div;}));
 $('frets').textContent=v?v.frets.map(f=>f<0?'X':f).join(' · '):'—';$('bass').textContent=v?noteName(current,v.bass)+(v.bass===current.pc?' · 근음':' · 전위형'):'—';$('shape').textContent=v?v.name+(v.omitted.length?' · 생략: '+v.omitted.join(', '):''):'—';$('neck').innerHTML=neck(v);$('audio-status').textContent='';document.querySelectorAll('#quick button').forEach(b=>b.setAttribute('aria-pressed',String(b.textContent===current.label)));}
-function syncFilters(chord){const kind=filterKinds.find(k=>k.quality===chord.quality),bass=chord.bassNote||'none';if(!kind||!filterRoots.includes(chord.root)||(bass!=='none'&&!filterRoots.includes(bass)))return;if(!chordFilterResults(filterRoot,filterKind,filterBass).includes(chord.label)){filterRoot=chord.root;filterKind=kind.label;filterBass=bass;}if(document.getElementById('root-filter'))renderFilters();}
-function find(value){try{const parsed=parse(value);const shapes=makeVoicings(parsed);current=parsed;voicings=shapes;position=0;syncFilters(parsed);$('error').textContent='';$('chord-input').removeAttribute('aria-invalid');render();}catch(error){$('error').textContent=error.message;$('chord-input').setAttribute('aria-invalid','true');}}
-let identifyFrets=Array(6).fill(-1),identifyStart=1;
-const displayChord=name=>name.replace(/#/g,'♯').replace(/b/g,'♭');
-let identifyPlaybackRequest=0;
-async function playIdentifyFrets(){
-const frets=identifyFrets.slice(),pcs=new Set(frets.flatMap((f,i)=>f<0?[]:[mod(tuning[i]+f)]));
-if(pcs.size<2){$('identify-audio-status').textContent='소리를 들으려면 치는 줄이 두 개 이상이고 서로 다른 음이 두 개 이상 있어야 합니다.';return;}
-stopPlayback();
-const request=identifyPlaybackRequest;
-try{
-const ctx=await prepareAudio();
-if(request!==identifyPlaybackRequest||document.hidden)return;
-const tones=scheduleChord(ctx,frets,ctx.currentTime+.03);
-const voices=tones.map(t=>t.voice);
-playing=voices;$('identify-audio-status').textContent='입력 운지 재생 중';
-tones[tones.length-1].oscs[0].addEventListener('ended',()=>{
-if(request!==identifyPlaybackRequest)return;
-playing=[];$('identify-audio-status').textContent='재생 완료';
-});
-confirmPlayback(ctx,()=>request===identifyPlaybackRequest,()=>{$('identify-audio-status').textContent=audioFailure;});
-}catch(_){if(request===identifyPlaybackRequest)$('identify-audio-status').textContent=audioFailure;}
-}
-function renderIdentify(){
-// Display barres independently of whether a grip fits within four fingers.
-const barres=[];
-for(const fret of new Set(identifyFrets.filter(f=>f>0))){
-for(let i=0;i<6;i++){if(identifyFrets[i]!==fret)continue;let end=i;for(let j=i+1;j<6&&identifyFrets[j]>=fret;j++)if(identifyFrets[j]===fret)end=j;if(end>i){barres.push({fret,from:i,to:end});i=end;}}
-}
-$('identify-diagram').innerHTML=diagram({frets:identifyFrets,fingers:[],barres},identifyStart);
-$('identify-frets').textContent=identifyFrets.map(f=>f<0?'X':f).join(' · ');
-const candidates=identifyChord(identifyFrets);
-const pcs=[...new Set(identifyFrets.flatMap((f,i)=>f<0?[]:[mod(tuning[i]+f)]))];
-const offscreen=identifyFrets.some(f=>f>0&&(f<identifyStart||f>=identifyStart+5));
-$('identify-status').textContent=(pcs.length<2?'서로 다른 음을 두 개 이상 선택해 주세요.':candidates.length?`${candidates.length}개 후보 · 최저음 ${displayChord(identifyRoots[candidates[0].bass])}`:`일치하는 후보가 없습니다. 구성음: ${pcs.map(pc=>displayChord(identifyRoots[pc])).join(' · ')}`)+(offscreen?' · 표시 범위 밖에도 누른 음이 있습니다.':'');
-const sounding=identifyFrets.filter(f=>f>=0).length,canPlay=sounding>=2&&pcs.length>=2;
-$('identify-play').disabled=!canPlay;
-$('identify-play').setAttribute('aria-label',canPlay?'입력 운지 소리 듣기':'입력 운지가 부족해 소리를 들을 수 없습니다');
-$('identify-candidates').replaceChildren(...candidates.map(candidate=>{
-const li=document.createElement('li'),button=document.createElement('button'),title=document.createElement('strong'),details=document.createElement('small'),tones=document.createElement('small');
-button.type='button';title.textContent=displayChord(candidate.label)+(candidate.alias?' / '+displayChord(candidate.alias):'');
-details.textContent=(candidate.slash?(candidate.nonChordBass?'슬래시 코드 · 비구성음 베이스':'슬래시 코드 · 전위형'):'최저음 = 근음')+(candidate.omitted.length?' · 생략: '+candidate.omitted.join(', '):' · 구성음 일치');
-tones.textContent='구성음 · 음정: '+candidate.chord.tones.filter(t=>candidate.notes.includes(mod(candidate.chord.pc+t[0]))).map(t=>displayChord(toneName(candidate.chord,t))+' ('+t[1]+')').join(' · ')+(candidate.nonChordBass?' · 베이스 '+displayChord(identifyRoots[candidate.bass]):'');
-button.append(title,details,tones);
-button.addEventListener('click',()=>{
-  const url=new URL($('chords-tab').href);
-  url.searchParams.set('chord',candidate.label);
-  location.assign(url.href);
-});
-li.append(button);return li;
-}));
-}
-function toggleIdentify(event){
-const target=event.target.closest('[data-string]');if(!target)return;
-if(event.type==='keydown'){if(!['Enter',' '].includes(event.key))return;event.preventDefault();}
-const i=Number(target.dataset.string),fret=Number(target.dataset.fret);
-stopPlayback();
-identifyFrets[i]=fret===0?(identifyFrets[i]===0?-1:0):(identifyFrets[i]===fret?-1:fret);
-renderIdentify();$('identify-diagram').querySelector(`[data-string="${i}"][data-fret="${fret}"]`).focus();
-}
-if(ready(['identify'])){$('identify-diagram').addEventListener('click',toggleIdentify);$('identify-diagram').addEventListener('keydown',toggleIdentify);$('identify-start').addEventListener('change',()=>{identifyStart=Math.max(1,Math.min(20,Math.round(Number($('identify-start').value)||1)));$('identify-start').value=identifyStart;renderIdentify();});$('identify-reset').addEventListener('click',()=>{stopPlayback();identifyFrets=Array(6).fill(-1);identifyStart=1;$('identify-start').value=1;renderIdentify();});$('identify-play').addEventListener('click',playIdentifyFrets);renderIdentify();}
-if(ready(['chords']))$('search').addEventListener('submit',e=>{e.preventDefault();find($('chord-input').value);});
-// Chord filter functions:
-const filterRoots=['C','D','E','F','G','A','B','C#','D#','F#','G#','A#'];
-const filterKinds=[['M','',''],['m','m','m'],['7','7','7'],['M7','maj7','maj7'],['m7','m7','m7'],['sus2','sus2','sus2'],['sus4','sus4','sus4'],['dim','dim','dim'],['aug','aug','aug'],['6','6','6'],['m6','m6','m6'],['add9','add9','add9'],['9','9','9'],['m9','m9','m9'],['m11','m11','m11'],['dim7','dim7','dim7'],['m7b5','m7b5','m7b5']].map(([label,suffix,quality])=>({label,suffix,quality}));
-const filterPc={C:0,D:2,E:4,F:5,G:7,A:9,B:11,'C#':1,'D#':3,'F#':6,'G#':8,'A#':10};
-// bass: 'none' = plain chord without slash, 'all' = plain chord plus every slash bass, or one note name.
-function chordFilterResults(root,kind,bass='none'){
-  const roots=root==='all'?filterRoots:filterRoots.filter(r=>r===root),kinds=kind==='all'?filterKinds:filterKinds.filter(k=>k.label===kind);
-  const basses=bass==='none'?[null]:bass==='all'?[null,...filterRoots]:filterRoots.filter(n=>n===bass);
-  const names=[];
-  for(const r of roots)for(const k of kinds)for(const b of basses){
-    if(b&&filterPc[b]===filterPc[r])continue;
-    try{const c=parse(r+k.suffix+(b?'/'+b:''));if(c.root===r&&c.quality===k.quality&&(b?c.bassNote===b:!c.bassNote))names.push(c.label);}catch(_){}
-  }
-  return names;
-}
-// End chord filter functions.
-let filterRoot='C',filterKind='M',filterBass='none';
-const filterListLimit=96;
-function filterButton(text,pressed,onClick,label){const b=document.createElement('button');b.type='button';b.textContent=text;b.setAttribute('aria-pressed',String(pressed));if(label)b.setAttribute('aria-label',label);b.addEventListener('click',onClick);return b;}
-function fillSelect(id,options,value,onChange){
-  const select=$(id);
-  if(!select.options.length){for(const [v,text] of options){const o=document.createElement('option');o.value=v;o.textContent=text;if(v==='none')o.title='슬래시 없는 일반 코드';if(v==='all'&&id==='bass-filter')o.title='일반 코드와 모든 슬래시 베이스';select.append(o);}select.addEventListener('change',()=>onChange(select.value));}
-  select.value=value;
-}
-function renderFilters(){
-  const word=value=>value==='all'?'전체':value==='none'?'일반(슬래시 없음)':value;
-  fillSelect('root-filter',[['all','전체'],...filterRoots.map(r=>[r,r])],filterRoot,v=>setFilters(v,filterKind,filterBass));
-  fillSelect('kind-filter',[['all','전체'],...filterKinds.map(k=>[k.label,k.label])],filterKind,v=>setFilters(filterRoot,v,filterBass));
-  fillSelect('bass-filter',[['none','일반'],['all','전체'],...filterRoots.map(n=>[n,n])],filterBass,v=>setFilters(filterRoot,filterKind,v));
-  const names=chordFilterResults(filterRoot,filterKind,filterBass),shown=names.slice(0,filterListLimit);
-  $('quick').replaceChildren(...shown.map(name=>filterButton(name,current&&current.label===name,()=>{$('chord-input').value=name;find(name);})));
-  $('filter-empty').hidden=names.length>0;$('quick').hidden=!names.length;
-  const status=$('filter-status');status.textContent='';
-  status.append(`기본음 ${word(filterRoot)} · 종류 ${word(filterKind)} · 베이스 ${word(filterBass)} → ${names.length}개`);
-  if(names.length===1){const strong=document.createElement('strong');strong.textContent=names[0];status.append(' · ',strong);}
-  if(names.length>shown.length)status.append(` (앞의 ${shown.length}개만 표시 · 필터를 좁혀 보세요)`);
-  return names;
-}
-function setFilters(root,kind,bass=filterBass){
-  filterRoot=root;filterKind=kind;filterBass=bass;const names=renderFilters();
-  if(names.length&&!(current&&names.includes(current.label))){$('chord-input').value=names[0];find(names[0]);}
-}
-if(ready(['chords'])){$('filter-reset').addEventListener('click',()=>{setFilters('C','M','none');if($('chord-input').value!=='C'||!current||current.label!=='C'){$('chord-input').value='C';find('C');}});renderFilters();$('prev').addEventListener('click',()=>{if(voicings.length){position=modIndex(position-1);render();}});$('next').addEventListener('click',()=>{if(voicings.length){position=modIndex(position+1);render();}});}
-function modIndex(n){return(n+voicings.length)%voicings.length;}
-let audioContext=null,playing=[],captureActive=()=>false;
-// iOS Web Audio can stay suspended/interrupted after backgrounding and is routed as "ambient" by default; prepare it on every explicit tap and fail visibly instead of reporting playback.
-function setAudioSession(type){try{if(navigator.audioSession&&navigator.audioSession.type!==type)navigator.audioSession.type=type;}catch(_){}}
-async function resumeAudio(context){if(context.state==='running')return true;try{await Promise.race([context.resume(),new Promise(resolve=>setTimeout(resolve,1500))]);}catch(_){}return context.state==='running';}
-async function prepareAudio(){
-const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)throw Error('unsupported');
-// A 'playback' session ends a live microphone track (W3C Audio Session), so keep 'auto' while the tuner listens.
-setAudioSession(captureActive()?'auto':'playback');
-if(audioContext&&audioContext.state==='closed')audioContext=null;
-if(!audioContext)audioContext=new Audio();
-if(await resumeAudio(audioContext))return audioContext;
-const stale=audioContext;audioContext=new Audio();try{stale.close();}catch(_){}
-if(await resumeAudio(audioContext))return audioContext;
-throw Error('audio-not-running');
-}
-// Capture switches the iOS session/route and can leave an older output context silent; rebuild it on the next tap.
-function retirePlaybackContext(){const old=audioContext;audioContext=null;if(old){try{old.close();}catch(_){}}}
-// Report failure if the context stops right after scheduling instead of leaving a false "playing" status.
-function confirmPlayback(ctx,stillCurrent,onFail){setTimeout(()=>{if(stillCurrent()&&(audioContext!==ctx||ctx.state!=='running'))onFail();},400);}
-const audioFailure='소리를 재생할 수 없습니다. 같은 버튼을 한 번 더 눌러 다시 시도하고, 계속되면 페이지를 새로고침해 주세요.';
-const chordLevel=.82,chordDecay=2.8,referenceLevel=.36,referenceDecay=1.7;
-function audioBus(ctx){
-if(!ctx.chordBus){const comp=ctx.createDynamicsCompressor(),master=ctx.createGain();comp.threshold.value=-12;comp.knee.value=10;comp.ratio.value=12;comp.attack.value=.003;comp.release.value=.2;master.connect(comp);comp.connect(ctx.destination);ctx.chordBus=master;}
-return ctx.chordBus;
-}
-function scheduleTone(ctx,out,frequency,at,peak,decay,weights,attack){
-const gain=ctx.createGain(),release=ctx.createGain(),oscs=[],end=at+decay+.1;
-gain.gain.setValueAtTime(0,at);gain.gain.linearRampToValueAtTime(peak,at+attack);gain.gain.exponentialRampToValueAtTime(.0001,at+decay);gain.gain.linearRampToValueAtTime(0,end);
-gain.connect(release);release.connect(out);
-weights.forEach((weight,k)=>{const osc=ctx.createOscillator(),level=ctx.createGain();osc.type='sine';osc.frequency.setValueAtTime(frequency*(k+1),at);level.gain.value=weight;osc.connect(level);level.connect(gain);osc.start(at);osc.stop(end);oscs.push(osc);osc.addEventListener('ended',()=>{osc.disconnect();level.disconnect();if(k===weights.length-1){gain.disconnect();release.disconnect();}});});
-let stopped=false;
-return {oscs,voice:{stop(){
-const now=ctx.currentTime;
-if(stopped||now>=end)return;
-stopped=true;
-// Fade separately so the natural decay never jumps back to its attack level.
-const stopAt=now<at?now:Math.min(end,now+.02);
-if(now>=at){release.gain.setValueAtTime(1,now);release.gain.linearRampToValueAtTime(0,stopAt);}
-for(const osc of oscs)osc.stop(stopAt);
-}}};
-}
-// Give low strings enough upper harmonics for their pitch to come through on phone speakers.
-const chordBassWeights=[1,.75,.52,.35,.24,.16],chordWeights=[1,.25,1/9,1/16];
-function scheduleChord(ctx,fretsList,at){
-const notes=fretsList.flatMap((f,i)=>f<0?[]:[{midi:tuning[i]+f,low:i<2}]);
-return scheduleChordNotes(ctx,notes,at);
-}
-function scheduleChordNotes(ctx,notes,at,decay=chordDecay,level=1){
-return notes.map(({midi,low},n)=>{
-const weights=low?chordBassWeights:chordWeights;
-const peak=level*chordLevel/(notes.length*weights.reduce((sum,weight)=>sum+weight,0));
-return scheduleTone(ctx,ctx.destination,440*Math.pow(2,(midi-69)/12),at+n*.032,peak,decay,weights,.012);
-});
-}
-// Phone speakers barely reproduce the low-string fundamentals, so upper partials carry the pitch there.
-const referenceWeights=[1,.6,.45,.35,.25,.15];
-function scheduleReference(ctx,frequency,at){return scheduleTone(ctx,audioBus(ctx),frequency,at,referenceLevel,referenceDecay,referenceWeights,.025);}
-if(ready(['chords']))$('play').addEventListener('click',async()=>{const v=voicings[position];if(!v)return;try{await prepareAudio();if($('chords-panel').hidden)return;for(const node of playing){try{node.stop();}catch(_){}}playing=[];
-const ctx=audioContext,voices=scheduleChord(ctx,v.frets,ctx.currentTime+.03).map(t=>t.voice);playing=voices;$('audio-status').textContent='현재 보이싱을 연주합니다.';confirmPlayback(ctx,()=>playing===voices,()=>{$('audio-status').textContent=audioFailure;});}catch(_){$('audio-status').textContent=audioFailure}});
-// YIN: cumulative mean normalized difference, then a parabolic period estimate.
-// Kept independent of the DOM so synthetic signals can exercise the real detector in Node.
-function detectPitch(samples,sampleRate){
-// Average down to at most 24 kHz to keep the longer buffer inexpensive.
-const stride=Math.max(1,Math.ceil(sampleRate/24000));
-if(stride>1){
-const reduced=new Float32Array(Math.floor(samples.length/stride));
-for(let i=0;i<reduced.length;i++){let sum=0;for(let j=0;j<stride;j++)sum+=samples[i*stride+j];reduced[i]=sum/stride;}
-samples=reduced;sampleRate/=stride;
-}
-const size=Math.floor(samples.length/2),maxLag=Math.min(size-1,Math.ceil(sampleRate/70)+1),minLag=Math.max(2,Math.floor(sampleRate/1000)-1);
-let mean=0;for(const value of samples)mean+=value;mean/=samples.length;
-let energy=0;for(const value of samples)energy+=(value-mean)**2;
-if(Math.sqrt(energy/samples.length)<.00015)return null;
-const difference=new Float64Array(maxLag+1);let sum=0;
-for(let lag=1;lag<=maxLag;lag++){
-let squared=0;for(let i=0;i<size;i++){const delta=samples[i]-samples[i+lag];squared+=delta*delta;}
-sum+=squared;difference[lag]=sum?squared*lag/sum:1;
-}
-let periodLag=0;
-for(let lag=minLag;lag<maxLag;lag++){
-if(difference[lag]>.15)continue;
-while(lag+1<maxLag&&difference[lag+1]<difference[lag])lag++;
-periodLag=lag;break;
-}
-if(!periodLag||periodLag>=maxLag)return null;
-// A dominant overtone can pass YIN first. Prefer a multiple only when its
-// periodicity is substantially better; pure high notes must retain their octave.
-const firstLag=periodLag;
-for(let multiple=2;multiple<=4;multiple++){
-const expected=firstLag*multiple,radius=Math.ceil(multiple*1.5);
-let best=0;
-for(let lag=Math.max(minLag,expected-radius);lag<Math.min(maxLag,expected+radius+1);lag++){
-if(!best||difference[lag]<difference[best])best=lag;
-}
-if(best&&difference[best]<difference[periodLag]*.25&&difference[periodLag]-difference[best]>.008)periodLag=best;
-}
-const left=difference[periodLag-1],center=difference[periodLag],right=difference[periodLag+1],curve=left-2*center+right;
-const period=periodLag+(curve?(left-right)/(2*curve):0),frequency=sampleRate/period;
-// Allow the interpolation's three-cent error margin at the range edges.
-const edgeTolerance=2**(3/1200);
-return frequency>=70/edgeTolerance&&frequency<=1000*edgeTolerance?Math.max(70,Math.min(1000,frequency)):null;
-}
+// Lighter beats are up strokes over the top strings.
+function scheduleChordNotes(ctx,notes,at,decay=chordDecay,level=1){return scheduleStrum(ctx,notes.map(note=>note.midi),at,{decay,level,up:level<1});}
 
-const stringNames=['E2','A2','D3','G3','B3','E4'];
-const stringFrequency=(index,a=440)=>a*2**((tuning[index]-69)/12);
-const pitchCents=(frequency,target)=>1200*Math.log2(frequency/target);
-function nearestString(frequency,a){let best=0;for(let i=1;i<tuning.length;i++)if(Math.abs(pitchCents(frequency,stringFrequency(i,a)))<Math.abs(pitchCents(frequency,stringFrequency(best,a))))best=i;return best;}
-let concertA=440,selectedString=null,micContext=null,micStream=null,micSource=null,micGain=null,analyser=null,micTimer=null,micRequest=0;
-let recentPitches=[],lastPitchAt=0,referenceUntil=0,playbackRequest=0;
-function resetTuner(){
-recentPitches=[];lastPitchAt=0;
-$('tuner-display').className='panel tuner-display waiting';
-$('tuner-target').textContent=selectedString===null?'자동 줄 인식 · 소리를 기다립니다':`${6-selectedString}번 줄 · 목표 ${stringNames[selectedString]} · ${stringFrequency(selectedString,concertA).toFixed(2)} Hz`;
-$('tuner-note').textContent=selectedString===null?'—':stringNames[selectedString];
-$('tuner-frequency').textContent=`기준음 A4 = ${concertA} Hz`;
-$('tuner-cents').textContent='— 센트';$('tuner-needle').style.transform='rotate(0deg)';
-$('tuner-advice').textContent=micStream?'한 줄을 튕겨 주세요.':'마이크를 켜고 한 줄을 튕겨 주세요.';
-for(const button of $('string-select').children)button.classList.remove('detected');
-}
-function showPitch(frequency){
-const index=selectedString===null?nearestString(frequency,concertA):selectedString,target=stringFrequency(index,concertA),cents=pitchCents(frequency,target),inTune=Math.abs(cents)<=5;
-$('tuner-display').className='panel tuner-display'+(inTune?' in-tune':'');
-$('tuner-target').textContent=`${selectedString===null?'자동 인식 · ':''}${6-index}번 줄 · 목표 ${stringNames[index]} · ${target.toFixed(2)} Hz`;
-$('tuner-note').textContent=stringNames[index];$('tuner-frequency').textContent=`감지 ${frequency.toFixed(2)} Hz · A4 = ${concertA} Hz`;
-$('tuner-cents').textContent=`${cents>0?'+':''}${cents.toFixed(1)} 센트`;
-$('tuner-needle').style.transform=`rotate(${Math.max(-50,Math.min(50,cents))*1.2}deg)`;
-const advice=inTune?'맞음 · 정확한 음이에요':cents<0?'낮음 · 줄을 조금 더 조여 주세요':'높음 · 줄을 조금 풀어 주세요';
-if($('tuner-advice').textContent!==advice)$('tuner-advice').textContent=advice;
-Array.from($('string-select').children).forEach((button,i)=>button.classList.toggle('detected',i===index));
-}
-function stopPlayback(){playbackRequest++;identifyPlaybackRequest++;referenceUntil=0;for(const node of playing){try{node.stop();}catch(_){}}playing=[];for(const id of ['reference-status','identify-audio-status']){const status=$(id);if(status)status.textContent='';}}
-function stopMicrophone(message='마이크가 꺼졌습니다. 다시 켜서 튜닝을 시작하세요.'){
-const wasCapturing=!!(micStream||micContext);micRequest++;clearInterval(micTimer);micTimer=null;
-if(micStream)micStream.getTracks().forEach(track=>track.stop());micStream=null;
-if(micSource)micSource.disconnect();micSource=null;
-if(micGain)micGain.disconnect();micGain=null;analyser=null;
-if(micContext){micContext.close().catch(()=>{});micContext=null;}
-$('mic-toggle').disabled=false;$('mic-toggle').textContent='마이크 켜기';$('mic-toggle').setAttribute('aria-pressed','false');
-$('mic-status').textContent=message;resetTuner();
-if(wasCapturing)retirePlaybackContext();
-}
-captureActive=()=>!!micStream;
-if(ready(['tuner']))$('mic-toggle').addEventListener('click',async()=>{
-if(micStream){stopMicrophone();return;}
-if(!window.isSecureContext){$('mic-status').textContent='마이크를 사용하려면 HTTPS 주소 또는 localhost에서 열어 주세요. 기준음 듣기는 그대로 사용할 수 있어요.';return;}
-const Audio=window.AudioContext||window.webkitAudioContext;
-if(!navigator.mediaDevices?.getUserMedia||!Audio){$('mic-status').textContent='이 브라우저는 마이크 튜닝을 지원하지 않습니다. 최신 Chrome, Edge, Safari에서 열거나 기준음 듣기를 이용해 주세요.';return;}
-const request=++micRequest;let context=null,stream=null;
-$('mic-toggle').disabled=true;$('mic-status').textContent='브라우저에서 마이크 사용을 허용해 주세요.';
-try{
-stopPlayback();retirePlaybackContext();setAudioSession('auto');context=new Audio();micContext=context;await context.resume();
-if(request!==micRequest)return;
-stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false},video:false});
-if(request!==micRequest||$('tuner-panel').hidden||document.hidden){stream.getTracks().forEach(track=>track.stop());return;}
-micStream=stream;micSource=context.createMediaStreamSource(stream);analyser=context.createAnalyser();analyser.fftSize=context.sampleRate>48000?16384:8192;analyser.smoothingTimeConstant=0;
-micGain=context.createGain();micGain.gain.value=Number($('mic-sensitivity').value);micSource.connect(micGain);micGain.connect(analyser);
-const samples=new Float32Array(analyser.fftSize);
-$('mic-toggle').disabled=false;$('mic-toggle').textContent='마이크 끄기';$('mic-toggle').setAttribute('aria-pressed','true');
-$('mic-status').textContent='마이크 사용 중 · 한 줄씩 튕겨 주세요. 다른 페이지로 이동하면 마이크가 꺼집니다.';resetTuner();
-stream.getTracks().forEach(track=>track.addEventListener('ended',()=>{if(request===micRequest)stopMicrophone('마이크 연결이 끊겼습니다. 연결과 권한을 확인한 뒤 다시 켜 주세요.');}));
-context.onstatechange=()=>{if(request===micRequest&&context.state==='suspended')stopMicrophone('오디오가 일시 중지되었습니다. 마이크를 다시 켜 주세요.');};
-micTimer=setInterval(()=>{
-if(performance.now()<referenceUntil){recentPitches=[];return;}
-analyser.getFloatTimeDomainData(samples);const frequency=detectPitch(samples,context.sampleRate),now=performance.now();
-if(frequency===null){if(lastPitchAt&&now-lastPitchAt>1800)resetTuner();return;}
-lastPitchAt=now;
-if(recentPitches.length&&Math.abs(pitchCents(frequency,recentPitches.at(-1)))>80)recentPitches=[];
-recentPitches.push(frequency);if(recentPitches.length>3)recentPitches.shift();
-if(recentPitches.length>=3)showPitch([...recentPitches].sort((a,b)=>a-b)[Math.floor(recentPitches.length/2)]);
-},80);
-}catch(error){
-if(stream)stream.getTracks().forEach(track=>track.stop());
-if(request!==micRequest)return;
-const messages={NotAllowedError:'마이크 권한이 거부되었습니다. 주소창의 사이트 설정에서 마이크를 허용한 뒤 다시 켜 주세요. 기준음 듣기도 사용할 수 있어요.',SecurityError:'브라우저의 보안 설정에서 마이크 사용을 허용해 주세요. HTTPS 또는 localhost 주소인지도 확인해 주세요.',NotFoundError:'마이크를 찾을 수 없습니다. 기기에 마이크를 연결한 뒤 다시 시도해 주세요.',NotReadableError:'마이크를 열 수 없습니다. 다른 앱의 마이크 사용을 종료하고 다시 시도해 주세요.'};
-stopMicrophone(messages[error.name]||'마이크를 시작하지 못했습니다. 연결과 브라우저 권한을 확인한 뒤 다시 시도해 주세요.');
-}finally{if(request!==micRequest&&context&&context.state!=='closed')context.close().catch(()=>{});}
-});
-function selectString(index){selectedString=index;$('auto-string').setAttribute('aria-pressed',String(index===null));Array.from($('string-select').children).forEach((button,i)=>button.setAttribute('aria-pressed',String(i===index)));resetTuner();}
-if(ready(['tuner'])){$('auto-string').addEventListener('click',()=>selectString(null));
-stringNames.forEach((name,index)=>{
-const select=document.createElement('button');select.type='button';select.innerHTML=`<small>${6-index}번 줄</small><strong>${name}</strong>`;select.setAttribute('aria-pressed','false');select.addEventListener('click',()=>selectString(index));$('string-select').append(select);
-const play=document.createElement('button');play.type='button';play.textContent=`♪ ${name}`;play.setAttribute('aria-label',`${6-index}번 줄 ${name} 기준음 듣기`);$('reference-tones').append(play);
-play.addEventListener('click',async()=>{
-stopPlayback();const request=playbackRequest;
-try{
-await prepareAudio();if(request!==playbackRequest||$('tuner-panel').hidden)return;
-const frequency=stringFrequency(index,concertA),tone=scheduleReference(audioContext,frequency,audioContext.currentTime+.02);
-const osc=tone.oscs[0];playing=[tone.voice];referenceUntil=performance.now()+2150;resetTuner();
-$('tuner-advice').textContent='기준음 재생 중 · 잠시 듣고 비교하세요.';
-$('reference-status').textContent=`${6-index}번 줄 ${name} · ${frequency.toFixed(2)} Hz 재생 중`;
-osc.addEventListener('ended',()=>{if(request===playbackRequest){playing=[];$('reference-status').textContent='재생 완료';resetTuner();}});
-confirmPlayback(audioContext,()=>request===playbackRequest,()=>{$('reference-status').textContent=audioFailure;});
-}catch(_){if(request===playbackRequest)$('reference-status').textContent=audioFailure;}
-});
-});
-$('mic-sensitivity').addEventListener('input',()=>{
-const gain=Number($('mic-sensitivity').value);$('mic-gain-value').textContent=`${gain}×`;
-if(micGain)micGain.gain.setTargetAtTime(gain,micContext.currentTime,.02);
-});
-$('concert-a').addEventListener('change',()=>{const input=$('concert-a');concertA=input.value===''?440:Math.max(430,Math.min(450,Math.round(Number(input.value)||440)));input.value=concertA;stopPlayback();resetTuner();});}
 // Score music functions: no DOM, OCR, or mutable UI state.
 function selectScoreClipboardImage(items){
 for(const item of Array.from(items||[])){
@@ -1674,6 +1029,7 @@ best={...best,agreement:!!(primary?.confidence>=90&&secondary?.support>=3&&secon
 if(useStaff&&!bbox.recovery){const suffix=[...suffixReadings.values()].filter(r=>r.support>=2||r.confidence>=40).sort((a,b)=>b.support-a.support||b.text.length-a.text.length)[0];if(suffix)fragments.push(suffix);}
 if(useStaff)samples.push({bbox,numericReads,rootHint:[...rootHints].sort((a,b)=>b[1]-a[1])[0]?.[0],readings:[...readings.values()],best,signature:scoreRegionSignature(source,bbox)});
 else if(best)candidates.push(best);
+if(onStage)onStage('region',{bbox,text:best?.text||null});
 }
 if(useStaff&&worker.recognizeRegion){
 const original=samples.filter(s=>s.best&&!s.bbox.recovery).map(s=>s.best),recovered=samples.filter(s=>s.best&&s.bbox.recovery).map(s=>s.best);
@@ -1785,7 +1141,7 @@ return true;
 // End score music functions.
 
 // Score editor: images and OCR results stay in memory on this device.
-const scoreState={showKey:true,introTempo:120,introMeter:'4/4',image:null,codes:[],capo:0,keyDown:0,overlay:'replace',original:false,busy:false,adding:false,intro:null,drag:null,editIndex:null,pending:null,run:0};
+const scoreState={showKey:true,introTempo:120,introMeter:'4/4',image:null,codes:[],capo:0,keyShift:0,overlay:'replace',original:false,busy:false,adding:false,intro:null,drag:null,editIndex:null,pending:null,run:0};
 let scoreIntroPlayback=null;
 let scoreLibraryPromise=null,scoreRuntimePromise=null;
 function scoreStatus(message){$('score-status').textContent=message;}
@@ -1858,10 +1214,41 @@ function cancelScoreOCR(){
 scoreState.run++;if(scoreAbortOCR)scoreAbortOCR();
 scoreBusy(false);
 }
+// Recognition in the preview: the area being read is outlined, read areas are tinted and show what was read.
+const scoreScan={
+layer:null,label:null,boxes:new Map(),
+start(){
+this.stop();const stage=$('score-stage');if(!stage||!document.createElement)return;
+const layer=document.createElement('div');layer.className='score-scan';layer.setAttribute('aria-hidden','true');
+const label=document.createElement('span');label.className='score-scan-label';label.textContent='코드 찾는 중…';
+const sweep=document.createElement('span');sweep.className='score-scan-sweep';
+layer.append(sweep,label);stage.append(layer);this.layer=layer;this.label=label;this.boxes=new Map();
+},
+box(bbox){
+const source=scoreState.source;if(!this.layer||!source||!bbox)return null;
+const key=`${bbox.x0},${bbox.y0},${bbox.x1},${bbox.y1}`;
+if(!this.boxes.has(key)){const el=document.createElement('span');el.className='score-scan-box';
+Object.assign(el.style,{left:bbox.x0/source.width*100+'%',top:bbox.y0/source.height*100+'%',width:(bbox.x1-bbox.x0)/source.width*100+'%',height:(bbox.y1-bbox.y0)/source.height*100+'%'});
+this.layer.append(el);this.boxes.set(key,el);}
+return this.boxes.get(key);
+},
+stage(stage,info){
+if(!this.layer)return;
+if(stage==='layout'){this.layer.classList.toggle('regions',info.regions.length>0);for(const bbox of info.regions)this.box(bbox);}
+if(stage==='region'){const el=this.box(info.bbox);if(el){el.classList.remove('current');el.classList.add('done');if(info.text){el.dataset.text=info.text;el.classList.add('found');}}}
+},
+step(index,total,bbox){
+if(!this.layer)return;
+this.label.textContent=`코드 찾는 중 ${index+1}/${total}`;
+for(const el of this.boxes.values())el.classList.remove('current');
+const el=bbox&&this.box(bbox);if(el)el.classList.add('current');
+},
+stop(){this.layer?.remove();this.layer=null;this.label=null;this.boxes=new Map();}
+};
 async function recognizeScore(){
 if(!scoreState.image||scoreState.busy)return;
 if(navigator.onLine===false){scoreStatus('오프라인에서는 자동 인식 준비가 어려울 수 있어요. 코드 직접 추가로 위치와 코드를 입력하거나, 연결 후 이미지를 다시 열어 주세요.');return;}
-const run=++scoreState.run;scoreBusy(true,true);scoreStatus('자동 인식을 준비합니다. 처음에는 인식 도구를 내려받아 잠시 걸릴 수 있어요.');
+const run=++scoreState.run;scoreBusy(true,true);scoreScan.start();scoreStatus('자동 인식을 준비합니다. 처음에는 인식 도구를 내려받아 잠시 걸릴 수 있어요.');
 let worker=null,timer,timedOut=false,abort,canvas=null,passIndex=0,passTotal=3,passVariant='color';
 const labels={color:'컬러 글씨 분리',gray:'확대·대비 보정',adaptive:'적응형 이진화',region:'코드 영역 확대'};
 const current=()=>run===scoreState.run&&!timedOut;
@@ -1876,10 +1263,11 @@ return canvas;
 worker=await scoreRecognitionWorker(current,message=>{if(current()&&message.status==='recognizing text')scoreStatus(`기기 안에서 코드를 읽고 있어요… ${passIndex+1}/${passTotal} · ${labels[passVariant]} · ${Math.round((passIndex+message.progress)/passTotal*100)}%`);},encode);
 if(!current()){await worker.terminate();return;}
 const source=scoreState.source,pixels=source.getContext('2d').getImageData(0,0,source.width,source.height);
-const codes=await runScoreOCRPasses(worker,{data:pixels.data,width:source.width,height:source.height},encode,async(index,total,variant)=>{
+const codes=await runScoreOCRPasses(worker,{data:pixels.data,width:source.width,height:source.height},encode,async(index,total,variant,bbox)=>{
 passIndex=index;passTotal=total;passVariant=variant;scoreStatus(`코드 인식 ${index+1}/${total} · ${labels[variant]} 준비 중… ${Math.round(index/total*100)}%`);
+scoreScan.step(index,total,bbox);
 await new Promise(resolve=>setTimeout(resolve,0));
-},current);
+},current,(stage,info)=>{if(current())scoreScan.stage(stage,info);});
 if(!current())return;
 scoreState.codes=codes;
 scoreState.adding=false;$('score-editor').close();renderScore();
@@ -1890,10 +1278,12 @@ scoreStatus(scoreState.codes.length?`${scoreState.codes.length}개 코드를 찾
 if(run===scoreState.run)scoreStatus('자동 인식을 완료하지 못했어요. 인터넷 연결 또는 브라우저의 인식 도구 지원을 확인해 주세요. 코드 직접 추가로 계속할 수 있어요.');
 }finally{
 clearTimeout(timer);if(scoreAbortOCR===abort)scoreAbortOCR=null;if(canvas){canvas.width=canvas.height=1;}if(worker)worker.terminate().catch(()=>{});
-if(run===scoreState.run)scoreBusy(false);
+if(run===scoreState.run){scoreBusy(false);scoreScan.stop();}
 }
 }
-function transformedScoreChord(text,key){if(scoreState.keyDown)return transposeScoreChord(text,-scoreState.keyDown,transposeScoreKey(key,-scoreState.keyDown));return capoScoreChord(text,scoreState.capo,key);}
+// Chords as drawn: the song's key moved by keyShift (sheet control), then played with the capo (neck).
+function scoreTotalShift(){return scoreState.keyShift-scoreState.capo;}
+function transformedScoreChord(text,key){if(!scoreState.keyShift)return capoScoreChord(text,scoreState.capo,key);const total=scoreTotalShift();return transposeScoreChord(text,total,transposeScoreKey(key,total));}
 function scoreIntroNotes(text,capo){
 const {root,suffix,bass}=parseScoreChord(text);
 const quality=suffix.replace(/sus|add|maj|dim|aug/gi,word=>word.toLowerCase())
@@ -1989,7 +1379,7 @@ renderScore();
 scoreStatus('전주를 악보 왼쪽 위에 넣었어요. 끌어서 원하는 위치로 옮기세요.');
 }
 function openScoreIntros(){
-if(scoreState.busy||$('score-intro-open').hidden)return;
+if($('score-intro-open').hidden)return;
 $('score-intro-dialog').showModal();
 }
 // Intro size on the score: 50–200% of the default label size.
@@ -2004,11 +1394,14 @@ renderScore();
 scoreStatus(`전주 크기를 ${Math.round(next*100)}%로 바꿨어요.`);
 }
 function renderScoreIntros(key){
-$('score-intro-open').hidden=!key;
+$('score-intro-open').hidden=!scoreState.image;
+$('score-intro-empty').hidden=Boolean(key);
+for(const id of ['easy','opening','ending'])for(const part of ['-title','','-actions'])$(`score-intro-${id}${part}`).hidden=!key;
+if(!key)$('score-intro-more').hidden=true;
 $('score-intro-remove').hidden=!scoreState.intro;
 $('score-intro-size').hidden=!scoreState.intro;
 if(scoreState.intro){const scale=scoreState.intro.scale||1;$('score-intro-size-value').textContent=Math.round(scale*100)+'%';$('score-intro-smaller').disabled=scale<=scoreIntroScales[0];$('score-intro-bigger').disabled=scale>=scoreIntroScales.at(-1);}
-if(!key){$('score-intro-dialog').close();return;}
+if(!key)return;
 const {easy,basedOnOpening,basedOnEnding}=recommendScoreIntros(key,scoreState.codes.map(code=>code.text));
 $('score-intro-more').hidden=basedOnOpening.length>0&&basedOnEnding.length>0;
 for(const [id,chords] of [['score-intro-easy',easy],['score-intro-opening',basedOnOpening],['score-intro-ending',basedOnEnding]]){
@@ -2042,8 +1435,8 @@ return {background:`rgb(${rgb.join(',')})`,ink:rgb.reduce((s,v)=>s+v,0)>390?'#15
 // Key stamp: a small, fixed label in the top-left corner describing the chords as shown.
 function scoreKeyStampText(key=detectScoreKey(scoreState.codes)){
 if(!key)return '';
-const shown=transposeScoreKey(key,-(scoreState.keyDown||scoreState.capo));
-if(scoreState.capo&&!scoreState.keyDown)return `${shown.name}폼 (Capo ${scoreState.capo}) / ${key.name}키`;
+const shown=transposeScoreKey(key,scoreTotalShift()),sound=transposeScoreKey(key,scoreState.keyShift);
+if(scoreState.capo)return `${shown.name}폼 (Capo ${scoreState.capo}) / ${sound.name}키`;
 return `${shown.name}키`;
 }
 function scoreKeyStampBox(source=scoreState.source,text=scoreKeyStampText()){
@@ -2097,13 +1490,24 @@ return hits;
 }
 function renderScore(){
 stopScoreIntro();
-const key=detectScoreKey(scoreState.codes),destination=transposeScoreKey(key,-(scoreState.keyDown||scoreState.capo));
+const key=detectScoreKey(scoreState.codes),destination=transposeScoreKey(key,scoreTotalShift()),sound=transposeScoreKey(key,scoreState.keyShift);
 renderScoreIntros(key);
 $('score-key').textContent=key?`감지 키: ${key.name} (추정)`:'감지 키: —';
-$('score-result-key').textContent=scoreState.keyDown?`카포 없음 · 소리의 키 ${key?key.name:'미정'} → ${destination?destination.name:'미정'}`:scoreState.capo?`카포 ${scoreState.capo} · 원래 키 ${key?key.name:'미정'} 유지 · 코드 모양의 키 ${destination?destination.name:'미정'}`:'카포 없이 키를 낮추려면 −를 누르세요.';
-$('score-capo-value').textContent=scoreState.keyDown?`카포 없음 · 키 −${scoreState.keyDown}반음`:scoreState.capo===0?'카포 없음':'카포 '+scoreState.capo;
-$('score-capo-minus').disabled=scoreState.capo===0&&scoreState.keyDown===11;$('score-capo-plus').disabled=scoreState.capo===11;
-for(const [i,button] of [...$('score-frets').children].entries())button.setAttribute('aria-pressed',String(i+1===scoreState.capo&&!scoreState.keyDown));
+const {capo,keyShift}=scoreState,keyName=k=>k?k.name:'미정';
+$('score-result-key').textContent=keyShift&&capo?`카포 ${capo} · 소리의 키 ${keyName(key)} → ${keyName(sound)} · 코드 모양의 키 ${keyName(destination)}`
+  :keyShift?`카포 없음 · 소리의 키 ${keyName(key)} → ${keyName(sound)}`
+  :capo?`카포 ${capo} · 원래 키 ${keyName(key)} 유지 · 코드 모양의 키 ${keyName(destination)}`:'카포 없이 키를 낮추려면 −를 누르세요.';
+$('score-capo-value').textContent=capo?'카포 '+capo:keyShift<0?`카포 없음 · 키 −${-keyShift}반음`:'카포 없음';
+$('score-capo-minus').disabled=capo===0&&keyShift===-11;$('score-capo-plus').disabled=capo===11;
+for(const [i,button] of [...$('score-frets').children].entries())button.setAttribute('aria-pressed',String(i+1===capo));
+// Sheet-side key control (same state as the neck's "−" below capo 0)
+// The sheet control shows the key the chords are drawn in, so it moves with the capo too.
+const drawn=keyShift-capo,step=`${drawn>0?'+':'−'}${Math.abs(drawn)}`;
+$('score-shift-value').textContent=!drawn&&!capo?(key?`${key.name} (원래 키)`:'원래 키')
+  :capo?(key?`${key.name} → ${destination.name} · 카포 ${capo}`:`카포 ${capo}`)
+  :key?`${key.name} → ${destination.name} (${step})`:`${step}반음`;
+$('score-shift-down').disabled=$('score-capo-minus').disabled;$('score-shift-up').disabled=$('score-capo-plus').disabled;
+$('score-shift-reset').hidden=$('score-capo-reset').hidden=!(keyShift||capo);
 if(!scoreState.image)return;
 $('score-stage').classList.toggle('adding',scoreState.adding);
 $('score-add').textContent=scoreState.adding?'위치 선택 취소':'코드 직접 추가';
@@ -2336,10 +1740,19 @@ finally{$('score-paste').disabled=scoreState.busy;}
 });
 if(ready(['score'])){
 for(let fret=1;fret<=11;fret++){
-const button=document.createElement('button'),span=document.createElement('span');button.type='button';span.textContent=fret;button.append(span);button.setAttribute('aria-label',`카포 ${fret}프렛`);button.setAttribute('aria-pressed','false');button.addEventListener('click',()=>{scoreState.capo=fret;scoreState.keyDown=0;renderScore();});$('score-frets').append(button);
+const button=document.createElement('button'),span=document.createElement('span');button.type='button';span.textContent=fret;button.append(span);button.setAttribute('aria-label',`카포 ${fret}프렛`);button.setAttribute('aria-pressed','false');button.addEventListener('click',()=>{scoreState.capo=fret;renderScore();});$('score-frets').append(button);
 }
-$('score-capo-minus').addEventListener('click',()=>{if(scoreState.capo>0&&!scoreState.keyDown)scoreState.capo--;else scoreState.keyDown=Math.min(11,scoreState.keyDown+1);renderScore();});
-$('score-capo-plus').addEventListener('click',()=>{if(scoreState.keyDown>0)scoreState.keyDown--;else scoreState.capo=Math.min(11,scoreState.capo+1);renderScore();});
+const scoreKeyDown=()=>{if(scoreState.capo>0)scoreState.capo--;else scoreState.keyShift=Math.max(-11,scoreState.keyShift-1);renderScore();};
+$('score-capo-minus').addEventListener('click',scoreKeyDown);
+const scoreKeyUp=()=>{if(!scoreState.capo&&scoreState.keyShift<0)scoreState.keyShift++;else scoreState.capo=Math.min(11,scoreState.capo+1);renderScore();};
+$('score-capo-plus').addEventListener('click',scoreKeyUp);
+// Sheet −/+ move the drawn chords a semitone; the capo stays where it is.
+// The sheet's −/+ are the same controls as the neck's −/+, just closer to the sheet.
+$('score-shift-down').addEventListener('click',scoreKeyDown);
+$('score-shift-up').addEventListener('click',scoreKeyUp);
+const resetScoreKey=()=>{scoreState.keyShift=0;scoreState.capo=0;renderScore();};
+$('score-shift-reset').addEventListener('click',resetScoreKey);
+$('score-capo-reset').addEventListener('click',resetScoreKey);
 for(const input of document.querySelectorAll('input[name="score-overlay"]'))input.addEventListener('change',()=>{scoreState.overlay=input.value;renderScore();});
 $('score-original').addEventListener('change',()=>{scoreState.original=$('score-original').checked;renderScore();});
 $('score-key-stamp').addEventListener('change',()=>{scoreState.showKey=$('score-key-stamp').checked;renderScore();});
@@ -2421,14 +1834,8 @@ scoreStatus('PNG를 저장합니다. 다운로드 목록을 확인해 주세요.
 });
 }
 
-if(ready(['chords'])){
-  const input=$('chord-input');
-  input.value=new URLSearchParams(location.search).get('chord')?.slice(0,input.maxLength)||input.value;
-  find(input.value);
-}
-if(ready(['tuner'])){document.addEventListener('visibilitychange',()=>{if(document.hidden){stopMicrophone();stopPlayback();}});window.addEventListener('pagehide',()=>{stopMicrophone();stopPlayback();});}
-else if(ready(['chords','identify']))window.addEventListener('pagehide',stopPlayback);
-else if(ready(['score']))window.addEventListener('pagehide',stopScoreIntro);
+// Stop sound when the page goes away.
+window.addEventListener('pagehide',stopScoreIntro);
 
 </script>
 </body>

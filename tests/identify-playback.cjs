@@ -45,6 +45,16 @@ function loadIdentifier({suspended=false,fail=false}={}) {
     createGain() {
       return {...node(),gain:param()};
     }
+    createBufferSource() {
+      const source={
+        ...node(),...eventTarget(),buffer:null,
+        start(time){this.startAt=time;},
+        stop(time){this.stopTimes.push(time);},
+        stopTimes:[]
+      };
+      oscillators.push(source);
+      return source;
+    }
     createOscillator() {
       const oscillator={
         ...node(),...eventTarget(),
@@ -67,7 +77,9 @@ function loadIdentifier({suspended=false,fail=false}={}) {
     querySelector:()=>({dataset:{mode:'identify'}})
   };
   const window={...eventTarget(),matchMedia:()=>eventTarget(),AudioContext:fail?undefined:AudioContext};
-  vm.runInNewContext(app[1],{document,window,navigator:{},setTimeout(){}});
+  const sandbox={document,window,navigator:{},setTimeout(){}};
+  vm.runInNewContext(require('./support/page-source.cjs').core+'\n'+app[1],sandbox);
+  sandbox.pluckBuffer=(_ctx,frequency)=>({frequency}); // pitch tag instead of rendering the string
   return {
     play:elements['identify-play'],
     status:elements['identify-audio-status'],
@@ -80,15 +92,9 @@ function loadIdentifier({suspended=false,fail=false}={}) {
   };
 }
 
-function strummedMidi(oscillators) {
-  const fundamentalByStart=new Map();
-  for (const oscillator of oscillators) {
-    const {startAt,frequency}=oscillator;
-    fundamentalByStart.set(startAt,Math.min(frequency.value,fundamentalByStart.get(startAt)??Infinity));
-  }
-  return [...fundamentalByStart.entries()].sort(([a],[b])=>a-b).map(([,hz])=>{
-    return Math.round(69+12*Math.log2(hz/440));
-  });
+// One buffer source per string, started low to high across the strum.
+function strummedMidi(sources) {
+  return [...sources].sort((a,b)=>a.startAt-b.startAt).map(source=>Math.round(69+12*Math.log2(source.buffer.frequency/440)));
 }
 
 async function main() {

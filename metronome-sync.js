@@ -5,7 +5,6 @@
 // clock (NTP-style round trips), then play the same grid on their own audio clock.
 (function (root) {
   const BEATS_PER_BAR = 4;
-  const MIN_BPM = 40, MAX_BPM = 240;
   const OFFSET_LIMIT = 300; // ms, for Bluetooth and other output delays
   const OFFSET_KEY = 'guitar-mate:metronome-offset';
   const ROOM_CODE = /^\d{4}$/; // 4 digits: easy to read out and type on a phone keypad
@@ -69,7 +68,7 @@
   }
 
   root.metronomeSync = {
-    BEATS_PER_BAR, MIN_BPM, MAX_BPM, OFFSET_LIMIT, OFFSET_KEY, ROOM_CODE,
+    OFFSET_LIMIT, OFFSET_KEY, ROOM_CODE,
     intervalMs, nextBeatIndex, beatEpoch, beatInBar, retime, clampOffset,
     makeRoomCode, normalizeCode, parseRoom, pickOffset, serverUrl,
   };

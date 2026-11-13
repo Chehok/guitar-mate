@@ -32,8 +32,6 @@
 body { margin:0; background:var(--paper); color:var(--ink); font-family:"Pretendard Variable",system-ui,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif; font-size:15px; line-height:1.6; word-break:keep-all; }
 button,input { font:inherit; }
 :where(button,input,a):focus-visible { outline:3px solid var(--focus); outline-offset:3px; }
-h1 { margin:0 0 8px; font-size:clamp(24px,3vw,30px); font-weight:700; line-height:1.4; letter-spacing:-.9px; }
-.intro { margin:0 0 24px; color:var(--muted); font-size:14px; line-height:1.7; }
 .panel { padding:24px; border:1px solid var(--line); border-radius:var(--radius); background:var(--panel); }
 .metronome-layout { display:grid; gap:20px; align-items:center; }
 .metronome-figure { display:block; width:100%; max-width:210px; height:auto; margin:auto; }
@@ -53,6 +51,41 @@ h1 { margin:0 0 8px; font-size:clamp(24px,3vw,30px); font-weight:700; line-heigh
 .status { min-height:24px; margin:12px 0 0; color:var(--muted); text-align:center; font-size:13px; }
 .start-button.passive { border-color:var(--line); background:var(--soft); color:var(--ink); cursor:default; }
 .tempo-value input:disabled, .tempo-slider:disabled { opacity:.55; }
+/* Strum patterns */
+#metronome-panel { position:relative; }
+.strum-open { position:absolute; top:12px; right:12px; z-index:1; display:inline-flex; align-items:center; gap:4px; min-height:36px; padding:6px 12px; border:1px solid var(--line); border-radius:18px; background:var(--panel); color:var(--ink); font-size:13px; font-weight:650; cursor:pointer; }
+.strum-open .arrows { color:var(--green); font-weight:800; letter-spacing:-1px; }
+@media (hover:hover) { .strum-open:hover { background:var(--soft); } }
+.strum-open:active { background:var(--soft); }
+@media (min-width:560px) { .metronome-controls { padding-top:36px; } }
+.strum-dialog { width:calc(100% - 24px); max-width:460px; max-height:calc(100dvh - 48px); padding:0; border:1px solid var(--line); border-radius:20px; background:var(--panel); color:var(--ink); overflow:hidden; }
+.strum-dialog[open] { display:flex; flex-direction:column; }
+.strum-dialog::backdrop { background:#0007; }
+.strum-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:20px 20px 12px; border-bottom:1px solid var(--line); }
+.strum-head h2 { margin:0; font-size:18px; letter-spacing:-.4px; }
+.strum-head p { margin:2px 0 0; color:var(--muted); font-size:13px; line-height:1.6; }
+.strum-close { flex:none; min-width:44px; min-height:40px; margin:-6px -8px 0 0; border:0; border-radius:10px; background:transparent; color:var(--muted); font-size:22px; line-height:1; cursor:pointer; }
+.strum-close:active { background:var(--soft); }
+.strum-legend { display:flex; flex-wrap:wrap; gap:4px 14px; margin:8px 0 0; padding:0; list-style:none; color:var(--muted); font-size:12px; }
+.strum-legend b { color:var(--ink); }
+.strum-list { margin:0; padding:8px 20px 20px; overflow-y:auto; list-style:none; overscroll-behavior:contain; }
+.strum-item { padding:14px 0; border-bottom:1px solid var(--line); }
+.strum-item:last-child { border-bottom:0; }
+.strum-title { display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
+.strum-title h3 { margin:0; font-size:15px; }
+.strum-level { flex:none; color:var(--muted); font-size:12px; }
+.strum-grid { display:grid; grid-template-columns:repeat(8,minmax(0,1fr)); margin:10px 0 8px; border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--soft); font-variant-numeric:tabular-nums; }
+.strum-grid span { display:grid; place-items:center; min-height:24px; color:var(--muted); font-size:11px; }
+.strum-grid span:nth-child(odd) { color:var(--ink); font-weight:700; }
+.strum-grid span:nth-child(odd):not(:first-child) { border-left:1px solid var(--line); }
+.strum-grid b { display:grid; place-items:center; min-height:40px; border-top:1px solid var(--line); background:var(--panel); color:var(--green); font-size:20px; font-weight:800; line-height:1; }
+.strum-grid b:nth-of-type(odd):not(:first-of-type) { border-left:1px solid var(--line); }
+.strum-grid b.rest { color:var(--control); font-size:16px; opacity:.6; }
+.strum-grid b.mute { color:var(--focus); font-size:17px; }
+.strum-item p { margin:0; color:var(--muted); font-size:13px; line-height:1.65; }
+.strum-use { margin-top:8px; min-height:36px; padding:4px 12px; border:1px solid var(--control); border-radius:10px; background:var(--panel); color:var(--ink); font-size:13px; font-weight:650; cursor:pointer; }
+.strum-use:active { background:var(--soft); }
+.strum-use:disabled { opacity:.5; cursor:default; }
 /* Metronome sync */
 .sync-panel { margin-top:16px; }
 .sync-panel [hidden] { display:none !important; }
@@ -64,6 +97,8 @@ h1 { margin:0 0 8px; font-size:clamp(24px,3vw,30px); font-weight:700; line-heigh
 .btn svg { flex:none; }
 .btn.primary { border-color:var(--green); background:var(--green); color:var(--on-green); }
 .btn.wide { width:100%; }
+/* Leaving a room: a clear outlined button on the soft room card */
+.btn.leave { min-height:36px; padding:4px 14px; border-color:var(--control); background:var(--panel); color:var(--ink); font-size:14px; font-weight:700; }
 .btn.tall { min-height:52px; }
 .btn.quiet { min-height:40px; padding:6px 10px; border-color:transparent; background:transparent; color:var(--muted); font-size:13px; }
 .btn:disabled { opacity:.6; cursor:default; }
@@ -81,7 +116,7 @@ h1 { margin:0 0 8px; font-size:clamp(24px,3vw,30px); font-weight:700; line-heigh
 .sync-join-row input::placeholder { color:var(--control); opacity:.55; }
 .sync-join-form .hint { margin-top:8px; }
 .sync-box { padding:12px 16px 16px; border:1px solid var(--line); border-radius:12px; background:var(--soft); }
-.sync-box-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin:0 -8px 8px 0; }
+.sync-box-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin:0 0 10px; }
 .sync-box-title { margin:0; font-weight:700; }
 .sync-box-title.label { color:var(--muted); font-size:13px; font-weight:600; }
 .sync-leader-body { display:grid; gap:12px; grid-template-areas:"code" "text" "qr" "share"; }
@@ -136,9 +171,9 @@ h1 { margin:0 0 8px; font-size:clamp(24px,3vw,30px); font-weight:700; line-heigh
 <div class="wrap">
 <gm-header active="metronome"></gm-header>
 <main>
-<h1>메트로놈</h1>
-<p class="intro">첫 박은 조금 더 강하게 들립니다.</p>
+<h1 class="sr-only">메트로놈</h1>
 <section id="metronome-panel" class="panel" aria-label="메트로놈 설정">
+<button class="strum-open" id="strum-open" type="button" aria-haspopup="dialog"><span class="arrows" aria-hidden="true">↓↑</span>스트로크</button>
 <div class="metronome-layout">
 <svg class="metronome-figure" viewBox="0 0 252 225" aria-hidden="true" focusable="false">
   <ellipse cx="126" cy="210" rx="86" ry="7" fill="var(--ink)" opacity=".12"/>
@@ -159,7 +194,7 @@ h1 { margin:0 0 8px; font-size:clamp(24px,3vw,30px); font-weight:700; line-heigh
   </g>
   <circle cx="126" cy="178" r="6" fill="#193e32" stroke="#e4c88c" stroke-width="2"/>
 </svg>
-<div>
+<div class="metronome-controls">
 <div class="tempo-row"><label for="tempo-range">템포</label><div class="tempo-value"><input id="tempo-value" type="number" min="40" max="240" step="1" value="100" inputmode="numeric" aria-label="분당 박자 수"><span>BPM</span></div></div>
 <input class="tempo-slider" id="tempo-range" type="range" min="40" max="240" step="1" value="100" aria-label="템포 조절">
 <div class="tempo-limits" aria-hidden="true"><span>40</span><span>240</span></div>
@@ -185,7 +220,7 @@ h1 { margin:0 0 8px; font-size:clamp(24px,3vw,30px); font-weight:700; line-heigh
 </div>
 <p class="hint" id="sync-unavailable" hidden>메트로놈 싱크 서버가 아직 준비되지 않았어요.</p>
 <div class="sync-box" id="sync-leader" hidden>
-<div class="sync-box-head"><p class="sync-box-title label">방 코드</p><button id="sync-close-room" class="btn quiet" type="button">방 닫기</button></div>
+<div class="sync-box-head"><p class="sync-box-title label">방 코드</p><button id="sync-close-room" class="btn leave" type="button">방 닫기</button></div>
 <div class="sync-leader-body">
 <p class="sync-code" id="sync-leader-code" translate="no"></p>
 <p class="sync-leader-text">다른 폰에서 이 숫자를 입력하거나 QR을 찍게 해 주세요.</p>
@@ -195,7 +230,7 @@ h1 { margin:0 0 8px; font-size:clamp(24px,3vw,30px); font-weight:700; line-heigh
 <a class="sync-link" id="sync-link" href="#" hidden></a>
 </div>
 <div class="sync-box" id="sync-follower" hidden>
-<div class="sync-box-head"><p class="sync-box-title" id="sync-follower-code"></p><button id="sync-leave" class="btn quiet" type="button">나가기</button></div>
+<div class="sync-box-head"><p class="sync-box-title" id="sync-follower-code"></p><button id="sync-leave" class="btn leave" type="button">나가기</button></div>
 <p class="sync-follower-text" id="sync-follower-text">참여하기를 누르면 리더의 박자를 따라가요.</p>
 <button id="sync-join" class="btn primary wide" type="button">참여하기</button>
 </div>
@@ -214,6 +249,17 @@ h1 { margin:0 0 8px; font-size:clamp(24px,3vw,30px); font-weight:700; line-heigh
 </div>
 </div>
 </section>
+<dialog class="strum-dialog" id="strum-dialog" aria-labelledby="strum-title">
+<div class="strum-head">
+<div>
+<h2 id="strum-title">스트로크 패턴</h2>
+<p>한 마디를 8칸(8분음표)으로 나눴어요. 쉬는 칸에서도 손은 위아래로 계속 흔들고, 줄만 치지 않아요.</p>
+<ul class="strum-legend"><li><b>↓</b> 다운</li><li><b>↑</b> 업</li><li><b>✕</b> 뮤트(착)</li><li><b>·</b> 쉬기</li></ul>
+</div>
+<button class="strum-close" id="strum-close" type="button" aria-label="닫기">×</button>
+</div>
+<ul class="strum-list" id="strum-list"></ul>
+</dialog>
 </main>
 <gm-footer></gm-footer>
 </div>
@@ -385,6 +431,46 @@ function setTempo(raw){
     publishTimer=setTimeout(()=>changeRoomTempo(tempoRange.valueAsNumber),250);
   }
 }
+// ---- Strum patterns ----
+// D down, U up, X muted down (chuck), . no hit; eight 8th-note slots per bar.
+const STRUMS=[
+  {name:'4비트 다운',level:'입문',bpm:70,pattern:'D.D.D.D.',note:'박마다 한 번씩 아래로 쳐요. 코드 바꾸는 연습부터 할 때 좋아요.'},
+  {name:'4비트 + 마지막 업',level:'입문',bpm:70,pattern:'D.D.D.DU',note:'마지막 업을 치는 동안 왼손은 다음 코드로 옮겨요.'},
+  {name:'8비트',level:'초급',bpm:80,pattern:'DUDUDUDU',note:'모든 칸을 쳐요. 다운은 조금 세게, 업은 가볍게 치면 리듬이 살아나요.'},
+  {name:'포크 (칼립소)',level:'초급',bpm:90,pattern:'D.DU.UDU',note:'가장 많이 쓰는 패턴이에요. 3박에서는 손이 줄을 치지 않고 그냥 지나가요.'},
+  {name:'팝 발라드',level:'초급',bpm:72,pattern:'D.DUD.DU',note:'"쿵 짝짝 쿵 짝짝" 느낌으로 반복해요. 느린 곡 반주에 잘 어울려요.'},
+  {name:'고고',level:'중급',bpm:110,pattern:'D.XU.UXU',note:'2박과 4박에 오른손 옆면으로 줄을 눌러 "착" 소리를 내요. 신나는 곡에 좋아요.'},
+  {name:'셔플',level:'중급',bpm:90,pattern:'DUDUDUDU',note:'8비트처럼 치되 업을 살짝 늦게 쳐서 통통 튀는 느낌을 내요.'},
+  {name:'엇박 업 (스카)',level:'중급',bpm:120,pattern:'.U.U.U.U',note:'업만 엇박에 짧게 끊어 쳐요. 치자마자 왼손 힘을 빼서 소리를 끊어요.'},
+];
+const strumDialog=$('strum-dialog'),strumList=$('strum-list');
+const STRUM_MARK={D:['↓','다운'],U:['↑','업'],X:['✕','뮤트'],'.':['·','쉬기']};
+function renderStrums(){
+  if(strumList.childElementCount)return;
+  for(const strum of STRUMS){
+    const li=document.createElement('li');li.className='strum-item';
+    const counts=['1','+','2','+','3','+','4','+'];
+    const cells=[...strum.pattern].map(c=>`<b class="${c==='.'?'rest':c==='X'?'mute':''}">${STRUM_MARK[c][0]}</b>`).join('');
+    li.innerHTML=`<div class="strum-title"><h3></h3><span class="strum-level"></span></div>
+<div class="strum-grid" role="img">${counts.map(n=>`<span>${n}</span>`).join('')}${cells}</div>
+<p></p><button class="strum-use" type="button"></button>`;
+    li.querySelector('.strum-grid').setAttribute('aria-label',[...strum.pattern].map(c=>STRUM_MARK[c][1]).join(', '));
+    li.querySelector('h3').textContent=strum.name;
+    li.querySelector('.strum-level').textContent=`${strum.level} · ${strum.bpm} BPM 추천`;
+    li.querySelector('p').textContent=strum.note;
+    const use=li.querySelector('.strum-use');use.textContent=`${strum.bpm} BPM으로 맞추기`;
+    use.addEventListener('click',()=>{setTempo(strum.bpm);strumDialog.close();status.textContent=`템포를 ${strum.bpm} BPM으로 맞췄어요.`;});
+    strumList.append(li);
+  }
+}
+$('strum-open').addEventListener('click',()=>{
+  renderStrums();
+  strumList.querySelectorAll('.strum-use').forEach(b=>{b.disabled=role==='follower';});
+  strumDialog.showModal();strumList.scrollTop=0;
+});
+$('strum-close').addEventListener('click',()=>strumDialog.close());
+strumDialog.addEventListener('click',event=>{if(event.target===strumDialog)strumDialog.close();});
+
 tempoRange.addEventListener('input',()=>setTempo(tempoRange.value));
 tempoValue.addEventListener('change',()=>setTempo(tempoValue.value));
 function changeRoomTempo(bpm){
