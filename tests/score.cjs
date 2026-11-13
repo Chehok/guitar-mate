@@ -174,7 +174,7 @@ assert(paint.find(p=>p[0]==='text')[3]<200,'Above mode draws above original chor
   assert.equal(shown('G'),'G');
   click('score-capo-minus');assert.deepEqual(state(),[0,1]);
   assert.equal(shown('G'),'F#');assert.equal(shown('C/E'),'B/D#');assert.equal(shown('Gm/Bb'),'F#m/A');assert.equal(shown('Em7'),'D#m7');
-  assert.equal($('score-capo-value').textContent,'카포 없음 · 키 −1반음');assert.match($('score-result-key').textContent,/소리의 키/);
+  assert.equal($('score-capo-value').textContent,'카포 X · −1키');assert.match($('score-result-key').textContent,/소리의 키/);
   assert(!/카포 −/.test($('score-capo-value').textContent));
   click('score-capo-minus');assert.deepEqual(state(),[0,2]);assert.equal(shown('G'),'F');
   for(let i=0;i<20;i++)click('score-capo-minus');assert.deepEqual(state(),[0,11]);assert($('score-capo-minus').disabled);
@@ -191,7 +191,7 @@ assert(paint.find(p=>p[0]==='text')[3]<200,'Above mode draws above original chor
   assert.equal($('score-shift-value').textContent,'G → F#');assert.equal($('score-capo-value').textContent,'카포 1');
   assert.equal(vm.runInContext("scoreKeyStampText({pc:7,minor:false,name:'G'})",context),'F#폼 (Capo 1) / G키');
   click('score-shift-down');click('score-shift-down');assert.deepEqual(state(),[0,1],'sheet − takes the capo off, then lowers the key');
-  assert.equal($('score-shift-value').textContent,'G → F#');assert.equal($('score-capo-value').textContent,'카포 없음 · 키 −1반음');
+  assert.equal($('score-shift-value').textContent,'G → F#');assert.equal($('score-capo-value').textContent,'카포 X · −1키');
   click('score-capo-plus');assert.deepEqual(state(),[0,0]);click('score-capo-plus');click('score-capo-plus');
   assert.equal($('score-shift-value').textContent,'G → F','neck + moves the sheet label too');
   assert(!$('score-capo-reset').disabled&&!$('score-shift-reset').disabled);
