@@ -134,10 +134,10 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .tuner-cents { margin: 4px 0 0; font-size: 20px; font-weight: 500; }
 .tuner-note, .tuner-frequency, .tuner-cents, .mic-sensitivity output { font-variant-numeric: tabular-nums; }
 .tuner-advice { min-height: 22px; margin: 2px 0 8px; color: var(--orange); font-size: 14px; font-weight: 650; }
-.headstock { display: grid; grid-template-columns: 52px minmax(104px, 140px) 52px; grid-template-rows: repeat(3, 58px); justify-content: center; align-items: center; column-gap: 6px; }
-.headstock-art { grid-column: 2; grid-row: 1 / span 3; width: 100%; height: 100%; }
-.headstock button { width: 50px; height: 50px; padding: 0; border-radius: 50%; border-color: var(--line); background: var(--panel); display: grid; place-content: center; line-height: 1.05; }
-.headstock button strong { font-size: 20px; font-weight: 600; }
+.headstock { display: grid; grid-template-columns: 52px 150px 52px; grid-template-rows: repeat(3, 50px) 22px; justify-content: center; align-items: center; column-gap: 6px; }
+.headstock-art { grid-column: 2; grid-row: 1 / span 4; width: 100%; height: 100%; }
+.headstock button { width: 46px; height: 46px; padding: 0; border-radius: 50%; border-color: var(--line); background: var(--panel); display: grid; place-content: center; line-height: 1.05; }
+.headstock button strong { font-size: 19px; font-weight: 600; }
 .headstock button small { font-size: 10px; color: var(--muted); }
 .headstock button[aria-pressed=true] { background: var(--green); border-color: var(--green); color: var(--on-green); }
 .headstock button[aria-pressed=true] small { color: inherit; opacity: .8; }
@@ -154,8 +154,8 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 @media (min-width: 760px) {
   .tuner-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: center; }
   .tuner-gauge { max-width: 360px; }
-  .headstock { grid-template-columns: 58px 150px 58px; grid-template-rows: repeat(3, 62px); }
-  .headstock button { width: 54px; height: 54px; }
+  .headstock { grid-template-columns: 58px 162px 58px; grid-template-rows: repeat(3, 54px) 24px; }
+  .headstock button { width: 50px; height: 50px; }
 }
 #identify-play { flex: none; padding-inline: 12px; font-size: 13px; white-space: nowrap; }
 #identify-reset { flex: none; }
@@ -261,14 +261,26 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 </div>
 <div class="tuner-head">
 <div id="string-select" class="headstock" role="group" aria-label="줄 선택">
-<svg class="headstock-art" viewBox="0 0 160 174" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-<rect x="58" y="164" width="44" height="12" fill="var(--fret)"/>
-<path d="M46 29H12M114 29H148" stroke="var(--fret)" stroke-width="3"/><rect x="0" y="21" width="14" height="16" rx="7" fill="var(--neck)" stroke="var(--fret)" stroke-width="1.5"/><rect x="146" y="21" width="14" height="16" rx="7" fill="var(--neck)" stroke="var(--fret)" stroke-width="1.5"/><path d="M46 87H12M114 87H148" stroke="var(--fret)" stroke-width="3"/><rect x="0" y="79" width="14" height="16" rx="7" fill="var(--neck)" stroke="var(--fret)" stroke-width="1.5"/><rect x="146" y="79" width="14" height="16" rx="7" fill="var(--neck)" stroke="var(--fret)" stroke-width="1.5"/><path d="M46 145H12M114 145H148" stroke="var(--fret)" stroke-width="3"/><rect x="0" y="137" width="14" height="16" rx="7" fill="var(--neck)" stroke="var(--fret)" stroke-width="1.5"/><rect x="146" y="137" width="14" height="16" rx="7" fill="var(--neck)" stroke="var(--fret)" stroke-width="1.5"/>
-<path d="M30 16Q30 6 40 5Q80 1 120 5Q130 6 130 16L125 128Q123 150 104 161H56Q37 150 35 128Z" fill="var(--green)" stroke="var(--fret)" stroke-width="1.5"/>
-<path d="M40 16Q80 10 120 16" fill="none" stroke="var(--neck)" stroke-opacity=".3"/>
-<g fill="none" stroke="var(--neck)" stroke-opacity=".85"><path d="M46 29L72 161V174" stroke-width="1.1"/><path d="M114 29L88 161V174" stroke-width="1.8"/><path d="M46 87L66 161V174" stroke-width="1.4"/><path d="M114 87L94 161V174" stroke-width="1.5"/><path d="M46 145L60 161V174" stroke-width="1.8"/><path d="M114 145L100 161V174" stroke-width="1.1"/></g>
-<circle cx="46" cy="29" r="6.5" fill="var(--neck)" stroke="var(--fret)" stroke-width="1.5"/><circle cx="46" cy="29" r="2.5" fill="var(--fret)"/><circle cx="114" cy="29" r="6.5" fill="var(--neck)" stroke="var(--fret)" stroke-width="1.5"/><circle cx="114" cy="29" r="2.5" fill="var(--fret)"/><circle cx="46" cy="87" r="6.5" fill="var(--neck)" stroke="var(--fret)" stroke-width="1.5"/><circle cx="46" cy="87" r="2.5" fill="var(--fret)"/><circle cx="114" cy="87" r="6.5" fill="var(--neck)" stroke="var(--fret)" stroke-width="1.5"/><circle cx="114" cy="87" r="2.5" fill="var(--fret)"/><circle cx="46" cy="145" r="6.5" fill="var(--neck)" stroke="var(--fret)" stroke-width="1.5"/><circle cx="46" cy="145" r="2.5" fill="var(--fret)"/><circle cx="114" cy="145" r="6.5" fill="var(--neck)" stroke="var(--fret)" stroke-width="1.5"/><circle cx="114" cy="145" r="2.5" fill="var(--fret)"/>
-<rect x="55" y="159" width="50" height="6" rx="1.5" fill="var(--neck)" stroke="var(--fret)"/>
+<svg class="headstock-art" viewBox="0 0 150 172" preserveAspectRatio="none" aria-hidden="true" focusable="false"><rect x="32.9" y="162" width="84.2" height="12" fill="var(--fret)"/>
+<path d="M26.2 10.6L21.4 57.4Q20.2 69.1 22.6 80.9L33.3 128.1Q27.4 145.6 26.2 162L123.8 162Q122.6 145.6 116.7 128.1L127.4 80.9Q129.8 69.1 128.6 57.4L123.8 10.6Q119 2 109.5 2L40.5 2Q31 2 26.2 10.6Z" fill="var(--green)" stroke="var(--fret)"/>
+<path d="M41.7 10.6Q34.5 10.6 32.1 16.4L27.4 63.2L40.5 128.1Q35.7 143.5 34.5 155.8M108.3 10.6Q115.5 10.6 117.9 16.4L122.6 63.2L109.5 128.1Q114.3 143.5 115.5 155.8" fill="none" stroke="var(--neck)" stroke-opacity=".38"/>
+<path d="M40.5 25H14.3M38.1 75H14.3M46.4 125H14.3M109.5 25H135.7M111.9 75H135.7M103.6 125H135.7" stroke="var(--fret)" stroke-width="3"/>
+<path d="M14.3 16v18M14.3 66v18M14.3 116v18M135.7 16v18M135.7 66v18M135.7 116v18" stroke="var(--fret)" stroke-width="8" stroke-linecap="round"/>
+<path d="M14.3 17v16M14.3 67v16M14.3 117v16M135.7 17v16M135.7 67v16M135.7 117v16" stroke="var(--neck)" stroke-width="1.6" stroke-linecap="round" opacity=".8"/>
+<g fill="none" stroke="var(--neck)" stroke-opacity=".85"><path d="M40.5 25L67.4 162V172" stroke-width="1.4"/>
+<path d="M38.1 75L52.1 162V172" stroke-width="1.65"/>
+<path d="M46.4 125L36.9 162V172" stroke-width="1.9"/>
+<path d="M109.5 25L82.6 162V172" stroke-width="1.2"/>
+<path d="M111.9 75L97.9 162V172" stroke-width="1"/>
+<path d="M103.6 125L113.1 162V172" stroke-width="0.9"/>
+</g><g fill="var(--neck)" stroke="var(--fret)"><circle cx="40.5" cy="25" r="4.5"/>
+<circle cx="38.1" cy="75" r="4.5"/>
+<circle cx="46.4" cy="125" r="4.5"/>
+<circle cx="109.5" cy="25" r="4.5"/>
+<circle cx="111.9" cy="75" r="4.5"/>
+<circle cx="103.6" cy="125" r="4.5"/>
+</g><path d="M38.3 25h4.4M35.9 75h4.4M44.2 125h4.4M107.3 25h4.4M109.7 75h4.4M101.4 125h4.4" stroke="var(--fret)" stroke-linecap="round"/>
+<rect x="31.9" y="159" width="86.2" height="5" rx="1.5" fill="var(--neck)" stroke="var(--fret)"/>
 </svg>
 </div>
 <p id="reference-status" class="headstock-hint" role="status">줄을 누르면 그 줄에 맞추고 기준음을 들려줘요.</p>
