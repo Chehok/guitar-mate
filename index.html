@@ -472,18 +472,18 @@ const n=spec.notes.length;
 return spec.notes.map((_,i)=>n===5&&i===4?[i,2,3]:[i,2+i,1]); // 5-string: highest string on the lone tuner below
 }
 // Sideways bass head (nut on the left), drawn in pixels to match the grid: clover keys over the top
-// edge, slotted posts, a string retainer for the high strings, a truss-rod scoop by the nut, and a
-// lower edge that drops into a belly and sweeps up into a big rounded tip. 5-string: 4+1, with the
+// edge, slotted posts, a string retainer for the high strings, a truss-rod scoop by the nut, and an
+// angular 'blade' outline. 5-string: 4+1, with the
 // highest string's tuner under the head next to the nut.
 function bassHeadArt(spec){
 const n=spec.notes.length,five=n===5,pw=46,X=k=>84+pw*k,top=five?4:n;
-const NT=five?42:44,NB=five?78:76,H=five?110:94,W=X(top-1)+62,e=W,postY=36;
+const NT=five?42:44,NB=five?78:76,H=five?110:94,W=X(top-1)+40,e=W,postY=36;
 const low=five?94:90,lowX=five?118:112;
 let s=`<rect x="0" y="${NT}" width="52" height="${NB-NT}" fill="var(--fret)"/><line x1="16" x2="16" y1="${NT}" y2="${NB}" stroke="var(--neck)" stroke-opacity=".55" stroke-width="2"/>`;
-// Outline after the reference photos: a near-straight top edge, a broad rounded end that stays level with
-// the top, and a lower edge that drops into a belly after the nut and rises gently back to the end.
-s+=`<path d="M52 ${NT}C60 ${NT} 62 26 80 26L${e-44} 21C${e-16} 20 ${e-2} 30 ${e-2} 45C${e-2} 60 ${e-16} 68 ${e-38} 70C${e-90} 74 ${lowX+56} ${low} ${lowX} ${low}C${lowX-30} ${low} 66 ${NB+4} 52 ${NB}Z" fill="var(--green)" stroke="var(--fret)" stroke-width="1.5"/>`;
-s+=`<path d="M${e-8} 47C${e-9} 58 ${e-20} 63 ${e-40} 64C${e-92} 68 ${lowX+54} ${low-6} ${lowX} ${low-6}C${lowX-24} ${low-6} 74 ${NB+1} 62 ${NB-2}" fill="none" stroke="var(--neck)" stroke-opacity=".28"/><ellipse cx="66" cy="${NB-8}" rx="7.5" ry="3.6" fill="var(--green-hover)"/>`;
+// Blade outline: straight top edge, a short squared end with small chamfers just past the last tuner,
+// and a straight lower edge rising from the belly, with a notch by the nut.
+s+=`<path d="M52 ${NT}L70 26L${e-8} 21L${e-2} 27L${e-2} 50L${e-8} 57L${lowX+10} ${low}L${lowX-8} ${low}L76 ${NB+8}L64 ${NB+2}L52 ${NB}Z" fill="var(--green)" stroke="var(--fret)" stroke-width="1.5"/>`;
+s+=`<path d="M${e-8} 48L${e-12} 52L${lowX+10} ${low-6}" fill="none" stroke="var(--neck)" stroke-opacity=".28"/><ellipse cx="66" cy="${NB-8}" rx="7.5" ry="3.6" fill="var(--green-hover)"/>`;
 const key=(x,y,down)=>{const d=down?-1:1;return `<g fill="var(--fret)" stroke="var(--fret)" stroke-width="1"><rect x="${x-2.5}" y="${down?y-16:y+6}" width="5" height="11"/><rect x="${x-4.5}" y="${down?y-9:y+3}" width="9" height="7" rx="2"/><circle cx="${x-6.5}" cy="${y+d}" r="6.3"/><circle cx="${x+6.5}" cy="${y+d}" r="6.3"/><circle cx="${x}" cy="${y-5*d}" r="6"/></g><g fill="var(--neck)" opacity=".55"><circle cx="${x-7.5}" cy="${y}" r="2"/><circle cx="${x+5.5}" cy="${y}" r="2"/><circle cx="${x-1}" cy="${y-6*d}" r="1.8"/></g>`;};
 const post=(x,y)=>`<circle cx="${x}" cy="${y}" r="8" fill="var(--neck)" stroke="var(--fret)" stroke-width="1.5"/><circle cx="${x}" cy="${y}" r="4.2" fill="var(--inlay)" stroke="var(--fret)"/><path d="M${x-3.4} ${y+1.6}L${x+3.4} ${y-1.6}" stroke="var(--fret)" stroke-width="1.6" stroke-linecap="round"/>`;
 let keys='',posts='',strings='';
