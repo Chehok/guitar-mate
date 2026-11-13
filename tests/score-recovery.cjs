@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
-const html=fs.readFileSync('index.html','utf8'),c=vm.createContext({});
+const html=fs.readFileSync('score-key-transposer.html','utf8'),c=vm.createContext({});
 vm.runInContext(html.slice(html.indexOf('// Score music functions:'),html.indexOf('// End score music functions.')),c);
 const bbox=(x0,x1,y0=80,y1=90,page=0)=>({x0,x1,y0,y1,page,staff:100,staffLeft:20,gap:5,row:85,ink:'neutral'});
 const code=(text,box,extra={})=>({text,bbox:box,confidence:99,support:3,styles:['gray','binary','flat'],engine:'paddle',...extra});

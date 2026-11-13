@@ -92,5 +92,5 @@
     };
   }
 
-  root.metronomeAudio = { setAudioSession, unlockMediaPlayback, silentWavUrl, resume, prepare, createClock };
+  root.metronomeAudio = { setAudioSession, resume, prepare, createClock };
 })(typeof window !== 'undefined' ? window : globalThis);

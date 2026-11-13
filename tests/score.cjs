@@ -146,7 +146,7 @@ const painter={drawImage(...a){paint.push(['image',...a]);},getImageData(_x,_y,w
 const elements=new Map(),$=id=>{if(!elements.has(id))elements.set(id,new Element());return elements.get(id);};
 const documentHandlers={};
 const head=new Element(),start=script.indexOf('// Score editor: images');
-const ui=script.slice(start,script.indexOf("if(ready(['chords']))",start));
+const ui=script.slice(start,script.indexOf('// Stop sound when the page goes away.',start));
 Object.assign(context,{painter,$,ready:modes=>modes.includes('score'),document:{addEventListener:(name,handler)=>{documentHandlers[name]=handler;},createElement:()=>new Element(),head,querySelectorAll:()=>[],activeElement:null},window:{},navigator:{onLine:true},setTimeout,clearTimeout,requestAnimationFrame:callback=>{callback();return 1;},cancelAnimationFrame(){},localStorage:{getItem:()=>null}});
 vm.runInContext(ui,context);
 context.loadScoreRecognizer=async()=>{throw Error('Exercise legacy fallback in DOM doubles');};

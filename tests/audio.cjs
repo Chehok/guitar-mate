@@ -2,9 +2,14 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
-const html=fs.readFileSync('index.html','utf8');
-const script=html.match(/<script data-main-app[^>]*>([\s\S]*?)<\/script>/)[1];
-const code=script.slice(script.indexOf('let audioContext=null,playing=[]'),script.indexOf("if(ready(['chords']))$('play').addEventListener"));
+// Each page carries only its own feature: the tuner (index) has the reference tone and mic handling,
+// the chord pages have chord playback. The audio helpers are the same on all of them.
+const pages={tuner:'index.html',chords:'chord-search.html',identify:'chord-identifier.html'};
+const source=Object.fromEntries(Object.entries(pages).map(([k,f])=>[k,fs.readFileSync(f,'utf8')]));
+const audioCode=(page,end)=>{const s=source[page].match(/<script data-main-app[^>]*>([\s\S]*?)<\/script>/)[1];const a=s.indexOf('let audioContext=null,playing=[]'),b=s.indexOf(end,a);assert(a>=0&&b>a,page);return s.slice(a,b);};
+const code=audioCode('tuner',"if(ready(['tuner']))$('mic-toggle')");
+const chordCode=audioCode('chords',"if(ready(['chords']))$('play')");
+const html=Object.values(source).join('\n');
 function make(contexts,audioSession){
   const made=[];
   class Ctx{constructor(){const spec=contexts.shift()||{};this.state=spec.initial||'suspended';this.spec=spec;made.push(this);}
@@ -42,7 +47,8 @@ function make(contexts,audioSession){
       connected:[],stopTimes:[],connect(n){this.connected.push(n);},disconnect(){},start(){},stop(t){this.stopTimes.push(t);},addEventListener(){}});
     const ctx={currentTime:1,destination:{name:'dest'},createGain:()=>node('gain'),createOscillator:()=>node('osc'),createDynamicsCompressor:()=>node('comp')};
     const box={window:{},navigator:{},setTimeout,tuning:[40,45,50,55,59,64]};
-    vm.runInNewContext(code+';this.sc=scheduleChord;this.sr=scheduleReference;',box);
+    vm.runInNewContext(chordCode+';this.sc=scheduleChord;',box);
+    {const reference={...box};vm.runInNewContext(code+';this.sr=scheduleReference;',reference);box.sr=reference.sr;}
     const tones=box.sc(ctx,[1,3,2,0,1,0],1);
     const outputFor=tone=>{
       const partials=tone.oscs.map(osc=>osc.connected[0]);
@@ -99,6 +105,6 @@ function make(contexts,audioSession){
   assert.match(html,/captureActive=\(\)=>!!micStream;/);
   assert.match(html,/stopPlayback\(\);retirePlaybackContext\(\);setAudioSession\('auto'\)/,'mic start rebuilds output');
   assert.match(html,/if\(wasCapturing\)retirePlaybackContext\(\);/,'mic stop rebuilds output');
-  assert.equal((html.match(/confirmPlayback\(/g)||[]).length,4,'chord, identify, reference verify playback');
+  for(const [page,text] of Object.entries(source))assert.equal((text.match(/confirmPlayback\(/g)||[]).length,2,page+' verifies its playback');
   console.log('Audio preparation: resume, interrupted recovery, failure reporting and session type passed (mocked, no browser).');
 })().catch(error=>{console.error(error);process.exitCode=1;});

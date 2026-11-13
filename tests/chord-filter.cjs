@@ -9,6 +9,10 @@ vm.runInContext(script.slice(script.indexOf('const mod='),script.indexOf('let cu
 vm.runInContext(script.slice(script.indexOf('// Chord filter functions:'),script.indexOf('// End chord filter functions.')),ctx);
 const {parse,makeVoicings}=ctx;
 const run=code=>JSON.parse(JSON.stringify(vm.runInContext(code,ctx)));
+// Chord data self-checks (voicings here; identification on the chord identifier page)
+vm.runInContext('checkChordVoicings();',ctx);
+{const page=fs.readFileSync('chord-identifier.html','utf8').match(/<script data-main-app[^>]*>([\s\S]*?)<\/script>/)[1];
+const idc=vm.createContext({});vm.runInContext(page.slice(page.indexOf('const mod='),page.indexOf('function diagram(')),idc);vm.runInContext('checkChordIdentification();',idc);}
 const roots=run('filterRoots'),kinds=run('filterKinds');
 assert.deepEqual(roots.slice(0,7),['C','D','E','F','G','A','B']);
 assert(roots.includes('C#')&&roots.includes('F#'));

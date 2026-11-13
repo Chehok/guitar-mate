@@ -4,7 +4,7 @@
 
 화면 언어는 한국어가 기본이며 헤더의 **EN** 버튼으로 영어로 바꿀 수 있습니다(다시 **KO**로 돌아가며, 고른 언어는 기기에 기억됩니다). 번역은 `i18n.js`(전환·적용)와 `i18n-en.js`(한국어 원문 → 영어 사전)가 화면에 표시되는 글자만 바꾸므로 앱 동작 코드는 그대로입니다. 새 문구를 추가하면 `i18n-en.js`에도 영어를 넣어 주세요. 탭처럼 좁은 곳은 요소에 `data-i18n-en`으로 짧은 영어를 따로 지정합니다.
 
-첫 화면은 튜닝(`index.html`)입니다. 코드 검색은 `chord-search.html`, 코드 판별은 `chord-identifier.html`, 악보 키 변환은 `score-key-transposer.html`에서 엽니다. Cloudflare Workers 기본 설정에서는 개별 HTML 주소가 확장자 없는 주소로 리디렉션됩니다.
+첫 화면은 튜닝(`index.html`)입니다. 코드 검색은 `chord-search.html`, 코드 판별은 `chord-identifier.html`, 악보 키 변환은 `score-key-transposer.html`에서 엽니다. Cloudflare Workers 기본 설정에서는 개별 HTML 주소가 확장자 없는 주소로 리디렉션됩니다. 각 페이지에는 그 기능에 필요한 스크립트만 들어 있습니다. 공용 오디오 도우미처럼 여러 페이지가 쓰는 코드는 페이지마다 같은 내용으로 들어가 있으니, 고칠 때는 함께 고쳐 주세요. 자동 악보 인식 코드(테스트·`scripts/ocr-*.cjs` 포함)는 `score-key-transposer.html`에 있습니다. 도구 페이지의 `<h1>`은 화면에 보이지 않고(`.sr-only`, 화면 낭독기·검색용) 탭 이름이 페이지 제목 역할을 합니다.
 
 튜너는 70–1000 Hz를 분석하며, 마이크 감도는 기본 8배(1–16배 조절)입니다. 마이크는 HTTPS 또는 localhost에서 사용할 수 있습니다.
 

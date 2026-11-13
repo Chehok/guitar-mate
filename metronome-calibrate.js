@@ -136,6 +136,6 @@
     };
   }
 
-  root.metronomeCalibrate = { analyze, openMic, bandpass, envelope, CHIRP_HZ, LEADER_HZ };
+  root.metronomeCalibrate = { analyze, openMic, envelope, CHIRP_HZ };
 })(typeof window !== 'undefined' ? window : globalThis);
 
