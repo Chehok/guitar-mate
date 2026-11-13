@@ -339,31 +339,22 @@ function paintPendulum(){
 }
 // Auto match: while listening, my clicks become 2 kHz chirps half a beat later (see metronome-calibrate.js).
 let calibrating=null,lastCalibration=null,lastRecording=null,autoWait=false,autoWaitTimer=null;
-// Output: clicks → boost → soft clipper → speaker. The clicks play near full scale so the phone's own
-// volume buttons decide how loud they are (and the mic can hear them for auto match). The clipper
-// keeps that from overloading harshly and, unlike a compressor, adds no delay.
-const CLICK_GAIN=4;
-let outBus=null;
-function bus(){
-  if(outBus&&outBus.ctx===audioContext)return outBus;
-  const clip=audioContext.createWaveShaper(),curve=new Float32Array(1025);
-  for(let i=0;i<curve.length;i++){const x=(i/512-1)*1.6;curve[i]=Math.tanh(1.4*x)/Math.tanh(1.4*1.6)*.98;}
-  clip.curve=curve;clip.connect(audioContext.destination);
-  const level=audioContext.createGain();level.gain.value=CLICK_GAIN;level.connect(clip);
-  outBus={ctx:audioContext,level,clip};return outBus;
-}
+// Clicks play near full scale (peaks below 1, so nothing clips): the phone's own volume buttons decide
+// how loud they are, and the mic can hear them for auto match. Shapes are shared with the auto-match
+// analysis (metronome-calibrate.js SHAPES).
 function playChirp(time){
   const oscillator=audioContext.createOscillator(),gain=audioContext.createGain();
   oscillator.type='sine';oscillator.frequency.setValueAtTime(window.metronomeCalibrate.CHIRP_HZ,time);
   const shape=window.metronomeCalibrate.SHAPES.chirp;
   gain.gain.setValueAtTime(.0001,time);gain.gain.exponentialRampToValueAtTime(shape.peak,time+.002);gain.gain.exponentialRampToValueAtTime(.0001,time+.002+shape.fall);
-  oscillator.connect(gain);gain.connect(bus().clip);sources.add(oscillator);oscillator.onended=()=>sources.delete(oscillator);oscillator.start(time);oscillator.stop(time+.045);
+  oscillator.connect(gain);gain.connect(audioContext.destination);sources.add(oscillator);oscillator.onended=()=>sources.delete(oscillator);oscillator.start(time);oscillator.stop(time+.045);
 }
 function playClick(time,beat){
   const oscillator=audioContext.createOscillator(),gain=audioContext.createGain();
-  oscillator.type='square';oscillator.frequency.setValueAtTime(beat===0?1320:880,time);
-  gain.gain.setValueAtTime(.0001,time);gain.gain.exponentialRampToValueAtTime(beat===0?.2:.13,time+.002);gain.gain.exponentialRampToValueAtTime(.0001,time+.045);
-  oscillator.connect(gain);gain.connect(bus().level);sources.add(oscillator);oscillator.onended=()=>sources.delete(oscillator);oscillator.start(time);oscillator.stop(time+.05);
+  const shape=window.metronomeCalibrate.SHAPES[beat===0?'accent':'beat'];
+  oscillator.type='square';oscillator.frequency.setValueAtTime(shape.hz,time);
+  gain.gain.setValueAtTime(.0001,time);gain.gain.exponentialRampToValueAtTime(shape.peak,time+.002);gain.gain.exponentialRampToValueAtTime(.0001,time+.002+shape.fall);
+  oscillator.connect(gain);gain.connect(audioContext.destination);sources.add(oscillator);oscillator.onended=()=>sources.delete(oscillator);oscillator.start(time);oscillator.stop(time+.05);
 }
 let lastResumeTry=0;
 function schedule(){
@@ -771,8 +762,22 @@ calibrateButton.addEventListener('click',async()=>{
   if(calibrating)return;
   if(autoWait){cancelAutoWait();return;}
   if(role==='follower'&&running&&grid&&audioContext){autoMatch();return;}
-  // The leader hasn't started yet: wait, then listen as soon as the beat comes in.
+  // The leader hasn't started yet: ask for the mic now (while the tap counts as a gesture), let it go
+  // again, and wait; listening starts as soon as the beat comes in.
   try{await ensureAudio();}catch(_){}
+  if(navigator.mediaDevices?.getUserMedia){
+    calibrateButton.disabled=true;calibrateLabel.textContent='마이크 확인 중…';
+    try{
+      const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+      stream.getTracks().forEach(track=>track.stop());
+    }catch(error){
+      calibrateButton.disabled=false;calibrateLabel.textContent='자동 맞추기';
+      $('sync-match-text').textContent=error&&error.name==='NotAllowedError'?'마이크 권한이 필요해요. 브라우저 설정에서 마이크를 허용해 주세요.':'마이크를 시작하지 못했어요. 다시 해 보세요.';
+      return;
+    }finally{window.metronomeAudio.setAudioSession('playback');}
+    calibrateButton.disabled=false;
+    if(role==='follower'&&running&&grid&&audioContext){autoMatch();return;} // the leader started meanwhile
+  }
   autoWait=true;
   calibrateLabel.textContent='리더 시작 기다리는 중… (누르면 취소)';
   $('sync-match-text').textContent='리더가 메트로놈을 시작하면 바로 들을게요. 리더 폰 가까이에 있어 주세요.';
