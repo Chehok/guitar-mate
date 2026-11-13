@@ -120,6 +120,13 @@ button,input { font:inherit; }
 .sync-join-row input { flex:1; min-width:0; min-height:52px; padding:6px 12px; border:1px solid var(--control); border-radius:10px; background:var(--panel); color:var(--ink); font-size:24px; font-weight:750; letter-spacing:.32em; text-indent:.32em; text-align:center; font-variant-numeric:tabular-nums; }
 .sync-join-row input::placeholder { color:var(--control); opacity:.55; }
 .sync-join-form .hint { margin-top:8px; }
+@media (min-width:760px) {
+  /* Wide screens: make a room | or | join with a code, side by side on one line */
+  #sync-idle { display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); gap:0 24px; align-items:start; max-width:none; }
+  #sync-lead { margin-top:30px; width:100%; }
+  #sync-idle .sync-or { flex-direction:column; align-self:stretch; margin:0; gap:8px; }
+  #sync-idle .sync-or::before, #sync-idle .sync-or::after { border-top:0; border-left:1px solid var(--line); }
+}
 .sync-box { padding:12px 16px 16px; border:1px solid var(--line); border-radius:12px; background:var(--soft); }
 .sync-box-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin:0 0 10px; }
 .sync-box-title { margin:0; font-weight:700; }
@@ -159,6 +166,7 @@ button,input { font:inherit; }
 }
 @media (min-width:760px) {
   .sync-grid { grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:32px; align-items:start; }
+  .sync-grid:has(> #sync-tune[hidden]) { grid-template-columns:minmax(0,1fr); }
   .sync-tune { padding:0 0 0 32px; border-top:0; border-left:1px solid var(--line); }
 }
 @media (min-width: 760px) { .panel { padding: 32px; } }
