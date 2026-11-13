@@ -3,16 +3,13 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
 const html=fs.readFileSync('chord-search.html','utf8');
-const script=html.match(/<script data-main-app[^>]*>([\s\S]*?)<\/script>/)[1];
-const ctx=vm.createContext({});
-vm.runInContext(script.slice(script.indexOf('const mod='),script.indexOf('let current=null')),ctx);
-vm.runInContext(script.slice(script.indexOf('// Chord filter functions:'),script.indexOf('// End chord filter functions.')),ctx);
+const {loadPage}=require('./support/page-source.cjs');
+const ctx=loadPage(vm.createContext({}),'chord-search.html');
 const {parse,makeVoicings}=ctx;
 const run=code=>JSON.parse(JSON.stringify(vm.runInContext(code,ctx)));
 // Chord data self-checks (voicings here; identification on the chord identifier page)
 vm.runInContext('checkChordVoicings();',ctx);
-{const page=fs.readFileSync('chord-identifier.html','utf8').match(/<script data-main-app[^>]*>([\s\S]*?)<\/script>/)[1];
-const idc=vm.createContext({});vm.runInContext(page.slice(page.indexOf('const mod='),page.indexOf('function diagram(')),idc);vm.runInContext('checkChordIdentification();',idc);}
+vm.runInContext('checkChordIdentification();',loadPage(vm.createContext({}),'chord-identifier.html'));
 const roots=run('filterRoots'),kinds=run('filterKinds');
 assert.deepEqual(roots.slice(0,7),['C','D','E','F','G','A','B']);
 assert(roots.includes('C#')&&roots.includes('F#'));
@@ -55,9 +52,7 @@ assert.match(html,/id="filter-reset"[^>]*aria-label="필터 초기화 \(C · M �
 assert(!/class="chips"/.test(html),'no always-open option grids');
 assert.match(html,/id="filter-empty"[^>]*hidden/);
 assert.match(html,/id="filter-reset"/);
-vm.runInContext(script.slice(script.indexOf('const svg='),script.indexOf('function diagram(')),ctx);
-vm.runInContext(script.slice(script.indexOf('function neck('),script.indexOf('function renderNeck(')),ctx);
-const fretboards=run("const current=parse('C'), grip=makeVoicings(current)[0]; [neck(grip,false),neck(grip,true)]");
+const fretboards=run("current=parse('C'); var grip=makeVoicings(current)[0]; [neck(grip,false),neck(grip,true)]");
 for(const board of fretboards){
   assert.deepEqual([...board.matchAll(/>(\d+)<\/text>/g)].map(match=>Number(match[1])),Array.from({length:16},(_,i)=>i));
   assert.equal([...board.matchAll(/<circle[^>]*fill="var\(--(?:orange|green)\)"/g)].length,5,'Same open C fingering highlighted');

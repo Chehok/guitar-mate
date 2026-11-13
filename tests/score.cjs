@@ -7,7 +7,8 @@ assert.doesNotMatch(html,/name="score-mode"/);
 const script=html.match(/<script data-main-app[^>]*>([\s\S]*?)<\/script>/)[1];
 new vm.Script(script);
 const pure=script.slice(script.indexOf('// Score music functions:'),script.indexOf('// End score music functions.'));
-const context=vm.createContext({});vm.runInContext(pure,context);
+const {core}=require('./support/page-source.cjs');
+const context=vm.createContext({});vm.runInContext(core,context);vm.runInContext(pure,context);
 const {parseScoreChord:parse,transposeScoreChord:transpose,capoScoreChord:capo,detectScoreKey:detect,filterScoreWords:filter}=context;
 const selectImage=context.selectScoreClipboardImage;
 const textItem={kind:'string',type:'text/plain'},pngItem={kind:'file',type:'image/png'},jpegItem={kind:'file',type:'image/jpeg'};
@@ -147,7 +148,7 @@ const elements=new Map(),$=id=>{if(!elements.has(id))elements.set(id,new Element
 const documentHandlers={};
 const head=new Element(),start=script.indexOf('// Score editor: images');
 const ui=script.slice(start,script.indexOf('// Stop sound when the page goes away.',start));
-Object.assign(context,{painter,$,ready:modes=>modes.includes('score'),document:{addEventListener:(name,handler)=>{documentHandlers[name]=handler;},createElement:()=>new Element(),head,querySelectorAll:()=>[],activeElement:null},window:{},navigator:{onLine:true},setTimeout,clearTimeout,requestAnimationFrame:callback=>{callback();return 1;},cancelAnimationFrame(){},localStorage:{getItem:()=>null}});
+Object.assign(context,{painter,$,ready:modes=>modes.includes('score'),document:{getElementById:id=>$(id),querySelector:selector=>selector==='[data-main-app]'?{dataset:{mode:'score'}}:null,addEventListener:(name,handler)=>{documentHandlers[name]=handler;},createElement:()=>new Element(),head,querySelectorAll:()=>[],activeElement:null},window:{},navigator:{onLine:true},setTimeout,clearTimeout,requestAnimationFrame:callback=>{callback();return 1;},cancelAnimationFrame(){},localStorage:{getItem:()=>null}});
 vm.runInContext(ui,context);
 context.loadScoreRecognizer=async()=>{throw Error('Exercise legacy fallback in DOM doubles');};
 assert.equal(head.children.length,0,'OCR must not download at app startup');

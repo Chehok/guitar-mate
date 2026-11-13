@@ -2,11 +2,10 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
-const html=fs.readFileSync('index.html','utf8');
-const script=html.match(/<script data-main-app[^>]*>([\s\S]*?)<\/script>/)[1];
-new vm.Script(script); // Parse the entire app, including microphone/event wiring.
-const context=vm.createContext({});
-vm.runInContext(script.slice(script.indexOf('function detectPitch('),script.indexOf('let concertA=')),context);
+const {core,mainScript,loadPage}=require('./support/page-source.cjs');
+const script=mainScript('index.html');
+new vm.Script(core);new vm.Script(script); // Parse the entire app, including microphone/event wiring.
+const context=loadPage(vm.createContext({}),'index.html');
 const detect=context.detectPitch;
 let seed=7,cases=0,maxError=0;
 const noise=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/2**32-.5;};
@@ -37,6 +36,5 @@ for(const rate of [44100,48000,96000]){
   for(const signal of [new Float32Array(length),new Float32Array(length).fill(.1),Float32Array.from({length},()=>noise()*.5),Float32Array.from({length},()=>noise()*.0005)])assert.equal(detect(signal,rate),null,'Silence, DC or noise detected as pitch');
 }
 // Existing chord checks run without a DOM or a browser.
-vm.runInContext(script.slice(script.indexOf('const mod='),script.indexOf('function diagram(')),context);
 for(let index=0;index<6;index++)assert.equal(vm.runInContext(`nearestString(stringFrequency(${index}),440)`,context),index);
 console.log(`${cases} pitch cases passed; maximum error ${maxError.toFixed(3)} cents. String checks passed.`);
