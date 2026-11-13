@@ -294,15 +294,17 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .score-intro-size .score-row { margin-top:0; gap:8px; flex-wrap:nowrap; }
 .score-intro-size button { min-width:44px; padding-inline:0; }
 #score-panel .score-intro-size output { min-width:52px; }
-.score-intro-tempo { margin-top:14px; padding:10px 12px; border:1px solid var(--line); border-radius:12px; background:var(--soft); }
-.score-intro-tempo-row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
-.score-intro-tempo-row label { font-size:14px; font-weight:650; }
+.score-intro-tempo { margin-top:10px; padding:8px 10px; border:1px solid var(--line); border-radius:12px; background:var(--soft); }
+.score-intro-tempo-row { display:flex; align-items:center; gap:10px; }
 .score-intro-tempo-value { display:flex; align-items:center; gap:6px; color:var(--muted); font-size:13px; }
-#score-intro-tempo-value { width:72px; min-height:44px; padding:6px 8px; border:1px solid var(--control); border-radius:10px; background:var(--panel); color:var(--ink); text-align:center; font:inherit; font-size:16px; font-variant-numeric:tabular-nums; }
-#score-intro-tempo-range { display:block; width:100%; margin:8px 0 0; accent-color:var(--green); }
-.score-intro-meter { display:flex; flex-wrap:wrap; align-items:center; gap:4px 12px; margin:10px 0 0; padding:0; border:0; }
-.score-intro-meter legend { float:left; margin-right:4px; padding:0; font-size:14px; font-weight:650; }
-.score-intro-meter label { display:inline-flex; align-items:center; gap:4px; min-height:44px; font-size:14px; }
+#score-intro-tempo-value { width:64px; min-height:44px; padding:6px 8px; border:1px solid var(--control); border-radius:10px; background:var(--panel); color:var(--ink); text-align:center; font:inherit; font-size:16px; font-variant-numeric:tabular-nums; }
+#score-intro-tempo-range { flex:1; min-width:0; margin:0; accent-color:var(--green); }
+.score-intro-meter { display:flex; align-items:center; gap:6px; margin-top:6px; }
+#score-intro-meter-label { margin-right:2px; font-size:14px; font-weight:650; }
+.score-intro-meter label { flex:1; }
+.score-intro-meter label span { display:grid; place-items:center; min-height:44px; border:1px solid var(--control); border-radius:8px; background:var(--panel); font-size:14px; cursor:pointer; }
+.score-intro-meter input:checked + span { border-color:var(--green); background:var(--green); color:var(--on-green); font-weight:650; }
+.score-intro-meter input:focus-visible + span { outline:3px solid var(--focus); outline-offset:1px; }
 .score-intro-bars { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; list-style:none; margin:6px 0 0; padding:0; }
 .score-intro-bars li { padding:8px 4px; border:1px solid var(--line); border-radius:8px; background:var(--soft); text-align:center; overflow-wrap:anywhere; }
 .score-intro-bars span { display:block; color:var(--muted); font-size:12px; }
@@ -373,10 +375,19 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <dialog id="score-intro-dialog" class="install-guide score-intro" aria-labelledby="score-intro-title">
 <div class="score-intro-header"><h2 id="score-intro-title">추천 전주</h2><button id="score-intro-close" type="button" aria-label="닫기" autofocus>×</button></div>
 <p class="hint">한 마디에 코드 하나씩 연주한 뒤 곡의 첫 코드로 넘어가세요.</p>
-<div class="score-intro-tempo"><div class="score-intro-tempo-row"><label for="score-intro-tempo-value">재생 템포</label><div class="score-intro-tempo-value"><input id="score-intro-tempo-value" type="number" min="40" max="240" step="1" value="100" inputmode="numeric" aria-describedby="score-intro-tempo-note"><span>BPM</span></div></div>
+<div class="score-intro-tempo">
+<div class="score-intro-tempo-row">
+<label class="sr-only" for="score-intro-tempo-value">재생 템포</label>
 <input id="score-intro-tempo-range" type="range" min="40" max="240" step="1" value="100" aria-label="재생 템포 조절">
-<fieldset class="score-intro-meter"><legend>박자</legend><label><input type="radio" name="score-intro-meter" value="4/4" checked> 4/4</label><label><input type="radio" name="score-intro-meter" value="3/4"> 3/4</label><label><input type="radio" name="score-intro-meter" value="6/8"> 6/8</label></fieldset>
-<p id="score-intro-tempo-note" class="hint">4/4박자 · 한 마디 2.4초</p></div>
+<div class="score-intro-tempo-value"><input id="score-intro-tempo-value" type="number" min="40" max="240" step="1" value="100" inputmode="numeric"><span>BPM</span></div>
+</div>
+<div class="score-intro-meter" role="radiogroup" aria-labelledby="score-intro-meter-label">
+<span id="score-intro-meter-label">박자</span>
+<label><input class="sr-only" type="radio" name="score-intro-meter" value="4/4" checked><span>4/4</span></label>
+<label><input class="sr-only" type="radio" name="score-intro-meter" value="3/4"><span>3/4</span></label>
+<label><input class="sr-only" type="radio" name="score-intro-meter" value="6/8" aria-label="6/8박자 · 점4분음표 기준"><span>6/8</span></label>
+</div>
+</div>
 <p id="score-intro-empty" class="hint" hidden>악보에서 코드를 찾으면 곡의 키에 맞는 전주를 추천해요. 인식이 끝나면 여기에 나와요.</p>
 <h3 id="score-intro-easy-title">쉬운 전주</h3>
 <ol id="score-intro-easy" class="score-intro-bars" aria-labelledby="score-intro-easy-title" role="list"></ol>
@@ -1321,19 +1332,15 @@ return [{midi:48+(bass??root)+capo,low:true},...chord.tones.map(t=>({midi:60+sco
 // One chord per bar, strummed on every pulse with the downbeat loudest.
 // BPM counts quarter notes in 4/4 and 3/4, and dotted quarters in 6/8.
 const scoreIntroMeters={
-'4/4':{beats:4,pulses:[[0,1],[1,.45],[2,.7],[3,.45]],label:'4/4박자'},
-'3/4':{beats:3,pulses:[[0,1],[1,.45],[2,.45]],label:'3/4박자'},
-'6/8':{beats:2,pulses:[[0,1],[1/3,.35],[2/3,.35],[1,.7],[4/3,.35],[5/3,.35]],label:'6/8박자 · 점4분음표 기준'}
+'4/4':{beats:4,pulses:[[0,1],[1,.45],[2,.7],[3,.45]]},
+'3/4':{beats:3,pulses:[[0,1],[1,.45],[2,.45]]},
+'6/8':{beats:2,pulses:[[0,1],[1/3,.35],[2/3,.35],[1,.7],[4/3,.35],[5/3,.35]]}
 };
 function scoreIntroBarLength(){return scoreIntroMeters[scoreState.introMeter].beats*60/scoreState.introTempo;}
-function updateScoreIntroTempoNote(){
-$('score-intro-tempo-note').textContent=`${scoreIntroMeters[scoreState.introMeter].label} · 한 마디 ${scoreIntroBarLength().toFixed(1)}초`;
-}
 function setScoreIntroMeter(value){
 if(!scoreIntroMeters[value]||value===scoreState.introMeter)return;
 stopScoreIntro();
 scoreState.introMeter=value;
-updateScoreIntroTempoNote();
 }
 function setScoreIntroTempo(raw,commit=true){
 const value=String(raw).trim()===''?NaN:Math.round(Number(raw));
@@ -1344,7 +1351,6 @@ if(bpm!==scoreState.introTempo)stopScoreIntro();
 scoreState.introTempo=bpm;
 $('score-intro-tempo-range').value=String(bpm);
 if(commit||document.activeElement!==$('score-intro-tempo-value'))$('score-intro-tempo-value').value=String(bpm);
-updateScoreIntroTempoNote();
 }
 function stopScoreIntro(){
 const playback=scoreIntroPlayback;

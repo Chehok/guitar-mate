@@ -633,7 +633,6 @@ patterns: [
   ['처리·저장 크기: {0} × {1}px', 'Processing/saving size: {0} × {1}px'],
   ['{0} → {1} · 수정', '{0} → {1} · edit'],
   ['직접 추가 · {0}', 'Added · {0}'],
-  ['{0} · 한 마디 {1}초', '{0} · {1} s per bar'],
   ['{0}마디', 'Bar {0}'],
   ['전주 크기를 {0}%로 바꿨어요.', 'Intro size set to {0}%.'],
   ['악보 코드 {0}개', '{0} chords on the sheet'],
