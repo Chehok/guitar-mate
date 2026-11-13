@@ -87,7 +87,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .filter-status { margin: 0; flex: 1; min-width: 0; font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
 .filter-status strong { color: var(--ink); font-size: 15px; }
 .filter-reset { flex: none; min-height: 44px; padding: 4px 12px; font-size: 13px; }
-.layout, .tuner-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start; }
+.layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start; }
 .panel { min-width: 0; padding: 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
 .chord-title { font-size: 36px; font-weight: 500; line-height: 1.2; letter-spacing: -1px; margin: 0; overflow-wrap: anywhere; }
 .quality { color: var(--muted); font-size: 13px; margin-top: 6px; }
@@ -106,7 +106,6 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .details { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 12px; border-top: 1px solid var(--line); padding-top: 20px; }
 .details span { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
 .details strong { font-size: 14px; font-weight: 550; font-variant-numeric: tabular-nums; }
-.tuner-controls h2{ font-size: 16px; font-weight: 650; margin: 0; }
 .key { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: var(--note); border: 1px solid var(--fret); }
 .key.root { background: var(--orange); border-color: var(--orange); }
 .key.current { background: var(--green); outline: 2px solid var(--ink); outline-offset: 2px; border: 0; }
@@ -115,36 +114,48 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .neck { display: block; width: 100%; min-width: 1010px; height: auto; }
 .empty { padding: 48px 8px; text-align: center; color: var(--muted); }
 #audio-status { min-height: 18px; margin-top: 8px; font-size: 12px; color: var(--muted); }
-.tuner-display { text-align: center; }
-.tuner-target { color: var(--muted); font-size: 14px; }
-.tuner-note { font-size: 64px; font-weight: 550; line-height: 1.2; margin: 16px 0 4px; letter-spacing: -2px; }
-.tuner-frequency { min-height: 24px; color: var(--muted); font-size: 14px; }
-.tuner-gauge { display: block; width: 100%; max-width: 430px; margin: 24px auto 8px; color: var(--orange); overflow: visible; }
+/* Tuner: one screen — reading on top, a headstock whose pegs pick the string, then the mic */
+.tuner-display { --wood: #a8763f; --wood-dark: #74502a; --peg: #ebe6d8; --peg-string: #d9d2bf; text-align: center; }
+.tuner-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; text-align: left; }
+.tuner-target { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+.auto-switch { flex: none; display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 4px 12px 4px 6px; border-radius: 20px; border-color: var(--line); font-size: 13px; font-weight: 650; }
+.switch-track { position: relative; width: 36px; height: 22px; border-radius: 11px; background: var(--fret); transition: background .15s; }
+.switch-knob { position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--panel); transition: transform .15s; }
+.auto-switch[aria-checked=true] .switch-track { background: var(--green); }
+.auto-switch[aria-checked=true] .switch-knob { transform: translateX(14px); }
+.tuner-note { font-size: 48px; font-weight: 550; line-height: 1.15; margin: 4px 0 0; letter-spacing: -2px; }
+.tuner-frequency { min-height: 20px; margin: 0; color: var(--muted); font-size: 13px; }
+.tuner-gauge { display: block; width: 100%; max-width: 250px; margin: 8px auto 0; color: var(--orange); overflow: visible; }
 .tuner-gauge text { font-family: inherit; font-weight: 600; }
 .tuner-display.in-tune .tuner-gauge, .tuner-display.in-tune .tuner-advice { color: var(--green); }
 .tuner-display.waiting .tuner-gauge, .tuner-display.waiting .tuner-advice { color: var(--muted); }
 #tuner-needle { transform-origin: 200px 172px; transition: transform .12s ease-out; }
-.tuner-cents { font-size: 24px; font-weight: 500; }
-.tuner-note, .tuner-frequency, .tuner-cents, .calibration input, .mic-sensitivity output { font-variant-numeric: tabular-nums; }
-.tuner-advice { min-height: 24px; margin: 8px 0 24px; color: var(--orange); font-size: 14px; font-weight: 650; }
-#mic-toggle { width: 100%; max-width: 280px; min-height: 48px; }
-#mic-status { min-height: 40px; max-width: 420px; margin: 12px auto 0; color: var(--muted); font-size: 12px; line-height: 1.8; }
-#auto-string { width: 100%; margin-top: 16px; }
-.string-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 12px 0; }
-.string-grid button { padding: 10px 4px; border-color: var(--line); }
-.string-grid strong { display: block; font-size: 22px; font-weight: 500; }
-.string-grid small { font-size: 12px; }
-.string-grid button[aria-pressed=true], #auto-string[aria-pressed=true] { color: var(--green); background: var(--soft); border-color: var(--green); }
-.string-grid button.detected { outline: 2px solid var(--orange); outline-offset: 2px; }
-.string-grid button:focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }
-.reference-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
-.reference-grid button { padding: 8px 4px; font-size: 13px; }
-.tuner-settings { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); }
-.calibration { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 14px; }
-.calibration input { width: 88px; padding: 8px 10px; }
-#reference-status { min-height: 20px; margin-top: 10px; color: var(--muted); font-size: 12px; }
-.mic-sensitivity { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; font-size: 14px; }
-.mic-sensitivity input { grid-column: 1 / -1; width: 100%; margin: 0; }
+.tuner-cents { margin: 4px 0 0; font-size: 20px; font-weight: 500; }
+.tuner-note, .tuner-frequency, .tuner-cents, .mic-sensitivity output { font-variant-numeric: tabular-nums; }
+.tuner-advice { min-height: 22px; margin: 2px 0 8px; color: var(--orange); font-size: 14px; font-weight: 650; }
+.headstock { display: grid; grid-template-columns: 52px minmax(104px, 140px) 52px; grid-template-rows: repeat(3, 58px); justify-content: center; align-items: center; column-gap: 6px; }
+.headstock-art { grid-column: 2; grid-row: 1 / span 3; width: 100%; height: 100%; }
+.headstock button { width: 50px; height: 50px; padding: 0; border-radius: 50%; border-color: var(--line); background: var(--panel); display: grid; place-content: center; line-height: 1.05; }
+.headstock button strong { font-size: 20px; font-weight: 600; }
+.headstock button small { font-size: 10px; color: var(--muted); }
+.headstock button[aria-pressed=true] { background: var(--green); border-color: var(--green); color: var(--on-green); }
+.headstock button[aria-pressed=true] small { color: inherit; opacity: .8; }
+.headstock button.detected { outline: 3px solid var(--orange); outline-offset: 2px; }
+.tuner-display.in-tune .headstock button.detected { outline-color: var(--green); }
+.headstock button:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+.headstock-hint { min-height: 20px; margin: 8px 0 0; color: var(--muted); font-size: 12px; }
+.tuner-mic { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+#mic-toggle { width: 100%; max-width: 320px; min-height: 48px; }
+#mic-status { min-height: 20px; max-width: 420px; margin: 6px auto 0; color: var(--muted); font-size: 12px; line-height: 1.7; }
+.mic-sensitivity { display: grid; grid-template-columns: auto minmax(0, 1fr) 3em; align-items: center; gap: 10px; max-width: 320px; margin: 8px auto 0; color: var(--muted); font-size: 13px; text-align: left; }
+.mic-sensitivity input { width: 100%; margin: 0; accent-color: var(--green); }
+.mic-sensitivity output { text-align: right; color: var(--ink); font-weight: 600; }
+@media (min-width: 760px) {
+  .tuner-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: center; }
+  .tuner-gauge { max-width: 360px; }
+  .headstock { grid-template-columns: 60px 170px 60px; grid-template-rows: repeat(3, 76px); }
+  .headstock button { width: 58px; height: 58px; }
+}
 #identify-play { flex: none; padding-inline: 12px; font-size: 13px; white-space: nowrap; }
 #identify-reset { flex: none; }
 #identify-audio-status { min-height: 22px; margin: 6px 0 0; font-size: 13px; color: var(--muted); }
@@ -159,18 +170,17 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .identify-hit:focus-visible rect { fill: var(--hit); stroke: var(--focus); stroke-width: 2.5; }
 @media (hover: hover) {
   button:hover:not(:disabled) { background: var(--soft); border-color: var(--green); }
+  .headstock button[aria-pressed=true]:hover:not(:disabled) { background: var(--green-hover); color: var(--on-green); }
   button.primary:hover:not(:disabled) { background: var(--green-hover); color: var(--on-green); border-color: var(--green-hover); }
   .identify-hit:hover rect { fill: var(--hit); stroke: var(--green); stroke-width: 2; }
 }
 @media (min-width: 760px) {
   .layout { grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); }
-  .tuner-layout { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
   .panel { padding: 24px; }
 }
 @media (min-width: 760px) and (max-width: 1023px) {
   .layout { grid-template-columns: minmax(300px, 1fr) minmax(0, 1fr); }
   .panel { padding: 20px; }
-  .tuner-layout { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -182,6 +192,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
     --fret: #83977e; --string: #92a58d; --neck: #242c24; --inlay: #67755f;
     --note: #3c513d; --note-ink: #ecf1e5; --hit: #a2d2b524;
   }
+  .tuner-display { --wood: #7a5530; --wood-dark: #4f3519; --peg: #cfc8b6; --peg-string: #a99f88; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
@@ -232,10 +243,14 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <main>
 <section id="tuner-panel">
 <h1 class="sr-only">튜닝</h1>
-<div class="tuner-layout">
-<section id="tuner-display" class="panel tuner-display waiting" aria-label="튜닝 측정">
+<section id="tuner-display" class="panel tuner-display waiting" aria-label="튜닝">
+<div class="tuner-top">
 <p id="tuner-target" class="tuner-target">자동 줄 인식 · 소리를 기다립니다</p>
-<div id="tuner-note" class="tuner-note">—</div><p id="tuner-frequency" class="tuner-frequency">기준음 A4 = 440 Hz</p>
+<button id="auto-string" class="auto-switch" type="button" role="switch" aria-checked="true"><span class="switch-track" aria-hidden="true"><span class="switch-knob"></span></span>자동</button>
+</div>
+<div class="tuner-body">
+<div class="tuner-readout">
+<div id="tuner-note" class="tuner-note">—</div><p id="tuner-frequency" class="tuner-frequency">A4 = 440 Hz</p>
 <svg class="tuner-gauge" viewBox="0 0 400 205" role="img" aria-label="센트 게이지, 왼쪽은 낮음, 오른쪽은 높음">
 <path d="M70 97 A150 150 0 0 1 330 97" fill="none" stroke="var(--fret)" stroke-width="12" stroke-linecap="round"/>
 <path d="M184 23 A150 150 0 0 1 216 23" fill="none" stroke="var(--green)" stroke-width="12"/>
@@ -243,20 +258,27 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <g id="tuner-needle"><path d="M200 172 L200 40" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><circle cx="200" cy="172" r="8" fill="currentColor"/></g>
 </svg>
 <p id="tuner-cents" class="tuner-cents">— 센트</p><p id="tuner-advice" class="tuner-advice" role="status">마이크를 켜고 한 줄을 튕겨 주세요.</p>
-<button id="mic-toggle" class="primary" type="button" aria-pressed="false">마이크 켜기</button>
-<p id="mic-status" role="status">마이크 소리는 기기 안에서 분석하며 녹음하거나 전송하지 않습니다.</p>
-</section>
-<section class="panel tuner-controls" aria-label="튜닝 설정">
-<h2>튜닝할 줄</h2><p class="hint">자동으로 가장 가까운 줄을 찾거나, 직접 선택하세요.</p>
-<button id="auto-string" type="button" aria-pressed="true">자동 줄 인식</button>
-<div id="string-select" class="string-grid" role="group" aria-label="수동 줄 선택"></div>
-<p class="hint">주황 테두리는 현재 인식한 줄입니다. 많이 풀린 줄은 직접 선택해 주세요.</p>
-<div class="tuner-settings"><label class="calibration" for="concert-a">A4 기준음 (Hz)<input id="concert-a" type="number" min="430" max="450" step="1" value="440" inputmode="numeric"></label><p class="hint">430–450 Hz · 기본값 440 Hz</p></div>
-<div class="tuner-settings"><label class="mic-sensitivity" for="mic-sensitivity">마이크 감도<output id="mic-gain-value" for="mic-sensitivity">8×</output><input id="mic-sensitivity" type="range" min="1" max="16" step="1" value="8"></label><p class="hint">작은 소리가 잡히지 않으면 높이고, 주변 소음이 잡히면 낮춰 주세요.</p></div>
-<div class="tuner-settings"><h2>기준음 듣기</h2><p class="hint">각 줄의 소리를 듣고 비교하세요. 재생 중에는 마이크 측정을 잠시 쉽니다.</p><div id="reference-tones" class="reference-grid" role="group" aria-label="줄별 기준음 재생"></div><p id="reference-status" role="status"></p></div>
-<p class="hint">조용한 곳에서 다른 줄을 가볍게 막아 주세요. 마이크는 HTTPS 또는 localhost 환경에서 사용할 수 있습니다.</p>
-</section>
 </div>
+<div class="tuner-head">
+<div id="string-select" class="headstock" role="group" aria-label="줄 선택">
+<svg class="headstock-art" viewBox="0 0 160 192" aria-hidden="true" focusable="false">
+<path d="M52 192 L46 150 C40 108 18 88 14 58 C10 30 18 10 46 6 L114 6 C142 10 150 30 146 58 C142 88 120 108 114 150 L108 192 Z" fill="var(--wood)" stroke="var(--wood-dark)" stroke-width="2"/>
+<path d="M66 18 C72 40 70 70 74 100 M94 18 C88 46 92 80 86 110" fill="none" stroke="var(--wood-dark)" stroke-width="1" opacity=".35"/>
+<g fill="var(--wood-dark)"><rect x="0" y="29" width="26" height="6" rx="3"/><rect x="0" y="93" width="26" height="6" rx="3"/><rect x="0" y="157" width="26" height="6" rx="3"/><rect x="134" y="29" width="26" height="6" rx="3"/><rect x="134" y="93" width="26" height="6" rx="3"/><rect x="134" y="157" width="26" height="6" rx="3"/></g>
+<g stroke="var(--peg-string)" stroke-width="1.2"><path d="M26 160 L58 192 M26 96 L67 192 M26 32 L76 192 M134 32 L84 192 M134 96 L93 192 M134 160 L102 192"/></g>
+<g fill="var(--peg)" stroke="var(--wood-dark)" stroke-width="1.5"><circle cx="26" cy="32" r="8"/><circle cx="26" cy="96" r="8"/><circle cx="26" cy="160" r="8"/><circle cx="134" cy="32" r="8"/><circle cx="134" cy="96" r="8"/><circle cx="134" cy="160" r="8"/></g>
+<rect x="48" y="186" width="64" height="6" rx="2" fill="var(--peg)"/>
+</svg>
+</div>
+<p id="reference-status" class="headstock-hint" role="status">줄을 누르면 그 줄에 맞추고 기준음을 들려줘요.</p>
+</div>
+</div>
+<div class="tuner-mic">
+<button id="mic-toggle" class="primary" type="button" aria-pressed="false">마이크 켜기</button>
+<label class="mic-sensitivity" for="mic-sensitivity"><span>마이크 감도</span><input id="mic-sensitivity" type="range" min="1" max="16" step="1" value="8"><output id="mic-gain-value" for="mic-sensitivity">8×</output></label>
+<p id="mic-status" role="status">마이크 소리는 기기 안에서 분석하며 녹음하거나 전송하지 않습니다.</p>
+</div>
+</section>
 </section>
 </main>
 <gm-footer></gm-footer>
@@ -343,23 +365,24 @@ recentPitches=[];lastPitchAt=0;
 $('tuner-display').className='panel tuner-display waiting';
 $('tuner-target').textContent=selectedString===null?'자동 줄 인식 · 소리를 기다립니다':`${6-selectedString}번 줄 · 목표 ${stringNames[selectedString]} · ${stringFrequency(selectedString,concertA).toFixed(2)} Hz`;
 $('tuner-note').textContent=selectedString===null?'—':stringNames[selectedString];
-$('tuner-frequency').textContent=`기준음 A4 = ${concertA} Hz`;
+$('tuner-frequency').textContent=selectedString===null?'A4 = 440 Hz':`목표 ${stringFrequency(selectedString,concertA).toFixed(2)} Hz`;
 $('tuner-cents').textContent='— 센트';$('tuner-needle').style.transform='rotate(0deg)';
 $('tuner-advice').textContent=micStream?'한 줄을 튕겨 주세요.':'마이크를 켜고 한 줄을 튕겨 주세요.';
-for(const button of $('string-select').children)button.classList.remove('detected');
+for(const button of pegButtons())button.classList.remove('detected');
 }
 function showPitch(frequency){
 const index=selectedString===null?nearestString(frequency,concertA):selectedString,target=stringFrequency(index,concertA),cents=pitchCents(frequency,target),inTune=Math.abs(cents)<=5;
 $('tuner-display').className='panel tuner-display'+(inTune?' in-tune':'');
-$('tuner-target').textContent=`${selectedString===null?'자동 인식 · ':''}${6-index}번 줄 · 목표 ${stringNames[index]} · ${target.toFixed(2)} Hz`;
-$('tuner-note').textContent=stringNames[index];$('tuner-frequency').textContent=`감지 ${frequency.toFixed(2)} Hz · A4 = ${concertA} Hz`;
+$('tuner-target').textContent=`${selectedString===null?'자동 · ':''}${6-index}번 줄 · 목표 ${stringNames[index]} · ${target.toFixed(2)} Hz`;
+$('tuner-note').textContent=stringNames[index];$('tuner-frequency').textContent=`감지 ${frequency.toFixed(2)} Hz`;
 $('tuner-cents').textContent=`${cents>0?'+':''}${cents.toFixed(1)} 센트`;
 $('tuner-needle').style.transform=`rotate(${Math.max(-50,Math.min(50,cents))*1.2}deg)`;
 const advice=inTune?'맞음 · 정확한 음이에요':cents<0?'낮음 · 줄을 조금 더 조여 주세요':'높음 · 줄을 조금 풀어 주세요';
 if($('tuner-advice').textContent!==advice)$('tuner-advice').textContent=advice;
-Array.from($('string-select').children).forEach((button,i)=>button.classList.toggle('detected',i===index));
+for(const button of pegButtons())button.classList.toggle('detected',Number(button.dataset.string)===index);lastDetected=index;
 }
-function stopPlayback(){playbackRequest++;identifyPlaybackRequest++;referenceUntil=0;for(const node of playing){try{node.stop();}catch(_){}}playing=[];for(const id of ['reference-status','identify-audio-status']){const status=$(id);if(status)status.textContent='';}}
+const referenceHint='줄을 누르면 그 줄에 맞추고 기준음을 들려줘요.';
+function stopPlayback(){playbackRequest++;identifyPlaybackRequest++;referenceUntil=0;for(const node of playing){try{node.stop();}catch(_){}}playing=[];const status=$('reference-status');if(status)status.textContent=referenceHint;}
 function stopMicrophone(message='마이크가 꺼졌습니다. 다시 켜서 튜닝을 시작하세요.'){
 const wasCapturing=!!(micStream||micContext);micRequest++;clearInterval(micTimer);micTimer=null;
 if(micStream)micStream.getTracks().forEach(track=>track.stop());micStream=null;
@@ -372,9 +395,9 @@ if(wasCapturing)retirePlaybackContext();
 }
 if(ready(['tuner']))$('mic-toggle').addEventListener('click',async()=>{
 if(micStream){stopMicrophone();return;}
-if(!window.isSecureContext){$('mic-status').textContent='마이크를 사용하려면 HTTPS 주소 또는 localhost에서 열어 주세요. 기준음 듣기는 그대로 사용할 수 있어요.';return;}
+if(!window.isSecureContext){$('mic-status').textContent='마이크를 사용하려면 HTTPS 주소 또는 localhost에서 열어 주세요. 줄을 눌러 기준음은 들을 수 있어요.';return;}
 const Audio=window.AudioContext||window.webkitAudioContext;
-if(!navigator.mediaDevices?.getUserMedia||!Audio){$('mic-status').textContent='이 브라우저는 마이크 튜닝을 지원하지 않습니다. 최신 Chrome, Edge, Safari에서 열거나 기준음 듣기를 이용해 주세요.';return;}
+if(!navigator.mediaDevices?.getUserMedia||!Audio){$('mic-status').textContent='이 브라우저는 마이크 튜닝을 지원하지 않습니다. 최신 Chrome, Edge, Safari에서 열거나, 줄을 눌러 기준음을 듣고 맞춰 주세요.';return;}
 const request=++micRequest;let context=null,stream=null;
 $('mic-toggle').disabled=true;$('mic-status').textContent='브라우저에서 마이크 사용을 허용해 주세요.';
 try{
@@ -401,16 +424,17 @@ if(recentPitches.length>=3)showPitch([...recentPitches].sort((a,b)=>a-b)[Math.fl
 }catch(error){
 if(stream)stream.getTracks().forEach(track=>track.stop());
 if(request!==micRequest)return;
-const messages={NotAllowedError:'마이크 권한이 거부되었습니다. 주소창의 사이트 설정에서 마이크를 허용한 뒤 다시 켜 주세요. 기준음 듣기도 사용할 수 있어요.',SecurityError:'브라우저의 보안 설정에서 마이크 사용을 허용해 주세요. HTTPS 또는 localhost 주소인지도 확인해 주세요.',NotFoundError:'마이크를 찾을 수 없습니다. 기기에 마이크를 연결한 뒤 다시 시도해 주세요.',NotReadableError:'마이크를 열 수 없습니다. 다른 앱의 마이크 사용을 종료하고 다시 시도해 주세요.'};
+const messages={NotAllowedError:'마이크 권한이 거부되었습니다. 주소창의 사이트 설정에서 마이크를 허용한 뒤 다시 켜 주세요. 줄을 눌러 기준음은 들을 수 있어요.',SecurityError:'브라우저의 보안 설정에서 마이크 사용을 허용해 주세요. HTTPS 또는 localhost 주소인지도 확인해 주세요.',NotFoundError:'마이크를 찾을 수 없습니다. 기기에 마이크를 연결한 뒤 다시 시도해 주세요.',NotReadableError:'마이크를 열 수 없습니다. 다른 앱의 마이크 사용을 종료하고 다시 시도해 주세요.'};
 stopMicrophone(messages[error.name]||'마이크를 시작하지 못했습니다. 연결과 브라우저 권한을 확인한 뒤 다시 시도해 주세요.');
 }finally{if(request!==micRequest&&context&&context.state!=='closed')context.close().catch(()=>{});}
 });
-function selectString(index){selectedString=index;$('auto-string').setAttribute('aria-pressed',String(index===null));Array.from($('string-select').children).forEach((button,i)=>button.setAttribute('aria-pressed',String(i===index)));resetTuner();}
-if(ready(['tuner'])){$('auto-string').addEventListener('click',()=>selectString(null));
-stringNames.forEach((name,index)=>{
-const select=document.createElement('button');select.type='button';select.innerHTML=`<small>${6-index}번 줄</small><strong>${name}</strong>`;select.setAttribute('aria-pressed','false');select.addEventListener('click',()=>selectString(index));$('string-select').append(select);
-const play=document.createElement('button');play.type='button';play.textContent=`♪ ${name}`;play.setAttribute('aria-label',`${6-index}번 줄 ${name} 기준음 듣기`);$('reference-tones').append(play);
-play.addEventListener('click',async()=>{
+// Pegs around the headstock: left D·A·E (strings 4·5·6), right G·B·E (strings 3·2·1), top to bottom.
+const pegLayout=[[2,1,1],[1,1,2],[0,1,3],[3,3,1],[4,3,2],[5,3,3]];
+let lastDetected=null;
+const pegButtons=()=>$('string-select').querySelectorAll('button[data-string]');
+function selectString(index){selectedString=index;$('auto-string').setAttribute('aria-checked',String(index===null));for(const button of pegButtons())button.setAttribute('aria-pressed',String(Number(button.dataset.string)===index));resetTuner();}
+async function playReference(index){
+const name=stringNames[index];
 stopPlayback();const request=playbackRequest;
 try{
 await prepareAudio();if(request!==playbackRequest||$('tuner-panel').hidden)return;
@@ -418,16 +442,24 @@ const frequency=stringFrequency(index,concertA),tone=scheduleReference(audioCont
 const osc=tone.oscs[0];playing=[tone.voice];referenceUntil=performance.now()+2150;resetTuner();
 $('tuner-advice').textContent='기준음 재생 중 · 잠시 듣고 비교하세요.';
 $('reference-status').textContent=`${6-index}번 줄 ${name} · ${frequency.toFixed(2)} Hz 재생 중`;
-osc.addEventListener('ended',()=>{if(request===playbackRequest){playing=[];$('reference-status').textContent='재생 완료';resetTuner();}});
+osc.addEventListener('ended',()=>{if(request===playbackRequest){playing=[];$('reference-status').textContent=referenceHint;resetTuner();}});
 confirmPlayback(audioContext,()=>request===playbackRequest,()=>{$('reference-status').textContent=audioFailure;});
 }catch(_){if(request===playbackRequest)$('reference-status').textContent=audioFailure;}
-});
-});
+}
+if(ready(['tuner'])){
+$('auto-string').addEventListener('click',()=>selectString(selectedString===null?(lastDetected??0):null));
+for(const [index,column,row] of pegLayout){
+const name=stringNames[index],peg=document.createElement('button');peg.type='button';peg.dataset.string=index;
+peg.innerHTML=`<strong>${name[0]}</strong><small>${6-index}</small>`;peg.setAttribute('aria-label',`${6-index}번 줄 ${name}`);peg.setAttribute('aria-pressed','false');
+peg.style.gridColumn=column;peg.style.gridRow=row;
+peg.addEventListener('click',()=>{selectString(index);playReference(index);});
+$('string-select').append(peg);
+}
 $('mic-sensitivity').addEventListener('input',()=>{
 const gain=Number($('mic-sensitivity').value);$('mic-gain-value').textContent=`${gain}×`;
 if(micGain)micGain.gain.setTargetAtTime(gain,micContext.currentTime,.02);
 });
-$('concert-a').addEventListener('change',()=>{const input=$('concert-a');concertA=input.value===''?440:Math.max(430,Math.min(450,Math.round(Number(input.value)||440)));input.value=concertA;stopPlayback();resetTuner();});}
+}
 
 
 
