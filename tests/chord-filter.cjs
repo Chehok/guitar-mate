@@ -47,18 +47,16 @@ assert(!res('C','all','G').some(n=>n.startsWith('C#')),'C does not match C#');
 assert(res('all','m7','G#').every(n=>n.endsWith('m7/G#')),'M7/m7 never cross; bass fixed');
 assert.equal(res('all','all','all').length,12*17+12*17*11,'full set');
 for(const n of ['C/G','C#m7/G#','Cm7/A#','Csus2/D','Cdim/F#','C#m11/G#','Am/C']){const c=parse(n);const v=makeVoicings(c);assert(v.length>0&&v.every(x=>x.bass===c.bassPc),n);}
-// Two ways to find: name search (default) and step-by-step conditions.
-assert.match(html,/id="mode-name"[^>]*role="tab" aria-selected="true"/);
-assert.match(html,/id="mode-steps"[^>]*role="tab" aria-selected="false"/);
-assert.match(html,/id="chord-steps"[^>]*hidden/,'conditions start folded away');
-assert.match(html,/id="filter-reset"[^>]*>[\s\S]*?처음부터<\/button>/);
-// Each step can be left open and results show from the first step.
+// Two ways to find: search (default) and a root filter.
+assert.match(html,/id="mode-name"[^>]*aria-selected="true"[^>]*>검색</);
+assert.match(html,/id="mode-steps"[^>]*role="tab" aria-selected="false"[^>]*>필터</);
+assert.match(html,/id="chord-steps"[^>]*hidden/,'filter starts folded away');
+assert.match(html,/id="step-current"[\s\S]*?id="filter-reset"[^>]*disabled[^>]*>[\s\S]*?처음부터<\/button>/,'picked chord and start-over share a row, start-over always in place');
+// A root alone lists every chord kind on it, without slash chords.
 const steps=code=>run(`${code};stepResults()`);
-assert.deepEqual(steps('stepRoot=null;stepKind=null;stepBass=null'),[],'nothing before a root');
-assert.equal(steps("stepRoot='C';stepKind=null;stepBass=null").length,17,'root only: every kind, no slash');
-assert.equal(steps("stepRoot='C';stepKind='m7';stepBass=null").length,12,'root + kind: plain chord and every slash bass');
-assert.equal(steps("stepRoot='C';stepKind='m7';stepBass=null")[0],'Cm7','plain chord first');
-assert.deepEqual(steps("stepRoot='C';stepKind='m7';stepBass='G'"),['Cm7/G']);
+assert.deepEqual(steps('stepRoot=null'),[],'nothing before a root');
+assert.equal(steps("stepRoot='C'").length,17,'root: every kind, no slash');
+assert.equal(steps("stepRoot='C'")[0],'C','plain triad first');
 const fretboards=run("current=parse('C'); var grip=makeVoicings(current)[0]; [neck(grip,false),neck(grip,true)]");
 for(const board of fretboards){
   assert.deepEqual([...board.matchAll(/>(\d+)<\/text>/g)].map(match=>Number(match[1])),Array.from({length:16},(_,i)=>i));
