@@ -134,7 +134,18 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .identify-controls input { width: 65px; padding: 8px; }
 #identify-play { flex: none; padding-inline: 12px; font-size: 13px; white-space: nowrap; }
 #identify-reset { flex: none; }
-#identify-audio-status { min-height: 22px; margin: 6px 0 0; font-size: 13px; color: var(--muted); }
+#identify-audio-status { margin: 6px 0 0; font-size: 13px; color: var(--muted); }
+#identify-audio-status:empty { margin: 0; }
+#identify-diagram .diagram { margin: 4px auto 0; }
+#identify-frets { margin: 4px 0 0; }
+.help { margin-top: 8px; border-top: 1px solid var(--line); }
+.help summary { min-height: 40px; display: flex; align-items: center; gap: 6px; cursor: pointer; color: var(--muted); font-size: 13px; list-style: none; }
+.help summary::-webkit-details-marker { display: none; }
+.help summary::after { content: ""; width: 7px; height: 7px; margin-left: auto; border: solid currentColor; border-width: 0 1.5px 1.5px 0; transform: rotate(45deg) translateY(-2px); }
+.help[open] summary::after { transform: rotate(-135deg) translateY(-2px); }
+.help .hint { margin: 0 0 4px; }
+.identify-overline { margin-bottom: 12px; }
+#identify-status { margin-top: 0; }
 .identify-candidates { display: grid; gap: 8px; padding-left: 24px; }
 .identify-candidates li::marker { color: var(--muted); font-size: 13px; }
 .identify-candidates > li > button { width: 100%; padding: 12px 14px; text-align: left; border-color: var(--line); }
@@ -221,9 +232,9 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <section class="panel" aria-label="판별할 운지 입력">
 <div class="identify-controls"><label for="identify-start">시작 프렛 <input id="identify-start" type="number" min="1" max="20" step="1" value="1" inputmode="numeric"></label><button id="identify-play" type="button">소리 듣기</button><button id="identify-reset" type="button">초기화</button></div><p id="identify-audio-status" role="status" aria-live="polite"></p>
 <div id="identify-diagram"></div><p id="identify-frets" class="counter"></p>
-<p class="hint">왼쪽부터 6번 → 1번 줄 · 5프렛씩 표시<br>칸을 누르면 점을 찍고, 같은 칸을 다시 누르면 지웁니다. 너트 위 표시를 누르면 O(개방현) / X(뮤트)로 전환합니다. 프렛을 옮겨도 입력한 음은 유지됩니다.</p>
+<details class="help"><summary>입력 방법</summary><p class="hint">왼쪽부터 6번 → 1번 줄 · 5프렛씩 표시<br>칸을 누르면 점을 찍고, 같은 칸을 다시 누르면 지웁니다. 너트 위 표시를 누르면 O(개방현) / X(뮤트)로 전환합니다. 프렛을 옮겨도 입력한 음은 유지됩니다.</p></details>
 </section>
-<section class="panel info-panel" aria-label="코드 판별 결과"><h2 class="overline">코드 후보</h2><p id="identify-status" role="status" aria-live="polite"></p><ol id="identify-candidates" class="identify-candidates"></ol><p class="hint">최저음이 근음인 해석을 우선하며, 생략음이 적은 후보를 앞에 표시합니다. 후보를 누르면 코드 검색에서 볼 수 있습니다.</p></section>
+<section class="panel info-panel" aria-label="코드 판별 결과"><h2 class="overline identify-overline">코드 후보</h2><p id="identify-status" role="status" aria-live="polite"></p><ol id="identify-candidates" class="identify-candidates"></ol><details class="help"><summary>후보 순서</summary><p class="hint">최저음이 근음인 해석을 우선하며, 생략음이 적은 후보를 앞에 표시합니다. 후보를 누르면 코드 검색에서 볼 수 있습니다.</p></details></section>
 </div>
 </section>
 </main>
