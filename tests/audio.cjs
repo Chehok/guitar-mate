@@ -60,8 +60,11 @@ function make(contexts,audioSession){
     assert(starts.every((t,i)=>i===0||t>starts[i-1]),'low to high');assert(starts.at(-1)-starts[0]<.08,'a strum, not an arpeggio');
     const fader=tone=>tone.oscs[0].connected[0];
     const levels=tones.map(tone=>Math.max(...fader(tone).gain.events.map(event=>event[1])));
-    assert(levels.reduce((a,b)=>a+b,0)<.9,'all strings together keep headroom (buffers peak at .9)');
-    assert(tones.every(tone=>fader(tone).connected[0].connected.includes(ctx.destination)));
+    // Buffers peak at .9 and the pan gives each channel at most cos(0.2π)≈.81: even all peaks lined up stay below 1.
+    assert(levels.reduce((a,b)=>a+b,0)*.9*.81<1,'all strings together keep headroom');
+    // Strings go through the guitar bus: dry to the speakers plus a small room (convolver) when available.
+    assert(tones.every(tone=>fader(tone).connected[0].connected.includes(ctx.guitarBus)));
+    assert(ctx.guitarBus.connected.includes(ctx.destination),'dry signal');
     // Each pitch is rendered once and reused.
     const rendered=buffers.length;box.sc(ctx,[-1,3,2,0,1,0],2);assert.equal(buffers.length,rendered,'string buffers are cached');
     const samples=buffers[0].getChannelData();assert(Math.max(...samples.slice(0,4800).map(Math.abs))>.85,'normalized pluck');
@@ -74,6 +77,17 @@ function make(contexts,audioSession){
     assert.equal(tones[0].oscs[0].stopTimes.at(-1),ctx.currentTime+.02);
     tones[4].voice.stop();
     assert.equal(tones[4].oscs[0].stopTimes.at(-1),ctx.currentTime,'queued strings never start');
+  }
+  {
+    const node=name=>({name,gain:{value:1,setValueAtTime(){},linearRampToValueAtTime(){}},pan:{value:0},connected:[],connect(n){this.connected.push(n);},start(){},stop(){},addEventListener(){}});
+    const ctx={currentTime:1,sampleRate:8000,destination:{name:'dest'},createGain:()=>node('gain'),createBufferSource:()=>node('source'),createStereoPanner:()=>node('pan'),
+      createConvolver:()=>({...node('room'),normalize:true,buffer:null}),createBuffer:(c,length)=>{const data=[...Array(c)].map(()=>new Float32Array(length));return {length,getChannelData:i=>data[i]};}};
+    const box={window:{},navigator:{},setTimeout,tuning:[40,45,50,55,59,64]};vm.runInNewContext(chordCode+';this.sc=scheduleChord;',box);
+    const tones=box.sc(ctx,[3,2,0,0,0,3],1),room=ctx.guitarBus.connected.find(n=>n.name==='room');
+    assert(room&&room.normalize===false&&room.buffer.length>8000,'a room of about a second');
+    assert(room.connected[0].gain.value>0&&room.connected[0].gain.value<.35,'the room stays in the background');
+    const pans=tones.map(tone=>tone.oscs[0].connected[0].connected[0].connected[0].pan.value);
+    assert(pans[0]<0&&pans.at(-1)>0&&Math.max(...pans.map(Math.abs))<=.2,'low strings slightly left, high slightly right');
   }
   // The pluck is in tune: measure the rendered string with the tuner's own pitch detector.
   {

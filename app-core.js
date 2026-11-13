@@ -348,11 +348,35 @@ const rate=ctx.sampleRate||48000,key=rate+':'+Math.round(frequency*100);
 if(!pluckBuffers.has(key)){const buffer=ctx.createBuffer(1,Math.round(rate*(chordDecay+.2)),rate);renderPluck(buffer.getChannelData(0),rate,frequency,Math.round(frequency*7));pluckBuffers.set(key,buffer);}
 return pluckBuffers.get(key);
 }
-function schedulePluck(ctx,out,frequency,at,peak,decay){
+// A small wooden room around the guitar: a stereo impulse response of decaying noise that darkens as it
+// fades, with an 8 ms pre-delay; each channel normalized to unit energy so the wet level is predictable.
+function roomImpulse(rate,seconds=1.1){
+let state=7;const rand=()=>(state=(Math.imul(state,1664525)+1013904223)>>>0)/2**31-1;
+const length=Math.round(rate*seconds),pre=Math.round(rate*.008),channels=[new Float32Array(length),new Float32Array(length)];
+for(const data of channels){let low=0,energy=0;
+for(let t=pre;t<length;t++){const x=(t-pre)/(length-pre),k=.55-.45*x;low+=k*(rand()-low);data[t]=low*Math.pow(.001,x);energy+=data[t]*data[t];}
+const scale=1/Math.sqrt(energy||1);for(let t=0;t<length;t++)data[t]*=scale;}
+return channels;
+}
+const roomWet=.2;
+function guitarBus(ctx){
+if(ctx.guitarBus)return ctx.guitarBus;
+const input=ctx.createGain();input.connect(ctx.destination);
+if(ctx.createConvolver&&ctx.createBuffer){
+const rate=ctx.sampleRate||48000,[left,right]=roomImpulse(rate),ir=ctx.createBuffer(2,left.length,rate);
+ir.getChannelData(0).set(left);ir.getChannelData(1).set(right);
+const room=ctx.createConvolver(),wet=ctx.createGain();room.normalize=false;room.buffer=ir;wet.gain.value=roomWet;
+input.connect(room);room.connect(wet);wet.connect(ctx.destination);
+}
+return ctx.guitarBus=input;
+}
+function schedulePluck(ctx,out,frequency,at,peak,decay,pan=0){
 const source=ctx.createBufferSource(),gain=ctx.createGain(),release=ctx.createGain(),end=at+decay+.08;
 source.buffer=pluckBuffer(ctx,frequency);
 gain.gain.setValueAtTime(peak,at);gain.gain.setValueAtTime(peak,at+decay);gain.gain.linearRampToValueAtTime(0,end);
-source.connect(gain);gain.connect(release);release.connect(out);source.start(at);source.stop(end);
+source.connect(gain);gain.connect(release);
+if(pan&&ctx.createStereoPanner){const panner=ctx.createStereoPanner();panner.pan.value=pan;release.connect(panner);panner.connect(out);}else release.connect(out);
+source.start(at);source.stop(end);
 let stopped=false;
 return {oscs:[source],voice:{stop(){
 const now=ctx.currentTime;
@@ -368,10 +392,12 @@ function scheduleStrum(ctx,midis,at,{decay=chordDecay,level=1,up=false}={}){
 // Render any new strings first (tens of ms the first time); if that ran past the start, start a bit later.
 for(const midi of midis)pluckBuffer(ctx,440*Math.pow(2,(midi-69)/12));
 at=Math.max(at,(ctx.currentTime||0)+.02);
-const count=midis.length,peak=level*chordLevel*1.1/Math.max(3,count);
+const count=midis.length,peak=level*chordLevel*1.4/Math.max(3,count); // ×1.4 makes up for the stereo pan law
 return midis.map((midi,i)=>{
 const order=up?count-1-i:i,humanize=((midi*37+order*11)%7-3)/1000,velocity=.92+((midi*13)%9)/50;
-return schedulePluck(ctx,ctx.destination,440*Math.pow(2,(midi-69)/12),at+order*.013+Math.max(0,humanize),peak*velocity,decay);
+// Low strings a little left, high strings a little right, as heard from in front of the guitar.
+const pan=count>1?(i/(count-1)-.5)*.4:0;
+return schedulePluck(ctx,guitarBus(ctx),440*Math.pow(2,(midi-69)/12),at+order*.013+Math.max(0,humanize),peak*velocity,decay,pan);
 });
 }
 let concertA=440,selectedString=null,micContext=null,micStream=null,micSource=null,micGain=null,analyser=null,micTimer=null,micRequest=0;
