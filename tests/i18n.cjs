@@ -41,7 +41,7 @@ function boot(saved) {
   assert.equal(t('C 운지, 6번 줄부터 뮤트, 3프렛, 2프렛, 0프렛, 1프렛, 0프렛'), 'C shape, from string 6: Muted, fret 3, fret 2, fret 0, fret 1, fret 0', 'Lists are translated item by item');
   assert.equal(t('메이저 · 장3화음 · 베이스 E'), 'Major · major triad · bass E', 'Joined labels are translated piece by piece');
   assert.equal(t('악보 코드 5개 · 전주 1개 · 확인 및 수정'), '5 chords on the sheet · 1 intro · Review and edit');
-  assert.equal(t('카포 2 · 원래 키 D 유지 · 코드 모양의 키 C'), 'Capo 2 · original key D kept · chord shapes in C');
+  assert.equal(t('카포 3 · −1키'), 'Capo 3 · −1 semitone(s)');
   assert.equal(t('G'), 'G', 'Chord names pass through');
   assert.equal(t('알 수 없는 문장'), '알 수 없는 문장', 'Unknown text is left as is rather than mangled');
   i18n.setLang('ko');

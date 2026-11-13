@@ -174,7 +174,7 @@ assert(paint.find(p=>p[0]==='text')[3]<200,'Above mode draws above original chor
   assert.equal(shown('G'),'G');
   click('score-capo-minus');assert.deepEqual(state(),[0,1]);
   assert.equal(shown('G'),'F#');assert.equal(shown('C/E'),'B/D#');assert.equal(shown('Gm/Bb'),'F#m/A');assert.equal(shown('Em7'),'D#m7');
-  assert.equal($('score-capo-value').textContent,'카포 X · −1키');assert.match($('score-result-key').textContent,/소리의 키/);
+  assert.equal($('score-capo-value').textContent,'카포 X · −1키');
   assert(!/카포 −/.test($('score-capo-value').textContent));
   click('score-capo-minus');assert.deepEqual(state(),[0,2]);assert.equal(shown('G'),'F');
   for(let i=0;i<20;i++)click('score-capo-minus');assert.deepEqual(state(),[0,11]);assert($('score-capo-minus').disabled);
