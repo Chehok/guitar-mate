@@ -322,11 +322,11 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <div id="score-drop" class="score-drop">
 <div class="score-upload-actions">
 <input class="sr-only" id="score-file" type="file" accept="image/*" aria-label="악보 이미지 파일 선택" aria-describedby="score-file-hint">
-<label class="score-file-button" for="score-file">파일 선택</label>
+<label class="score-file-button" for="score-file">악보 선택</label>
 <button id="score-paste" type="button">클립보드에서 붙여넣기</button>
 </div>
-<p class="score-drop-message">또는 이미지를 여기에 끌어 놓으세요</p>
-<p id="score-file-hint" class="score-drop-message">이미지 한 장 · 최대 20MB</p>
+<p class="score-drop-message">또는 악보 이미지를 여기에 끌어 놓으세요</p>
+<p id="score-file-hint" class="score-drop-message">최대 20MB</p>
 </div>
 <p id="score-status" class="hint" role="status" aria-live="polite">첫 자동 인식에는 인터넷 연결이 필요해요.</p>
 </div>
@@ -1683,7 +1683,7 @@ function scorePasteFallback(error=null){
 const name=error?.name&&error.name!=='Error'?` (${error.name})`:'';
 scoreStatus(error?.name==='NotAllowedError'
 ?'붙여넣기가 허용되지 않았어요. 버튼을 다시 누른 뒤 나타나는 ‘붙여넣기’를 눌러 주세요.'
-:'클립보드를 읽을 수 없어요. 파일 선택으로 악보 이미지를 올려 주세요.'+name);
+:'클립보드를 읽을 수 없어요. 악보 선택으로 악보 이미지를 올려 주세요.'+name);
 }
 // Some browsers hand back a clipboard Blob without its MIME type.
 function scoreClipboardFile(blob,type){
@@ -1727,7 +1727,7 @@ return accepted||pasted;
 if(ready(['score']))$('score-paste').addEventListener('click',async()=>{
 if(scoreState.busy)return;
 if(scoreIsAppleTouch()){
-if(!scorePasteViaEditable())scoreStatus('붙여넣지 못했어요. 버튼을 다시 누른 뒤 나타나는 ‘붙여넣기’를 누르거나, 파일 선택으로 올려 주세요.');
+if(!scorePasteViaEditable())scoreStatus('붙여넣지 못했어요. 버튼을 다시 누른 뒤 나타나는 ‘붙여넣기’를 누르거나, 악보 선택으로 올려 주세요.');
 return;
 }
 if(typeof navigator.clipboard?.read!=='function'){scorePasteFallback();return;}

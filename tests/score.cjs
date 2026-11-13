@@ -477,9 +477,9 @@ assert.equal(revoked,2);assert.equal(prevented,2);assert.match($('score-status')
 await documentHandlers.paste({...pasteEvent,target:$('score-edit-text'),clipboardData:{items:[textItem]}});
 assert.equal(prevented,2);assert.equal(revoked,2);
 // Without clipboard.read, or when it fails, the status explains why (with the error name for diagnosis).
-await $('score-paste').handlers.click();assert.match($('score-status').textContent,/파일 선택/);
+await $('score-paste').handlers.click();assert.match($('score-status').textContent,/악보 선택/);
 context.navigator.clipboard={read:async()=>{throw Error('read failed');}};
-await $('score-paste').handlers.click();assert.equal($('score-status').textContent,'클립보드를 읽을 수 없어요. 파일 선택으로 악보 이미지를 올려 주세요.');assert.equal($('score-paste').disabled,false);
+await $('score-paste').handlers.click();assert.equal($('score-status').textContent,'클립보드를 읽을 수 없어요. 악보 선택으로 악보 이미지를 올려 주세요.');assert.equal($('score-paste').disabled,false);
 context.navigator.clipboard.read=async()=>{throw Object.assign(Error('denied'),{name:'NotAllowedError'});};
 await $('score-paste').handlers.click();assert.match($('score-status').textContent,/허용되지 않았어요/);
 context.navigator.clipboard.read=async()=>{throw Object.assign(Error('bad'),{name:'DataError'});};
