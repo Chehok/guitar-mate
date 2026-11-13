@@ -126,11 +126,11 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .auto-switch[aria-checked=true] .switch-knob { transform: translateX(14px); }
 .tuner-note { font-size: 48px; font-weight: 550; line-height: 1.15; margin: 4px 0 0; letter-spacing: -2px; }
 .tuner-frequency { min-height: 20px; margin: 0; color: var(--muted); font-size: 13px; }
-.tuner-gauge { display: block; width: 100%; max-width: 250px; margin: 8px auto 0; color: var(--orange); overflow: visible; }
+.tuner-gauge { display: block; width: 100%; max-width: 290px; margin: 6px auto 0; color: var(--orange); overflow: visible; }
 .tuner-gauge text { font-family: inherit; font-weight: 600; }
 .tuner-display.in-tune .tuner-gauge, .tuner-display.in-tune .tuner-advice { color: var(--green); }
 .tuner-display.waiting .tuner-gauge, .tuner-display.waiting .tuner-advice { color: var(--muted); }
-#tuner-needle { transform-origin: 200px 172px; transition: transform .12s ease-out; }
+#tuner-needle { transform-origin: 200px 290px; transition: transform .12s ease-out; }
 .tuner-cents { margin: 4px 0 0; font-size: 20px; font-weight: 500; }
 .tuner-note, .tuner-frequency, .tuner-cents, .mic-sensitivity output { font-variant-numeric: tabular-nums; }
 .tuner-advice { min-height: 22px; margin: 2px 0 8px; color: var(--orange); font-size: 14px; font-weight: 650; }
@@ -251,23 +251,24 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <div class="tuner-body">
 <div class="tuner-readout">
 <div id="tuner-note" class="tuner-note">—</div><p id="tuner-frequency" class="tuner-frequency">A4 = 440 Hz</p>
-<svg class="tuner-gauge" viewBox="0 0 400 205" role="img" aria-label="센트 게이지, 왼쪽은 낮음, 오른쪽은 높음">
-<path d="M70 97 A150 150 0 0 1 330 97" fill="none" stroke="var(--fret)" stroke-width="12" stroke-linecap="round"/>
-<path d="M184 23 A150 150 0 0 1 216 23" fill="none" stroke="var(--green)" stroke-width="12"/>
-<g fill="var(--muted)" font-size="13" text-anchor="middle"><text x="57" y="126">−50</text><text x="113" y="44">−25</text><text x="200" y="9">0</text><text x="287" y="44">+25</text><text x="343" y="126">+50</text><text x="77" y="184">낮음</text><text x="323" y="184">높음</text></g>
-<g id="tuner-needle"><path d="M200 172 L200 40" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><circle cx="200" cy="172" r="8" fill="currentColor"/></g>
+<svg class="tuner-gauge" viewBox="0 0 400 122" role="img" aria-label="센트 게이지, 왼쪽은 낮음, 오른쪽은 높음">
+<path d="M33 91 A260 260 0 0 1 367 91" fill="none" stroke="var(--fret)" stroke-width="12" stroke-linecap="round"/>
+<path d="M182 31 A260 260 0 0 1 218 31" fill="none" stroke="var(--green)" stroke-width="12"/>
+<g fill="var(--muted)" font-size="13" text-anchor="middle"><text x="200" y="14">0</text><text x="106" y="30">−25</text><text x="294" y="30">+25</text><text x="33" y="116">−50</text><text x="367" y="116">+50</text><text x="40" y="44">낮음</text><text x="360" y="44">높음</text></g>
+<g id="tuner-needle"><path d="M200 88 L200 18" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><circle cx="200" cy="88" r="5" fill="currentColor"/></g>
 </svg>
 <p id="tuner-cents" class="tuner-cents">— 센트</p><p id="tuner-advice" class="tuner-advice" role="status">마이크를 켜고 한 줄을 튕겨 주세요.</p>
 </div>
 <div class="tuner-head">
 <div id="string-select" class="headstock" role="group" aria-label="줄 선택">
-<svg class="headstock-art" viewBox="0 0 160 192" aria-hidden="true" focusable="false">
-<path d="M52 192 L46 150 C40 108 18 88 14 58 C10 30 18 10 46 6 L114 6 C142 10 150 30 146 58 C142 88 120 108 114 150 L108 192 Z" fill="var(--wood)" stroke="var(--wood-dark)" stroke-width="2"/>
-<path d="M66 18 C72 40 70 70 74 100 M94 18 C88 46 92 80 86 110" fill="none" stroke="var(--neck)" stroke-width="1" opacity=".3"/>
-<g fill="var(--wood-dark)"><rect x="0" y="29" width="26" height="6" rx="3"/><rect x="0" y="93" width="26" height="6" rx="3"/><rect x="0" y="157" width="26" height="6" rx="3"/><rect x="134" y="29" width="26" height="6" rx="3"/><rect x="134" y="93" width="26" height="6" rx="3"/><rect x="134" y="157" width="26" height="6" rx="3"/></g>
-<g stroke="var(--peg-string)" stroke-width="1.2"><path d="M26 160 L58 192 M26 96 L67 192 M26 32 L76 192 M134 32 L84 192 M134 96 L93 192 M134 160 L102 192"/></g>
-<g fill="var(--peg)" stroke="var(--wood-dark)" stroke-width="1.5"><circle cx="26" cy="32" r="8"/><circle cx="26" cy="96" r="8"/><circle cx="26" cy="160" r="8"/><circle cx="134" cy="32" r="8"/><circle cx="134" cy="96" r="8"/><circle cx="134" cy="160" r="8"/></g>
-<rect x="48" y="186" width="64" height="6" rx="2" fill="var(--peg)"/>
+<svg class="headstock-art" viewBox="0 0 160 174" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+<path d="M2 29h40M118 29h40M2 87h40M118 87h40M2 145h40M118 145h40" stroke="var(--fret)" stroke-width="8" stroke-linecap="round"/>
+<path d="M4 29h8M148 29h8M4 87h8M148 87h8M4 145h8M148 145h8" stroke="var(--neck)" stroke-width="1.5" stroke-linecap="round" opacity=".8"/>
+<path d="M42 6Q80 1 118 6Q134 9 134 22V40Q134 52 127 58L125 62Q132 70 132 84V96Q132 110 125 116L123 120Q128 128 128 140V146Q126 160 106 170H54Q34 160 32 146V140Q32 128 37 120L35 116Q28 110 28 96V84Q28 70 35 62L33 58Q26 52 26 40V22Q26 9 42 6Z" fill="var(--green)" stroke="var(--fret)" stroke-width="1.5"/>
+<path d="M36 22Q36 14 46 13Q80 9 114 13Q124 14 124 22M38 150Q40 160 58 164M122 150Q120 160 102 164" fill="none" stroke="var(--neck)" stroke-opacity=".38"/>
+<g fill="none" stroke="var(--neck)" stroke-opacity=".85"><path d="M44 29 L74 168" stroke-width="1.2"/><path d="M116 29 L86 168" stroke-width="1.8"/><path d="M44 87 L67 168" stroke-width="1.5"/><path d="M116 87 L93 168" stroke-width="1.5"/><path d="M44 145 L60 168" stroke-width="1.8"/><path d="M116 145 L100 168" stroke-width="1.2"/></g>
+<g fill="var(--neck)" stroke="var(--fret)" stroke-width="1.5"><circle cx="44" cy="29" r="6"/><circle cx="116" cy="29" r="6"/><circle cx="44" cy="87" r="6"/><circle cx="116" cy="87" r="6"/><circle cx="44" cy="145" r="6"/><circle cx="116" cy="145" r="6"/></g>
+<rect x="52" y="166" width="56" height="7" rx="2" fill="var(--neck)" stroke="var(--fret)"/>
 </svg>
 </div>
 <p id="reference-status" class="headstock-hint" role="status">줄을 누르면 그 줄에 맞추고 기준음을 들려줘요.</p>
@@ -376,7 +377,7 @@ $('tuner-display').className='panel tuner-display'+(inTune?' in-tune':'');
 $('tuner-target').textContent=`${selectedString===null?'자동 · ':''}${6-index}번 줄 · 목표 ${stringNames[index]} · ${target.toFixed(2)} Hz`;
 $('tuner-note').textContent=stringNames[index];$('tuner-frequency').textContent=`감지 ${frequency.toFixed(2)} Hz`;
 $('tuner-cents').textContent=`${cents>0?'+':''}${cents.toFixed(1)} 센트`;
-$('tuner-needle').style.transform=`rotate(${Math.max(-50,Math.min(50,cents))*1.2}deg)`;
+$('tuner-needle').style.transform=`rotate(${Math.max(-50,Math.min(50,cents))*.8}deg)`; // ±50 cents = the ±40° arc
 const advice=inTune?'맞음 · 정확한 음이에요':cents<0?'낮음 · 줄을 조금 더 조여 주세요':'높음 · 줄을 조금 풀어 주세요';
 if($('tuner-advice').textContent!==advice)$('tuner-advice').textContent=advice;
 for(const button of pegButtons())button.classList.toggle('detected',Number(button.dataset.string)===index);lastDetected=index;
