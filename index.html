@@ -117,6 +117,12 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 /* Tuner: one screen — reading on top, a headstock whose pegs pick the string, then the mic */
 /* Same headstock colours as the sheet transposer's neck: green head, fret-grey edges and tuners, light strings and posts. */
 .tuner-display { --wood: var(--green); --wood-dark: var(--fret); --peg: var(--neck); --peg-string: var(--neck); text-align: center; }
+.instrument-switch { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0 0 12px; padding: 3px; border-radius: 12px; background: var(--soft); }
+.instrument-switch label { display: flex; align-items: center; justify-content: center; min-height: 36px; padding: 4px 6px; border-radius: 9px; color: var(--muted); font-size: 14px; font-weight: 650; cursor: pointer; white-space: nowrap; }
+.instrument-switch input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+.instrument-switch label:has(input:checked) { background: var(--panel); color: var(--ink); box-shadow: 0 0 0 1px var(--line); }
+.instrument-switch label:has(input:focus-visible) { outline: 3px solid var(--focus); outline-offset: 1px; }
+@media (min-width: 760px) { .instrument-switch { max-width: 360px; } }
 .tuner-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; text-align: left; }
 .tuner-target { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
 .auto-switch { flex: none; display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 4px 12px 4px 6px; border-radius: 20px; border-color: var(--line); font-size: 13px; font-weight: 650; }
@@ -250,6 +256,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <section id="tuner-panel">
 <h1 class="sr-only">튜닝</h1>
 <section id="tuner-display" class="panel tuner-display waiting" aria-label="튜닝">
+<div class="instrument-switch" role="radiogroup" aria-label="악기"><label><input type="radio" name="instrument" value="guitar" checked><span>일렉·어쿠</span></label><label><input type="radio" name="instrument" value="bass4"><span>4현 베이스</span></label><label><input type="radio" name="instrument" value="bass5"><span>5현 베이스</span></label></div>
 <div class="tuner-top">
 <p id="tuner-target" class="tuner-target">자동 줄 인식 · 소리를 기다립니다</p>
 <button id="auto-string" class="auto-switch" type="button" role="switch" aria-checked="true"><span class="switch-track" aria-hidden="true"><span class="switch-knob"></span></span>자동</button>
@@ -270,22 +277,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <svg class="headstock-art" viewBox="0 0 150 172" preserveAspectRatio="none" aria-hidden="true" focusable="false"><rect x="33.3" y="162" width="83.3" height="12" fill="var(--fret)"/>
 <path d="M26.2 10.6L21.4 57.4Q20.2 69.1 22.6 80.9L33.3 128.1L33.3 162L116.7 162L116.7 128.1L127.4 80.9Q129.8 69.1 128.6 57.4L123.8 10.6Q119 2 109.5 2L40.5 2Q31 2 26.2 10.6Z" fill="var(--green)" stroke="var(--fret)"/>
 <path d="M41.7 10.6Q34.5 10.6 32.1 16.4L27.4 63.2L40.5 128.1L40.5 155.8M108.3 10.6Q115.5 10.6 117.9 16.4L122.6 63.2L109.5 128.1L109.5 155.8" fill="none" stroke="var(--neck)" stroke-opacity=".38"/>
-<path d="M40.5 25H14.3M38.1 75H14.3M46.4 125H14.3M109.5 25H135.7M111.9 75H135.7M103.6 125H135.7" stroke="var(--fret)" stroke-width="3"/>
-<path d="M14.3 16v18M14.3 66v18M14.3 116v18M135.7 16v18M135.7 66v18M135.7 116v18" stroke="var(--fret)" stroke-width="8" stroke-linecap="round"/>
-<path d="M14.3 17v16M14.3 67v16M14.3 117v16M135.7 17v16M135.7 67v16M135.7 117v16" stroke="var(--neck)" stroke-width="1.6" stroke-linecap="round" opacity=".8"/>
-<g fill="none" stroke="var(--neck)" stroke-opacity=".85"><path d="M40.5 25L67.4 162V172" stroke-width="1.4"/>
-<path d="M38.1 75L52.1 162V172" stroke-width="1.65"/>
-<path d="M46.4 125L36.9 162V172" stroke-width="1.9"/>
-<path d="M109.5 25L82.6 162V172" stroke-width="1.2"/>
-<path d="M111.9 75L97.9 162V172" stroke-width="1"/>
-<path d="M103.6 125L113.1 162V172" stroke-width="0.9"/>
-</g><g fill="var(--neck)" stroke="var(--fret)"><circle cx="40.5" cy="25" r="4.5"/>
-<circle cx="38.1" cy="75" r="4.5"/>
-<circle cx="46.4" cy="125" r="4.5"/>
-<circle cx="109.5" cy="25" r="4.5"/>
-<circle cx="111.9" cy="75" r="4.5"/>
-<circle cx="103.6" cy="125" r="4.5"/>
-</g><path d="M38.3 25h4.4M35.9 75h4.4M44.2 125h4.4M107.3 25h4.4M109.7 75h4.4M101.4 125h4.4" stroke="var(--fret)" stroke-linecap="round"/>
+<g id="headstock-parts"></g>
 <rect x="33.3" y="159" width="83.3" height="5" rx="1.5" fill="var(--neck)" stroke="var(--fret)"/>
 </svg>
 </div>
@@ -330,18 +322,23 @@ return ctx.chordBus;
 }
 // Phone speakers barely reproduce the low-string fundamentals, so upper partials carry the pitch there.
 const referenceWeights=[1,.6,.45,.35,.25,.15];
-function scheduleReference(ctx,frequency,at){return scheduleTone(ctx,audioBus(ctx),frequency,at,referenceLevel,referenceDecay,referenceWeights,.025);}
+// Bass notes sit below what phone speakers can play, so their reference leans on the overtones
+// (heard as the same pitch).
+const bassReferenceWeights=[.45,.45,.4,.35,.3,.27,.23,.2,.16,.13,.1,.08];
+function scheduleReference(ctx,frequency,at){return scheduleTone(ctx,audioBus(ctx),frequency,at,referenceLevel,referenceDecay,frequency<70?bassReferenceWeights:referenceWeights,.025);}
+const GUITAR_RANGE={min:70,max:1000,rate:24000},BASS_RANGE={min:28,max:500,rate:12000};
 // YIN: cumulative mean normalized difference, then a parabolic period estimate.
 // Kept independent of the DOM so synthetic signals can exercise the real detector in Node.
-function detectPitch(samples,sampleRate){
-// Average down to at most 24 kHz to keep the longer buffer inexpensive.
-const stride=Math.max(1,Math.ceil(sampleRate/24000));
+// range: guitar 70–1000 Hz by default; basses reach down to B0 (31 Hz) and are averaged further down.
+function detectPitch(samples,sampleRate,range=GUITAR_RANGE){
+// Average down to at most range.rate (24 kHz for guitar) to keep the longer buffer inexpensive.
+const stride=Math.max(1,Math.ceil(sampleRate/range.rate));
 if(stride>1){
 const reduced=new Float32Array(Math.floor(samples.length/stride));
 for(let i=0;i<reduced.length;i++){let sum=0;for(let j=0;j<stride;j++)sum+=samples[i*stride+j];reduced[i]=sum/stride;}
 samples=reduced;sampleRate/=stride;
 }
-const size=Math.floor(samples.length/2),maxLag=Math.min(size-1,Math.ceil(sampleRate/70)+1),minLag=Math.max(2,Math.floor(sampleRate/1000)-1);
+const size=Math.floor(samples.length/2),maxLag=Math.min(size-1,Math.ceil(sampleRate/range.min)+1),minLag=Math.max(2,Math.floor(sampleRate/range.max)-1);
 let mean=0;for(const value of samples)mean+=value;mean/=samples.length;
 let energy=0;for(const value of samples)energy+=(value-mean)**2;
 if(Math.sqrt(energy/samples.length)<.00015)return null;
@@ -372,18 +369,26 @@ const left=difference[periodLag-1],center=difference[periodLag],right=difference
 const period=periodLag+(curve?(left-right)/(2*curve):0),frequency=sampleRate/period;
 // Allow the interpolation's three-cent error margin at the range edges.
 const edgeTolerance=2**(3/1200);
-return frequency>=70/edgeTolerance&&frequency<=1000*edgeTolerance?Math.max(70,Math.min(1000,frequency)):null;
+return frequency>=range.min/edgeTolerance&&frequency<=range.max*edgeTolerance?Math.max(range.min,Math.min(range.max,frequency)):null;
 }
 
-const stringNames=['E2','A2','D3','G3','B3','E4'];
-const stringFrequency=(index,a=440)=>a*2**((tuning[index]-69)/12);
+// Instruments: open-string MIDI notes (low to high), names, and where each string's peg sits
+// around the headstock as [string, column, row] (column 1 = left, 3 = right; row 3 is next to the nut).
+const INSTRUMENTS={
+  guitar:{notes:[40,45,50,55,59,64],names:['E2','A2','D3','G3','B3','E4'],layout:[[2,1,1],[1,1,2],[0,1,3],[3,3,1],[4,3,2],[5,3,3]],range:GUITAR_RANGE,widths:[1.9,1.65,1.4,1.2,1,.9]},
+  bass4:{notes:[28,33,38,43],names:['E1','A1','D2','G2'],layout:[[1,1,1],[0,1,3],[2,3,1],[3,3,3]],range:BASS_RANGE,widths:[2.6,2.3,2,1.7]},
+  bass5:{notes:[23,28,33,38,43],names:['B0','E1','A1','D2','G2'],layout:[[2,1,1],[1,1,2],[0,1,3],[3,3,1],[4,3,3]],range:BASS_RANGE,widths:[2.8,2.5,2.2,1.9,1.6]},
+};
+let instrument='guitar',tunerNotes=INSTRUMENTS.guitar.notes,stringNames=INSTRUMENTS.guitar.names;
+const stringCount=()=>tunerNotes.length;
+const stringFrequency=(index,a=440)=>a*2**((tunerNotes[index]-69)/12);
 const pitchCents=(frequency,target)=>1200*Math.log2(frequency/target);
-function nearestString(frequency,a){let best=0;for(let i=1;i<tuning.length;i++)if(Math.abs(pitchCents(frequency,stringFrequency(i,a)))<Math.abs(pitchCents(frequency,stringFrequency(best,a))))best=i;return best;}
+function nearestString(frequency,a){let best=0;for(let i=1;i<tunerNotes.length;i++)if(Math.abs(pitchCents(frequency,stringFrequency(i,a)))<Math.abs(pitchCents(frequency,stringFrequency(best,a))))best=i;return best;}
 let recentPitches=[],lastPitchAt=0,referenceUntil=0,playbackRequest=0;
 function resetTuner(){
 recentPitches=[];lastPitchAt=0;
 $('tuner-display').className='panel tuner-display waiting';
-$('tuner-target').textContent=selectedString===null?'자동 줄 인식 · 소리를 기다립니다':`${6-selectedString}번 줄 · 목표 ${stringNames[selectedString]} · ${stringFrequency(selectedString,concertA).toFixed(2)} Hz`;
+$('tuner-target').textContent=selectedString===null?'자동 줄 인식 · 소리를 기다립니다':`${stringCount()-selectedString}번 줄 · 목표 ${stringNames[selectedString]} · ${stringFrequency(selectedString,concertA).toFixed(2)} Hz`;
 $('tuner-note').textContent=selectedString===null?'—':stringNames[selectedString];
 $('tuner-frequency').textContent=selectedString===null?'A4 = 440 Hz':`목표 ${stringFrequency(selectedString,concertA).toFixed(2)} Hz`;
 $('tuner-cents').textContent='— 센트';$('tuner-needle').style.transform='rotate(0deg)';
@@ -393,7 +398,7 @@ for(const button of pegButtons())button.classList.remove('detected');
 function showPitch(frequency){
 const index=selectedString===null?nearestString(frequency,concertA):selectedString,target=stringFrequency(index,concertA),cents=pitchCents(frequency,target),inTune=Math.abs(cents)<=5;
 $('tuner-display').className='panel tuner-display'+(inTune?' in-tune':'');
-$('tuner-target').textContent=`${selectedString===null?'자동 · ':''}${6-index}번 줄 · 목표 ${stringNames[index]} · ${target.toFixed(2)} Hz`;
+$('tuner-target').textContent=`${selectedString===null?'자동 · ':''}${stringCount()-index}번 줄 · 목표 ${stringNames[index]} · ${target.toFixed(2)} Hz`;
 $('tuner-note').textContent=stringNames[index];$('tuner-frequency').textContent=`감지 ${frequency.toFixed(2)} Hz`;
 $('tuner-cents').textContent=`${cents>0?'+':''}${cents.toFixed(1)} 센트`;
 $('tuner-needle').style.transform=`rotate(${Math.max(-50,Math.min(50,cents))*.8}deg)`; // ±50 cents = the ±40° arc
@@ -434,7 +439,7 @@ stream.getTracks().forEach(track=>track.addEventListener('ended',()=>{if(request
 context.onstatechange=()=>{if(request===micRequest&&context.state==='suspended')stopMicrophone('오디오가 일시 중지되었습니다. 마이크를 다시 켜 주세요.');};
 micTimer=setInterval(()=>{
 if(performance.now()<referenceUntil){recentPitches=[];return;}
-analyser.getFloatTimeDomainData(samples);const frequency=detectPitch(samples,context.sampleRate),now=performance.now();
+analyser.getFloatTimeDomainData(samples);const frequency=detectPitch(samples,context.sampleRate,INSTRUMENTS[instrument].range),now=performance.now();
 if(frequency===null){if(lastPitchAt&&now-lastPitchAt>1800)resetTuner();return;}
 lastPitchAt=now;
 if(recentPitches.length&&Math.abs(pitchCents(frequency,recentPitches.at(-1)))>80)recentPitches=[];
@@ -448,8 +453,20 @@ const messages={NotAllowedError:'마이크 권한이 거부되었습니다. 주�
 stopMicrophone(messages[error.name]||'마이크를 시작하지 못했습니다. 연결과 브라우저 권한을 확인한 뒤 다시 시도해 주세요.');
 }finally{if(request!==micRequest&&context&&context.state!=='closed')context.close().catch(()=>{});}
 });
-// Pegs around the headstock: left D·A·E (strings 4·5·6), right G·B·E (strings 3·2·1), top to bottom.
-const pegLayout=[[2,1,1],[1,1,2],[0,1,3],[3,3,1],[4,3,2],[5,3,3]];
+// Headstock drawing: posts at each peg position (column 1 = left, 3 = right; rows top to bottom),
+// tuner keys at the edges, and strings from each post to its nut slot (lowest string on the left).
+const HEAD_POSTS={1:{1:[40.5,25],2:[38.1,75],3:[46.4,125]},3:{1:[109.5,25],2:[111.9,75],3:[103.6,125]}};
+function headstockParts(spec){
+const n=spec.notes.length,slot=i=>36.9+(113.1-36.9)*(n>1?i/(n-1):.5),keyX={1:14.3,3:135.7},bass=n<6;
+let shafts='',keys='',shine='',strings='',posts='',slots='';
+for(const [index,column,row] of spec.layout){
+const [x,y]=HEAD_POSTS[column][row],kx=keyX[column],r=bass?5.2:4.5;
+shafts+=`M${x} ${y}H${kx}`;keys+=`M${kx} ${y-9}v18`;shine+=`M${kx} ${y-8}v16`;
+strings+=`<path d="M${x} ${y}L${slot(index).toFixed(1)} 162V172" stroke-width="${spec.widths[index]}"/>`;
+posts+=`<circle cx="${x}" cy="${y}" r="${r}"/>`;slots+=`M${(x-r/2).toFixed(1)} ${y}h${r}`;
+}
+return `<path d="${shafts}" stroke="var(--fret)" stroke-width="3"/><path d="${keys}" stroke="var(--fret)" stroke-width="${bass?10:8}" stroke-linecap="round"/><path d="${shine}" stroke="var(--neck)" stroke-width="1.6" stroke-linecap="round" opacity=".8"/><g fill="none" stroke="var(--neck)" stroke-opacity=".85">${strings}</g><g fill="var(--neck)" stroke="var(--fret)">${posts}</g><path d="${slots}" stroke="var(--fret)" stroke-linecap="round"/>`;
+}
 let lastDetected=null;
 const pegButtons=()=>$('string-select').querySelectorAll('button[data-string]');
 function selectString(index){selectedString=index;$('auto-string').setAttribute('aria-checked',String(index===null));for(const button of pegButtons())button.setAttribute('aria-pressed',String(Number(button.dataset.string)===index));resetTuner();}
@@ -461,20 +478,34 @@ await prepareAudio();if(request!==playbackRequest||$('tuner-panel').hidden)retur
 const frequency=stringFrequency(index,concertA),tone=scheduleReference(audioContext,frequency,audioContext.currentTime+.02);
 const osc=tone.oscs[0];playing=[tone.voice];referenceUntil=performance.now()+2150;resetTuner();
 $('tuner-advice').textContent='기준음 재생 중 · 잠시 듣고 비교하세요.';
-$('reference-status').textContent=`${6-index}번 줄 ${name} · ${frequency.toFixed(2)} Hz 재생 중`;
+$('reference-status').textContent=`${stringCount()-index}번 줄 ${name} · ${frequency.toFixed(2)} Hz 재생 중`;
 osc.addEventListener('ended',()=>{if(request===playbackRequest){playing=[];$('reference-status').textContent=referenceHint;resetTuner();}});
 confirmPlayback(audioContext,()=>request===playbackRequest,()=>{$('reference-status').textContent=audioFailure;});
 }catch(_){if(request===playbackRequest)$('reference-status').textContent=audioFailure;}
 }
-if(ready(['tuner'])){
-$('auto-string').addEventListener('click',()=>selectString(selectedString===null?(lastDetected??0):null));
-for(const [index,column,row] of pegLayout){
-const name=stringNames[index],peg=document.createElement('button');peg.type='button';peg.dataset.string=index;
-const note=document.createElement('strong');note.textContent=name[0];peg.append(note);peg.setAttribute('aria-label',`${6-index}번 줄 ${name}`);peg.setAttribute('aria-pressed','false');
+// Switch between guitar and 4/5-string bass: strings, pegs, headstock drawing and detector range.
+function setInstrument(name){
+const spec=INSTRUMENTS[name]||INSTRUMENTS.guitar;
+instrument=INSTRUMENTS[name]?name:'guitar';tunerNotes=spec.notes;stringNames=spec.names;lastDetected=null;
+try{localStorage.setItem('gm-tuner-instrument',instrument);}catch(_){}
+for(const input of document.querySelectorAll?.('input[name="instrument"]')||[])input.checked=input.value===instrument;
+stopPlayback();
+const box=$('string-select');for(const old of pegButtons())old.remove();
+$('headstock-parts').innerHTML=headstockParts(spec);
+for(const [index,column,row] of spec.layout){
+const label=spec.names[index],peg=document.createElement('button');peg.type='button';peg.dataset.string=index;
+const note=document.createElement('strong');note.textContent=label[0];peg.append(note);peg.setAttribute('aria-label',`${spec.notes.length-index}번 줄 ${label}`);peg.setAttribute('aria-pressed','false');
 peg.style.gridColumn=column;peg.style.gridRow=row;
 peg.addEventListener('click',()=>{selectString(index);playReference(index);});
-$('string-select').append(peg);
+box.append(peg);
 }
+selectString(null);
+}
+if(ready(['tuner'])){
+$('auto-string').addEventListener('click',()=>selectString(selectedString===null?(lastDetected??0):null));
+for(const input of document.querySelectorAll('input[name="instrument"]'))input.addEventListener('change',()=>setInstrument(input.value));
+let savedInstrument=null;try{savedInstrument=localStorage.getItem('gm-tuner-instrument');}catch(_){}
+setInstrument(INSTRUMENTS[savedInstrument]?savedInstrument:'guitar');
 $('mic-sensitivity').addEventListener('input',()=>{
 const gain=Number($('mic-sensitivity').value);$('mic-gain-value').textContent=`${gain}×`;
 if(micGain)micGain.gain.setTargetAtTime(gain,micContext.currentTime,.02);
