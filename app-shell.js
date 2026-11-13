@@ -22,8 +22,8 @@ class GuitarMateHeader extends HTMLElement {
           <a class="brand" href="./"><img src="./favicon.svg" width="40" height="40" alt=""><span class="brand-name">기타메이트<span class="brand-subtitle">기타 연습 도우미</span></span></a>
           <div class="install-action">
             <button class="lang-toggle" type="button" translate="no" data-lang-toggle></button>
-            <a class="guide-launch" href="${guide}">사용 가이드</a>
-            <button id="install-button" type="button" data-i18n-en="Install" hidden>홈 화면에 추가</button>
+            <a class="guide-launch" href="${guide}">가이드</a>
+            <button id="install-button" type="button" data-i18n-en="Install" hidden>앱 설치</button>
             <span class="badge">오프라인 지원</span>
           </div>
         </div>

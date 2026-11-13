@@ -12,6 +12,7 @@ text: {
   '메트로놈': 'Metronome',
   '악보 키 변환': 'Sheet transposer',
   '가이드': 'Guide',
+  '앱 설치': 'Install',
   '사용 가이드': 'Guide',
   '연습 모드': 'Practice modes',
   '기타메이트 메뉴': 'Guitar Mate menu',
