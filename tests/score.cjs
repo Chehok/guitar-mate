@@ -165,39 +165,28 @@ assert(paint.some(call=>call[0]==='mask'&&call[2]===198),'Replacement covers ori
 paint.length=0;context.drawScore(new Element(),true);assert.deepEqual(paint.map(p=>p[0]),['image']);
 paint.length=0;vm.runInContext("scoreState.overlay='above'",context);context.drawScore(new Element(),false);
 assert(paint.find(p=>p[0]==='text')[3]<200,'Above mode draws above original chord');
-// Capo view: "−" below capo 0 lowers the key (never a negative fret); + returns the same way.
+// Capo view: + lowers the chord shapes (capo up), − raises them (capo down, then the key up with no capo).
 {
-  const click=id=>$(id).handlers.click(),state=()=>JSON.parse(vm.runInContext('JSON.stringify([scoreState.capo,-scoreState.keyShift])',context));
+  const click=id=>$(id).handlers.click(),state=()=>JSON.parse(vm.runInContext('JSON.stringify([scoreState.capo,scoreState.keyShift])',context));
   const shown=chord=>vm.runInContext(`transformedScoreChord(${JSON.stringify(chord)},{pc:7,minor:false,name:'G'})`,context);
   vm.runInContext("scoreState.capo=0;scoreState.keyShift=0;",context);
   context.renderScore();assert(!$('score-capo-minus').disabled,'− is available at capo 0');
   assert.equal(shown('G'),'G');
-  click('score-capo-minus');assert.deepEqual(state(),[0,1]);
-  assert.equal(shown('G'),'F#');assert.equal(shown('C/E'),'B/D#');assert.equal(shown('Gm/Bb'),'F#m/A');assert.equal(shown('Em7'),'D#m7');
-  assert.equal($('score-capo-value').textContent,'카포 없음 · 키 −1반음');assert.match($('score-result-key').textContent,/소리의 키/);
-  assert(!/카포 −/.test($('score-capo-value').textContent));
-  click('score-capo-minus');assert.deepEqual(state(),[0,2]);assert.equal(shown('G'),'F');
+  click('score-capo-plus');assert.deepEqual(state(),[1,0]);assert.equal(shown('G'),'F#','+ moves the shapes down');
+  assert.equal(shown('C/E'),'B/D#');assert.equal(shown('Gm/Bb'),'F#m/A');assert.equal(shown('Em7'),'D#m7');
+  assert.equal($('score-capo-value').textContent,'카포 1');
+  click('score-capo-minus');assert.deepEqual(state(),[0,0]);
+  click('score-capo-minus');assert.deepEqual(state(),[0,1],'− at no capo raises the key');assert.equal(shown('G'),'Ab');
+  assert.equal($('score-capo-value').textContent,'카포 X · +1키');assert(!/카포 −/.test($('score-capo-value').textContent));
   for(let i=0;i<20;i++)click('score-capo-minus');assert.deepEqual(state(),[0,11]);assert($('score-capo-minus').disabled);
-  for(let i=0;i<11;i++)click('score-capo-plus');assert.deepEqual(state(),[0,0]);assert.equal(shown('G'),'G');
-  click('score-capo-plus');assert.deepEqual(state(),[1,0]);assert.equal(shown('G'),'F#');
-  click('score-capo-minus');assert.deepEqual(state(),[0,0]);click('score-capo-minus');assert.deepEqual(state(),[0,1]);
+  click('score-capo-plus');assert.deepEqual(state(),[0,10],'+ brings a raised key back first');
+  for(let i=0;i<10;i++)click('score-capo-plus');assert.deepEqual(state(),[0,0]);
+  for(let i=0;i<20;i++)click('score-capo-plus');assert.deepEqual(state(),[11,0]);assert($('score-capo-plus').disabled);
+  vm.runInContext("scoreState.capo=0;scoreState.keyShift=1;",context);
   $('score-frets').children[2].handlers.click();assert.deepEqual(state(),[3,1],'a fret keeps the song key change');
-  assert.equal($('score-capo-value').textContent,'카포 3');
-  click('score-capo-minus');click('score-capo-minus');click('score-capo-minus');click('score-capo-minus');assert.deepEqual(state(),[0,2]);
-  // The sheet −/+ are the neck −/+: same state, same steps, same labels
-  vm.runInContext("scoreState.capo=0;scoreState.keyShift=0;",context);context.renderScore();
-  assert.equal($('score-shift-value').textContent,'G (원래 키)');assert($('score-shift-reset').hidden);
-  click('score-shift-up');assert.deepEqual(state(),[1,0],'sheet + puts the capo on, like the neck +');assert.equal(shown('G'),'F#');
-  assert.equal($('score-shift-value').textContent,'G → F# · 카포 1');assert.equal($('score-capo-value').textContent,'카포 1');
-  assert.equal(vm.runInContext("scoreKeyStampText({pc:7,minor:false,name:'G'})",context),'F#폼 (Capo 1) / G키');
-  click('score-shift-down');click('score-shift-down');assert.deepEqual(state(),[0,1],'sheet − takes the capo off, then lowers the key');
-  assert.equal($('score-shift-value').textContent,'G → F# (−1)');assert.equal($('score-capo-value').textContent,'카포 없음 · 키 −1반음');
-  click('score-capo-plus');assert.deepEqual(state(),[0,0]);click('score-capo-plus');click('score-capo-plus');
-  assert.equal($('score-shift-value').textContent,'G → F · 카포 2','neck + moves the sheet label too');
-  assert(!$('score-capo-reset').hidden&&!$('score-shift-reset').hidden);
-  click('score-shift-reset');assert.deepEqual(state(),[0,0]);
-  for(let i=0;i<20;i++)click('score-shift-up');assert.deepEqual(state(),[11,0]);assert($('score-shift-up').disabled&&$('score-capo-plus').disabled);
-  click('score-capo-reset');assert.deepEqual(state(),[0,0]);
+  assert.equal($('score-capo-value').textContent,'카포 3 · +1키');
+  // The key is set in one place only: the neck under the sheet.
+  assert(!/id="score-shift-/.test(html),'no second key control on the sheet');
   vm.runInContext("scoreState.capo=1;scoreState.keyShift=0;",context);
 }
 // Recommendations follow the actual score controls and keep four bars per progression.
@@ -217,8 +206,8 @@ assert(paint.find(p=>p[0]==='text')[3]<200,'Above mode draws above original chor
   assert.deepEqual(bars(easy),['Bb','Gm','Cm','F7']);
   assert.deepEqual(bars(opening),['Bb','F','Gm','F7']);
   for(let i=0;i<3;i++)$('score-capo-minus').handlers.click();
-  assert.deepEqual(bars(easy),['B','G#m','C#m','F#7']);
-  assert.deepEqual(bars(opening),['B','F#','G#m','F#7']);
+  assert.deepEqual(bars(easy),['Db','Bbm','Ebm','Ab7'],'− past capo 0 raises the key');
+  assert.deepEqual(bars(opening),['Db','Ab','Bbm','Ab7']);
   vm.runInContext("scoreState.codes.length=2;scoreState.keyShift=0;",context);
   context.renderScore();assert.deepEqual(bars(opening),['C','G','Am','G7']);
   assert($('score-intro-ending').hidden);assert($('score-intro-ending-title').hidden);assert(!$('score-intro-more').hidden);
@@ -249,7 +238,7 @@ async function checkIntroActions(){
   for(let i=0;i<3;i++)$('score-capo-minus').handlers.click();
   assert.equal(stopped.length,32,'Changing key or capo stops playback');
   await easy.onclick();
-  assert.deepEqual(bars[8].pitches,[3,6,11],'Lowering the key one semitone sounds in B');
+  assert.deepEqual(bars[8].pitches,[1,5,8],'Raising the key one semitone sounds in Db');
   assert.deepEqual(strums.slice(-16,-12).map(s=>[Number((s.at-10.04).toFixed(3)),s.level]),[[0,1],[.5,.45],[1,.7],[1.5,.45]],'4/4 strums every quarter note');
   assert(strums.at(-15).count<=3,'Weak beats brush the top strings');
   // Tempo: 4/4 bars, changing it stops playback, typing a partial number waits for a valid value.
@@ -309,12 +298,12 @@ async function checkIntroActions(){
     paint.length=0;context.drawScore(new Element(),true);assert.deepEqual(paint.map(p=>p[0]),['image'],'Original view stays untouched');
     vm.runInContext(`scoreState.capo=${capo};scoreState.keyShift=${keyShift};`,context);paint.length=0;context.drawScore(new Element(),false);
   }
-  assert(paint.some(call=>call[0]==='text'&&call[1]==='|  B  |  F#  |  G#m  |  F#7  |'),'Intro is drawn without a label');
+  assert(paint.some(call=>call[0]==='text'&&call[1]==='|  Db  |  Ab  |  Bbm  |  Ab7  |'),'Intro is drawn without a label');
   assert(!paint.some(call=>call[0]==='text'&&String(call[1]).includes('전주')));
   $('score-frets').children[1].handlers.click();
   paint.length=0;context.drawScore(new Element(),false);
   const intro=paint.find(call=>call[0]==='text'&&call[1].startsWith('|  '));
-  assert.equal(intro[1],'|  A  |  E  |  F#m  |  E7  |','PNG drawing uses the current key change and capo shapes');
+  assert.equal(intro[1],'|  B  |  F#  |  G#m  |  F#7  |','PNG drawing uses the current key change and capo shapes');
   assert(intro[2]+intro[4]<=1000,'Placed intro stays inside the image');
   paint.length=0;context.drawScore(new Element(),true);assert.deepEqual(paint.map(p=>p[0]),['image']);
   context.renderScore();
@@ -465,7 +454,13 @@ await dropImages([dropFile,dropFile]);assert.match($('score-status').textContent
 await dropImages([dropFile]);assert(dropPrevented);
 assert.equal(vm.runInContext('scoreState.source.width',context),4096);
 assert.equal(vm.runInContext('scoreState.source.height',context),2048);
-assert.equal($('score-work').hidden,false);assert.equal($('score-add').disabled,false);assert.equal(revoked,1);
+assert.equal($('score-work').hidden,false);assert.equal($('score-upload').hidden,true,'the upload area steps aside for the preview');assert.equal($('score-add').disabled,false);assert.equal(revoked,1);
+// "다른 악보 선택" drops the sheet and brings the upload area back, cancelling recognition still running.
+vm.runInContext('scoreState.capo=2;scoreState.busy=true',context);const runBefore=vm.runInContext('scoreState.run',context);
+$('score-reselect').handlers.click();
+assert.equal($('score-work').hidden,true);assert.equal($('score-upload').hidden,false);
+assert.deepEqual(JSON.parse(vm.runInContext('JSON.stringify([scoreState.image,scoreState.capo,scoreState.busy,scoreState.run>'+runBefore+'])',context)),[null,0,false,true]);
+assert.equal($('score-file').disabled,false);
 // Clipboard entry points share image loading, validation and OCR with file selection.
 const pasted={type:'image/webp',size:100};let prevented=0;
 const pasteEvent={target:$('score-panel'),clipboardData:{items:[textItem,{kind:'file',type:pasted.type,getAsFile:()=>pasted}]},preventDefault(){prevented++;}};

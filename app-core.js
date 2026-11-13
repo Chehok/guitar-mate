@@ -208,7 +208,7 @@ const svg=(body,view,cls,label)=>`<svg xmlns="http://www.w3.org/2000/svg" viewBo
 function diagram(v,editBase=null){
 if(!v)return '<p class="empty">4프렛 범위에서 추천할 운지를 찾지 못했습니다.</p>';
 const f=v.frets,max=Math.max(...f),positive=f.filter(n=>n>0),base=editBase??(max<=5?1:Math.min(...positive)),x=i=>editBase===null?59+i*35:22+i*44,rowHeight=editBase===null?40:44,y=n=>67+(n-base+.5)*rowHeight;
-let s='';if(base>1)s+=`<text x="${editBase===null?10:0}" y="${editBase===null?49:16}" font-size="14" fill="var(--muted)">${base}fr</text>`;
+let s='';if(base>1)s+=`<text x="${editBase===null?10:-8}" y="${editBase===null?49:48}" font-size="${editBase===null?14:12}" fill="var(--muted)">${base}fr</text>`;
 for(let fret=base;fret<base+5;fret++){
   const position=fret%12;
   const dots=position===0?[-5,5]:[3,5,7,9].includes(position)?[0]:[];
@@ -225,7 +225,7 @@ for(let i=0;i<6;i++)for(let row=-1;row<5;row++){
 const fret=row<0?0:base+row,top=row<0?23:67+row*44;
 s+=`<g class="identify-hit" role="button" tabindex="0" data-string="${i}" data-fret="${fret}" aria-label="${6-i}번 줄 ${row<0?'개방현 / 뮤트 전환':fret+'프렛'}" aria-pressed="${row<0?f[i]===0:f[i]===fret}"><rect x="${x(i)-22}" y="${top}" width="44" height="44" fill="transparent"/></g>`;
 }
-return svg(s,'-8 0 272 330','diagram diagram-editor',`운지 입력, ${base}–${base+4}프렛`).replace('role="img"','role="group"');
+return svg(s,'-8 24 272 292','diagram diagram-editor',`운지 입력, ${base}–${base+4}프렛`).replace('role="img"','role="group"');
 }
 return svg(s,'0 0 290 310','diagram',`${current.label} 운지, 6번 줄부터 ${f.map(n=>n<0?'뮤트':n+'프렛').join(', ')}`);
 }
