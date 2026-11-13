@@ -1,6 +1,6 @@
 'use strict';
 // Increment when changing any app-shell file so installed copies refresh together.
-const VERSION='v159-guide-panel-focus';
+const VERSION='v160-compact-header';
 // Keep the storage namespace so activation also removes pre-rebrand caches.
 const CACHE_PREFIX=`six-strings:${self.registration.scope}:`;
 const CACHE_NAME=CACHE_PREFIX+VERSION;
