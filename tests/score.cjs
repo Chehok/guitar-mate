@@ -185,6 +185,12 @@ assert(paint.find(p=>p[0]==='text')[3]<200,'Above mode draws above original chor
   vm.runInContext("scoreState.capo=0;scoreState.keyShift=1;",context);
   $('score-frets').children[2].handlers.click();assert.deepEqual(state(),[3,1],'a fret keeps the song key change');
   assert.equal($('score-capo-value').textContent,'카포 3 · +1키');
+  // 들어보기 plays the sheet in reading order, in the shapes shown (here capo 2 → shapes down two).
+  vm.runInContext("scoreState.capo=2;scoreState.keyShift=0;scoreState.codes=[{text:'A',bbox:{x0:300,y0:102,x1:330,y1:118}},{text:'D',bbox:{x0:40,y0:100,x1:70,y1:120}},{text:'G',bbox:{x0:40,y0:300,x1:70,y1:320}},{text:'Bm',bbox:{x0:500,y0:98,x1:540,y1:121}}];",context);
+  assert.deepEqual(JSON.parse(vm.runInContext('JSON.stringify(scoreReadingOrder(scoreState.codes))',context)),['D','A','Bm','G'],'lines top to bottom, left to right');
+  assert.deepEqual(JSON.parse(vm.runInContext('JSON.stringify(scoreListenChords())',context)),['C','G','Am','F']);
+  context.renderScore();assert.equal($('score-listen').disabled,false);
+  vm.runInContext("scoreState.codes=[];",context);context.renderScore();assert.equal($('score-listen').disabled,true,'nothing to play without chords');
   // The key is set in one place only: the neck under the sheet.
   assert(!/id="score-shift-/.test(html),'no second key control on the sheet');
   vm.runInContext("scoreState.capo=1;scoreState.keyShift=0;",context);
