@@ -343,7 +343,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <p id="score-edit-hint" class="hint">악보 위의 코드를 눌러 수정하세요. 직접 추가한 코드와 전주는 끌어서 옮길 수 있어요. 아래 목록에서도 편집할 수 있어요.<br><span id="score-size"></span></p>
 </div>
 <div id="score-capo-panel" class="panel score-controls">
-<div id="score-capo-controls"><div class="score-row score-capo-row"><button id="score-capo-minus" type="button" aria-label="카포 한 프렛 내리기 (카포 없음에서는 키를 반음 내림)">−</button><output id="score-capo-value" aria-live="polite">카포 없음</output><button id="score-capo-plus" type="button" aria-label="카포 한 프렛 올리기">+</button><button id="score-capo-reset" class="score-reset" type="button" disabled>원래 키로</button></div>
+<div id="score-capo-controls"><div class="score-row score-capo-row"><button id="score-capo-minus" type="button" aria-label="키 올리기 (카포를 한 프렛 내리고, 카포 없음에서는 키를 반음 올림)">−</button><output id="score-capo-value" aria-live="polite">카포 없음</output><button id="score-capo-plus" type="button" aria-label="키 내리기 (카포를 한 프렛 올림)">+</button><button id="score-capo-reset" class="score-reset" type="button" disabled>원래 키로</button></div>
 <div class="score-fret-scroll" tabindex="0" role="region" aria-label="카포 1부터 11프렛 선택, 좌우로 스크롤"><div class="score-neck">
 <svg class="score-headstock" viewBox="0 0 96 126" preserveAspectRatio="none" aria-hidden="true" focusable="false">
 <path d="M16 22 37 18q4-1 8 1l18 9 20-11 13-4v100l-13-4-20-11-18 9q-4 2-8 1l-21-4q-6-4-6-12V34q0-8 6-12Z" fill="var(--green)" stroke="var(--fret)"/>
@@ -1511,7 +1511,7 @@ $('score-key').textContent=key?`감지 키: ${key.name} (추정)`:'감지 키: �
 const {capo,keyShift}=scoreState;
 const keyStep=keyShift?` · ${keyShift>0?'+':'−'}${Math.abs(keyShift)}키`:'';
 $('score-capo-value').textContent=capo?'카포 '+capo+keyStep:keyShift?'카포 X'+keyStep:'카포 없음';
-$('score-capo-minus').disabled=capo===0&&keyShift===-11;$('score-capo-plus').disabled=capo===11;
+$('score-capo-minus').disabled=capo===0&&keyShift===11;$('score-capo-plus').disabled=capo===11&&keyShift<=0;
 for(const [i,button] of [...$('score-frets').children].entries())button.setAttribute('aria-pressed',String(i+1===capo));
 $('score-capo-reset').disabled=!(keyShift||capo);
 if(!scoreState.image)return;
@@ -1748,9 +1748,11 @@ if(ready(['score'])){
 for(let fret=1;fret<=11;fret++){
 const button=document.createElement('button'),span=document.createElement('span');button.type='button';span.textContent=fret;button.append(span);button.setAttribute('aria-label',`카포 ${fret}프렛`);button.setAttribute('aria-pressed','false');button.addEventListener('click',()=>{scoreState.capo=fret;renderScore();});$('score-frets').append(button);
 }
-const scoreKeyDown=()=>{if(scoreState.capo>0)scoreState.capo--;else scoreState.keyShift=Math.max(-11,scoreState.keyShift-1);renderScore();};
+// − raises the chord shapes: capo down a fret, or with no capo the key itself goes up.
+// + lowers them: a raised key comes back first, then the capo goes up a fret.
+const scoreKeyDown=()=>{if(scoreState.capo>0)scoreState.capo--;else scoreState.keyShift=Math.min(11,scoreState.keyShift+1);renderScore();};
 $('score-capo-minus').addEventListener('click',scoreKeyDown);
-const scoreKeyUp=()=>{if(!scoreState.capo&&scoreState.keyShift<0)scoreState.keyShift++;else scoreState.capo=Math.min(11,scoreState.capo+1);renderScore();};
+const scoreKeyUp=()=>{if(scoreState.keyShift>0)scoreState.keyShift--;else scoreState.capo=Math.min(11,scoreState.capo+1);renderScore();};
 $('score-capo-plus').addEventListener('click',scoreKeyUp);
 const resetScoreKey=()=>{scoreState.keyShift=0;scoreState.capo=0;renderScore();};
 $('score-capo-reset').addEventListener('click',resetScoreKey);
