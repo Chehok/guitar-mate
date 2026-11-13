@@ -100,10 +100,10 @@ function strummedMidi(sources) {
 async function main() {
   assert.match(html,/id="identify-play"[^>]*>소리 듣기<\/button><button id="identify-reset"/);
   const page=loadIdentifier();
-  assert.equal(page.play.disabled,true,'all strings muted disables playback');
+  assert.equal(page.play.disabled,false,'strings start open, so the open chord can be played right away');
 
   // Use the actual fret and play listeners. Open strings and muted strings affect the scheduled pitches.
-  for (const [string,fret] of [[1,0],[2,2],[3,0],[4,1],[5,0]]) await page.toggle(string,fret);
+  for (const [string,fret] of [[0,0],[2,2],[4,1]]) await page.toggle(string,fret);
   assert.equal(page.candidates.children[0].children[0].children[0].textContent,'Am7');
   await page.play.emit('click');
   const first=page.oscillators.slice();
@@ -120,7 +120,7 @@ async function main() {
   await page.toggle(1,0);
   assert(first.every(oscillator=>oscillator.stopTimes.length===2),'editing the fingering stops the previous chord');
   await page.reset();
-  for (const [string,fret] of [[2,0],[3,2],[4,3],[5,1]]) await page.toggle(string,fret);
+  for (const [string,fret] of [[0,0],[1,0],[3,2],[4,3],[5,1]]) await page.toggle(string,fret);
   assert.equal(page.candidates.children[0].children[0].children[0].textContent,'Dm');
   await page.play.emit('click');
   const second=page.oscillators.slice(first.length);
@@ -129,13 +129,14 @@ async function main() {
   assert.match(page.status.textContent,/재생 중/,'an old preview cannot clear the new preview status');
 
   await page.reset();
-  assert.equal(page.play.disabled,true);
+  assert.equal(page.play.disabled,false,'reset goes back to open strings');
   assert.equal(page.status.textContent,'');
   assert(second.every(oscillator=>oscillator.stopTimes.length===2),'reset stops the active preview');
 
   const pending=loadIdentifier({suspended:true});
   await pending.toggle(0,1);
   await pending.toggle(1,1);
+  for (const string of [2,3,4,5]) await pending.toggle(string,0); // strings start open; mute the rest
   const oldRequest=pending.play.emit('click');
   await pending.toggle(0,2);
   pending.finishResume();

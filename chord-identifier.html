@@ -309,7 +309,7 @@ return svg(s,'0 0 1040 237','neck',`${current.label} 코드 구성음의 전체 
 function render(){const v=voicings[position];$('chord-title').textContent=current.label;$('quality').textContent=current.name;$('diagram').innerHTML=diagram(v);$('counter').textContent=voicings.length?`보이싱 ${position+1}/${voicings.length}`:'보이싱 없음';$('prev').disabled=$('next').disabled=voicings.length<2;$('play').disabled=!v;
 $('tones').replaceChildren(...current.tones.map(t=>{const div=document.createElement('div');div.className='tone'+(t[0]===0?' root':'');const strong=document.createElement('strong'),small=document.createElement('small');strong.textContent=toneName(current,t);small.textContent=t[1];div.append(strong,small);return div;}));
 $('frets').textContent=v?v.frets.map(f=>f<0?'X':f).join(' · '):'—';$('bass').textContent=v?noteName(current,v.bass)+(v.bass===current.pc?' · 근음':' · 전위형'):'—';$('shape').textContent=v?v.name+(v.omitted.length?' · 생략: '+v.omitted.join(', '):''):'—';$('neck').innerHTML=neck(v);$('audio-status').textContent='';document.querySelectorAll('#quick button').forEach(b=>b.setAttribute('aria-pressed',String(b.textContent===current.label)));}
-let identifyFrets=Array(6).fill(-1),identifyStart=1;
+let identifyFrets=Array(6).fill(0),identifyStart=1;
 const displayChord=name=>name.replace(/#/g,'♯').replace(/b/g,'♭');
 let identifyPlaybackRequest=0;
 async function playIdentifyFrets(){
@@ -367,7 +367,7 @@ stopPlayback();
 identifyFrets[i]=fret===0?(identifyFrets[i]===0?-1:0):(identifyFrets[i]===fret?-1:fret);
 renderIdentify();$('identify-diagram').querySelector(`[data-string="${i}"][data-fret="${fret}"]`).focus();
 }
-if(ready(['identify'])){$('identify-diagram').addEventListener('click',toggleIdentify);$('identify-diagram').addEventListener('keydown',toggleIdentify);$('identify-start').addEventListener('change',()=>{identifyStart=Math.max(1,Math.min(20,Math.round(Number($('identify-start').value)||1)));$('identify-start').value=identifyStart;renderIdentify();});$('identify-reset').addEventListener('click',()=>{stopPlayback();identifyFrets=Array(6).fill(-1);identifyStart=1;$('identify-start').value=1;renderIdentify();});$('identify-play').addEventListener('click',playIdentifyFrets);renderIdentify();}
+if(ready(['identify'])){$('identify-diagram').addEventListener('click',toggleIdentify);$('identify-diagram').addEventListener('keydown',toggleIdentify);$('identify-start').addEventListener('change',()=>{identifyStart=Math.max(1,Math.min(20,Math.round(Number($('identify-start').value)||1)));$('identify-start').value=identifyStart;renderIdentify();});$('identify-reset').addEventListener('click',()=>{stopPlayback();identifyFrets=Array(6).fill(0);identifyStart=1;$('identify-start').value=1;renderIdentify();});$('identify-play').addEventListener('click',playIdentifyFrets);renderIdentify();}
 function scheduleChord(ctx,fretsList,at){return scheduleStrum(ctx,fretsList.map((f,i)=>f>=0?tuning[i]+f:null).filter(midi=>midi!==null),at);}
 
 let recentPitches=[],lastPitchAt=0,referenceUntil=0,playbackRequest=0;
