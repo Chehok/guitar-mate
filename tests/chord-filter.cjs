@@ -57,6 +57,7 @@ const steps=code=>run(`${code};stepResults()`);
 assert.deepEqual(steps('stepRoot=null'),[],'nothing before a root');
 assert.equal(steps("stepRoot='C'").length,17,'root: every kind, no slash');
 assert.equal(steps("stepRoot='C'")[0],'C','plain triad first');
+assert.match(html,/id="bass-row"[^>]*hidden[\s\S]*?id="bass-quick"/,'slash bass row sits under the chord row');
 const fretboards=run("current=parse('C'); var grip=makeVoicings(current)[0]; [neck(grip,false),neck(grip,true)]");
 for(const board of fretboards){
   assert.deepEqual([...board.matchAll(/>(\d+)<\/text>/g)].map(match=>Number(match[1])),Array.from({length:16},(_,i)=>i));
