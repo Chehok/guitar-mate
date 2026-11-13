@@ -299,7 +299,7 @@ text: {
   '기본음을 골라 주세요': 'Pick a root',
   '베이스음': 'Bass note',
   '없음': 'None',
-  '베이스': 'Bass',
+  '종류': 'Type',
   '처음부터': 'Start over',
   '조건에 맞는 코드': 'Matching chords',
   // Sheet transposer
@@ -498,7 +498,7 @@ html: {
   '다이어그램은 왼쪽부터 6번 줄입니다. <strong>O</strong>는 프렛을 누르지 않고 치는 줄, <strong>X</strong>는 치지 않는 줄입니다.': 'The diagram starts with string 6 on the left. <strong>O</strong> means play the string open, <strong>X</strong> means don’t play it.',
   '예를 들어 6번부터 <strong>X–3–2–0–0–0</strong>으로 표시된 운지는 5번 줄 3프렛과 4번 줄 2프렛을 누르고, 3·2·1번 줄은 그대로 칩니다.': 'For example, a shape shown as <strong>X–3–2–0–0–0</strong> from string 6 presses string 5 at fret 3 and string 4 at fret 2, with strings 3, 2 and 1 open.',
   '<strong>← 이전</strong>과 <strong>다음 →</strong>으로 같은 코드의 다른 운지를 보고, <strong>소리 듣기</strong>로 연주한 음과 비교합니다.': 'Use <strong>← Prev</strong> and <strong>Next →</strong> to see other shapes of the same chord, and <strong>Play</strong> to compare with what you hear.',
-  '※ 이름이 기억나지 않으면 위쪽 토글을 <strong>필터</strong>로 바꾸고 기본음을 골라 보세요. 그 기본음의 코드가 한 줄로 나오니 옆으로 넘기며 고르고, 아래 <strong>베이스</strong> 줄에서 C/G 같은 슬래시 베이스도 고를 수 있어요. 아래 <strong>지판에서 찾기</strong>에는 0–15프렛 전체에서 근음과 구성음 위치가 표시되고, 지금 보고 있는 운지는 진한 색으로 보여요.': '※ Can’t remember the name? Switch the toggle at the top to <strong>Filter</strong> and pick a root. Every chord on that root appears in one row; swipe and pick, and use the <strong>Bass</strong> row below for slash chords like C/G. <strong>On the fretboard</strong> shows the roots and chord tones across frets 0–15, with the current shape in a darker color.',
+  '※ 이름이 기억나지 않으면 위쪽 토글을 <strong>필터</strong>로 바꾸고 기본음을 골라 보세요. 그 기본음의 코드가 한 줄로 나오니 옆으로 넘기며 고르고, 아래 <strong>근음</strong> 줄에서 C/G 같은 슬래시 베이스도 고를 수 있어요. 아래 <strong>지판에서 찾기</strong>에는 0–15프렛 전체에서 근음과 구성음 위치가 표시되고, 지금 보고 있는 운지는 진한 색으로 보여요.': '※ Can’t remember the name? Switch the toggle at the top to <strong>Filter</strong> and pick a root. Every chord on that root appears in one row; swipe and pick, and use the <strong>Bass</strong> row below for slash chords like C/G. <strong>On the fretboard</strong> shows the roots and chord tones across frets 0–15, with the current shape in a darker color.',
   '영상에서 본 손 모양이나 내가 연습한 운지가 무슨 코드인지 확인할 때 쓰는 기능입니다. 화면의 기타 지판에 <strong>어느 줄을 몇 프렛에서 누르는지</strong> 직접 표시하면, 그 운지에서 나는 음을 계산해 가능한 코드 이름을 보여줍니다.': 'Use this to find out which chord a hand shape from a video, or one you’re practicing, is. Mark <strong>which string you press at which fret</strong> on the on-screen neck, and it works out the notes and shows possible chord names.',
   '지판에서 <strong>5번 줄 · 2프렛</strong> 칸을 손가락으로 누르면 점이 찍혀요. 같은 칸을 다시 누르면 지워져요.': 'Tap the <strong>string 5 · fret 2</strong> cell and a dot appears. Tap it again to remove it.',
   '이어서 <strong>4번 줄 · 2프렛</strong>도 눌러요. Em 운지에서 손가락으로 누르는 곳은 이 두 칸뿐이에요.': 'Then tap <strong>string 4 · fret 2</strong>. These are the only two cells you press for Em.',
