@@ -308,31 +308,37 @@ if(now>=at){release.gain.setValueAtTime(1,now);release.gain.linearRampToValueAtT
 for(const osc of oscs)osc.stop(stopAt);
 }}};
 }
-// Steel-string acoustic pluck: a Karplus–Strong string with a pick-position comb, then a small guitar-body
-// EQ, rendered once per pitch into a buffer (cached) so playing a chord only schedules buffer sources.
+// Steel-string acoustic pluck: a Karplus–Strong string (soft pick, 3-tap loop filter so upper partials die
+// away quickly like a real string), then a guitar-body EQ, rendered once per pitch into a cached buffer.
 function renderPluck(data,rate,frequency,seed=1){
 let state=(seed>>>0)||1;const rand=()=>(state=(Math.imul(state,1664525)+1013904223)>>>0)/2**31-1;
-// Loop delay = n − ½ (the two-tap average reads the newest and the oldest sample) + frac (all-pass) = period.
-const period=rate/frequency;let n=Math.floor(period+.5),frac=period+.5-n;if(frac<.1&&n>2){n--;frac++;}
+// Loop delay = (n − 1) for the centred 3-tap filter + frac from the all-pass = one period.
+const period=rate/frequency;let n=Math.floor(period+1),frac=period+1-n;if(frac<.1&&n>3){n--;frac++;}
 const c=(1-frac)/(1+frac);
-const line=new Float32Array(n),pick=Math.max(1,Math.round(n/8));
-for(let i=0;i<n;i++)line[i]=rand();
-for(let i=n-1;i>=pick;i--)line[i]-=.9*line[i-pick];
-const t60=Math.max(1.4,Math.min(4.5,4.8-frequency/220)),loss=Math.pow(.001,1/(t60*frequency));
+// Pick: noise softened twice (a plectrum, not a click), mixed with a smooth pluck shape, then the
+// pick-position comb (plucked about 1/7 of the way from the bridge).
+const line=new Float32Array(n),pick=Math.max(1,Math.round(n/7));
+let soft1=0,soft2=0;const k=Math.min(.6,1200/frequency*.12+.18);
+for(let i=0;i<n;i++){soft1+=k*(rand()-soft1);soft2+=k*(soft1-soft2);line[i]=.75*soft2+.25*(1-Math.abs(2*i/n-1));}
+let mean=0;for(let i=0;i<n;i++)mean+=line[i]/n;for(let i=0;i<n;i++)line[i]-=mean;
+for(let i=n-1;i>=pick;i--)line[i]-=.85*line[i-pick];
+const t60=Math.max(1.5,Math.min(4.5,4.8-frequency/220)),loss=Math.pow(.001,1/(t60*frequency));
 let idx=0,apIn=0,apOut=0;
 for(let t=0;t<data.length;t++){
-const a=line[idx],b=line[idx+1===n?0:idx+1],lowpass=loss*.5*(a+b),y=c*lowpass+apIn-c*apOut;
-apIn=lowpass;apOut=y;data[t]=a;line[idx]=y;idx=idx+1===n?0:idx+1;
+const i1=idx+1===n?0:idx+1,i2=i1+1===n?0:i1+1;
+const a=line[idx],lowpass=loss*(.25*a+.5*line[i1]+.25*line[i2]),y=c*lowpass+apIn-c*apOut;
+apIn=lowpass;apOut=y;data[t]=a;line[idx]=y;idx=i1;
 }
-// Body: cut rumble, a little air/top resonance, steel-string presence, softer pick hiss.
-const biquad=(type,f0,q,gainDb)=>{const A=Math.pow(10,gainDb/40),w=2*Math.PI*f0/rate,cs=Math.cos(w),al=Math.sin(w)/(2*q);let b0,b1,b2,a0,a1,a2;
+// Body: cut rumble, warm air/top resonances, tame the 3–6 kHz edge, roll off the very top.
+const biquad=(type,f0,q,gainDb=0)=>{const A=Math.pow(10,gainDb/40),w=2*Math.PI*f0/rate,cs=Math.cos(w),al=Math.sin(w)/(2*q);let b0,b1,b2,a0,a1,a2;
 if(type==='hp'){b0=(1+cs)/2;b1=-(1+cs);b2=(1+cs)/2;a0=1+al;a1=-2*cs;a2=1-al;}
+else if(type==='lp'){b0=(1-cs)/2;b1=1-cs;b2=(1-cs)/2;a0=1+al;a1=-2*cs;a2=1-al;}
 else if(type==='peak'){b0=1+al*A;b1=-2*cs;b2=1-al*A;a0=1+al/A;a1=-2*cs;a2=1-al/A;}
 else{const sq=2*Math.sqrt(A)*al;b0=A*((A+1)+(A-1)*cs+sq);b1=-2*A*((A-1)+(A+1)*cs);b2=A*((A+1)+(A-1)*cs-sq);a0=(A+1)-(A-1)*cs+sq;a1=2*((A-1)-(A+1)*cs);a2=(A+1)-(A-1)*cs-sq;}
 let x1=0,x2=0,y1=0,y2=0;for(let t=0;t<data.length;t++){const x=data[t],y=(b0*x+b1*x1+b2*x2-a1*y1-a2*y2)/a0;x2=x1;x1=x;y2=y1;y1=y;data[t]=y;}};
-biquad('hp',75,.7,0);biquad('peak',110,1.2,4);biquad('peak',230,1.4,2);biquad('peak',2600,1,3);biquad('shelf',7000,.7,-4);
+biquad('hp',70,.7);biquad('peak',105,1.1,4);biquad('peak',220,1.3,2.5);biquad('peak',3200,.9,-4);biquad('shelf',5000,.7,-6);biquad('lp',7500,.7);
 let peak=0;for(let t=0;t<data.length;t++)peak=Math.max(peak,Math.abs(data[t]));
-const scale=peak?.9/peak:0,fade=Math.min(data.length,Math.round(rate*.0015));
+const scale=peak?.9/peak:0,fade=Math.min(data.length,Math.round(rate*.002));
 for(let t=0;t<data.length;t++)data[t]*=scale*(t<fade?t/fade:1);
 return data;
 }

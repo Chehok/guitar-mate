@@ -84,6 +84,13 @@ function make(contexts,audioSession){
       const got=tuner.detectPitch(data.slice(7200,7200+8192),48000),cents=1200*Math.log2(got/hz);
       assert(Math.abs(cents-1200*Math.round(cents/1200))<1.5,`midi ${midi} in tune (${cents.toFixed(1)} cents)`);
     }
+    // Not harsh: in the first 100 ms the sample-to-sample change stays small next to the signal
+    // (this was 0.47–0.77 for the first, too-bright version; a soft pick and string are about 0.2–0.3).
+    for(const midi of [40,52,64,76]){
+      const data=new Float32Array(48000);tuner.renderPluck(data,48000,440*2**((midi-69)/12),3);
+      let level=0,edge=0;for(let t=1;t<4800;t++){level+=data[t]**2;edge+=(data[t]-data[t-1])**2;}
+      assert(Math.sqrt(edge/level)<.4,`midi ${midi} attack is not harsh`);
+    }
   }
   // Tuner reference tone: clean partials through its own compressor bus.
   {
