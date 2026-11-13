@@ -184,23 +184,8 @@ assert(paint.find(p=>p[0]==='text')[3]<200,'Above mode draws above original chor
   $('score-frets').children[2].handlers.click();assert.deepEqual(state(),[3,1],'a fret keeps the song key change');
   assert.equal($('score-capo-value').textContent,'카포 3 · −1키');
   click('score-capo-minus');click('score-capo-minus');click('score-capo-minus');click('score-capo-minus');assert.deepEqual(state(),[0,2]);
-  // The sheet −/+ move the drawn key down/up; down uses the capo first, up takes it off first.
-  vm.runInContext("scoreState.capo=0;scoreState.keyShift=0;",context);context.renderScore();
-  assert.equal($('score-shift-value').textContent,'G (원래 키)');assert($('score-shift-reset').disabled&&$('score-capo-reset').disabled,'reset stays in place, disabled at the original key');
-  click('score-shift-down');assert.deepEqual(state(),[1,0],'sheet − puts the capo on');assert.equal(shown('G'),'F#');
-  assert.equal($('score-shift-value').textContent,'G → F#');assert.equal($('score-capo-value').textContent,'카포 1');
-  assert.equal(vm.runInContext("scoreKeyStampText({pc:7,minor:false,name:'G'})",context),'F#폼 (Capo 1) / G키');
-  click('score-shift-up');assert.deepEqual(state(),[0,0],'sheet + takes the capo off');assert.equal(shown('G'),'G');
-  click('score-shift-up');assert.deepEqual(state(),[0,-1],'sheet + then raises the key');assert.equal(shown('G'),'Ab');
-  assert.equal($('score-shift-value').textContent,'G → Ab');assert.equal($('score-capo-value').textContent,'카포 X · +1키');
-  click('score-shift-down');assert.deepEqual(state(),[0,0]);
-  click('score-capo-minus');click('score-shift-down');assert.deepEqual(state(),[0,2],'after the neck lowered the key, sheet − keeps lowering it');
-  assert.equal($('score-shift-value').textContent,'G → F');
-  assert(!$('score-capo-reset').disabled&&!$('score-shift-reset').disabled);
-  click('score-shift-reset');assert.deepEqual(state(),[0,0]);
-  for(let i=0;i<20;i++)click('score-shift-down');assert.deepEqual(state(),[11,0]);assert($('score-shift-down').disabled&&$('score-capo-plus').disabled);
-  click('score-capo-reset');for(let i=0;i<20;i++)click('score-shift-up');assert.deepEqual(state(),[0,-11]);assert($('score-shift-up').disabled);
-  click('score-capo-reset');assert.deepEqual(state(),[0,0]);
+  // The key is set in one place only: the neck under the sheet.
+  assert(!/id="score-shift-/.test(html),'no second key control on the sheet');
   vm.runInContext("scoreState.capo=1;scoreState.keyShift=0;",context);
 }
 // Recommendations follow the actual score controls and keep four bars per progression.
@@ -468,7 +453,13 @@ await dropImages([dropFile,dropFile]);assert.match($('score-status').textContent
 await dropImages([dropFile]);assert(dropPrevented);
 assert.equal(vm.runInContext('scoreState.source.width',context),4096);
 assert.equal(vm.runInContext('scoreState.source.height',context),2048);
-assert.equal($('score-work').hidden,false);assert.equal($('score-add').disabled,false);assert.equal(revoked,1);
+assert.equal($('score-work').hidden,false);assert.equal($('score-upload').hidden,true,'the upload area steps aside for the preview');assert.equal($('score-add').disabled,false);assert.equal(revoked,1);
+// "다른 악보 선택" drops the sheet and brings the upload area back, cancelling recognition still running.
+vm.runInContext('scoreState.capo=2;scoreState.busy=true',context);const runBefore=vm.runInContext('scoreState.run',context);
+$('score-reselect').handlers.click();
+assert.equal($('score-work').hidden,true);assert.equal($('score-upload').hidden,false);
+assert.deepEqual(JSON.parse(vm.runInContext('JSON.stringify([scoreState.image,scoreState.capo,scoreState.busy,scoreState.run>'+runBefore+'])',context)),[null,0,false,true]);
+assert.equal($('score-file').disabled,false);
 // Clipboard entry points share image loading, validation and OCR with file selection.
 const pasted={type:'image/webp',size:100};let prevented=0;
 const pasteEvent={target:$('score-panel'),clipboardData:{items:[textItem,{kind:'file',type:pasted.type,getAsFile:()=>pasted}]},preventDefault(){prevented++;}};
