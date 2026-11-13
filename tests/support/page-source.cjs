@@ -2,7 +2,7 @@
 // Tool pages = app-core.js (shared) + the page's own <script data-main-app>. Tests load both, core first.
 const fs=require('node:fs'),path=require('node:path');
 const root=path.join(__dirname,'..','..');
-const core=fs.readFileSync(path.join(root,'app-core.js'),'utf8');
+const core=fs.readFileSync(path.join(root,'guitar-synth.js'),'utf8')+'\n'+fs.readFileSync(path.join(root,'app-core.js'),'utf8');
 const mainScript=file=>fs.readFileSync(path.join(root,file),'utf8').match(/<script data-main-app[^>]*>([\s\S]*?)<\/script>/)[1];
 // Top-level code of a page up to its first feature wiring (`if(ready(...))`): definitions only, no DOM needed.
 const definitions=file=>{const s=mainScript(file),i=s.search(/^if\(ready\(/m);return i<0?s:s.slice(0,i);};

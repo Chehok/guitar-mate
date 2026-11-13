@@ -74,7 +74,7 @@ button,input { font:inherit; }
 .strum-title { display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
 .strum-title h3 { margin:0; font-size:15px; }
 .strum-level { flex:none; color:var(--muted); font-size:12px; }
-.strum-grid { display:grid; grid-template-columns:repeat(8,minmax(0,1fr)); margin:10px 0 8px; border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--soft); font-variant-numeric:tabular-nums; }
+.strum-grid { display:grid; margin:10px 0 8px; border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--soft); font-variant-numeric:tabular-nums; }
 .strum-grid span { display:grid; place-items:center; min-height:24px; color:var(--muted); font-size:11px; }
 .strum-grid span:nth-child(odd) { color:var(--ink); font-weight:700; }
 .strum-grid span:nth-child(odd):not(:first-child) { border-left:1px solid var(--line); }
@@ -83,7 +83,12 @@ button,input { font:inherit; }
 .strum-grid b.rest { color:var(--control); font-size:16px; opacity:.6; }
 .strum-grid b.mute { color:var(--focus); font-size:17px; }
 .strum-item p { margin:0; color:var(--muted); font-size:13px; line-height:1.65; }
-.strum-use { margin-top:8px; min-height:36px; padding:4px 12px; border:1px solid var(--control); border-radius:10px; background:var(--panel); color:var(--ink); font-size:13px; font-weight:650; cursor:pointer; }
+.strum-section { padding:14px 0 2px; color:var(--green); font-size:13px; font-weight:750; }
+.strum-section + .strum-item { padding-top:6px; }
+.strum-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+.strum-play { min-height:36px; padding:4px 12px; border:1px solid var(--green); border-radius:10px; background:var(--soft); color:var(--green); font-size:13px; font-weight:700; cursor:pointer; }
+.strum-play[aria-pressed=true] { background:var(--green); color:var(--on-green); }
+.strum-use { min-height:36px; padding:4px 12px; border:1px solid var(--control); border-radius:10px; background:var(--panel); color:var(--ink); font-size:13px; font-weight:650; cursor:pointer; }
 .strum-use:active { background:var(--soft); }
 .strum-use:disabled { opacity:.5; cursor:default; }
 /* Metronome sync */
@@ -253,7 +258,7 @@ button,input { font:inherit; }
 <div class="strum-head">
 <div>
 <h2 id="strum-title">스트로크 패턴</h2>
-<p>한 마디를 8칸(8분음표)으로 나눴어요. 쉬는 칸에서도 손은 위아래로 계속 흔들고, 줄만 치지 않아요.</p>
+<p>한 칸이 8분음표예요(4/4는 8칸, 3/4는 6칸). 쉬는 칸에서도 손은 위아래로 계속 흔들고, 줄만 치지 않아요.</p>
 <ul class="strum-legend"><li><b>↓</b> 다운</li><li><b>↑</b> 업</li><li><b>✕</b> 뮤트(착)</li><li><b>·</b> 쉬기</li></ul>
 </div>
 <button class="strum-close" id="strum-close" type="button" aria-label="닫기">×</button>
@@ -269,6 +274,7 @@ button,input { font:inherit; }
 <script src="./metronome-audio.js"></script>
 <script src="./metronome-room.js"></script>
 <script src="./metronome-calibrate.js"></script>
+<script src="./guitar-synth.js"></script>
 <script>
 'use strict';
 const $=id=>document.getElementById(id);
@@ -432,34 +438,89 @@ function setTempo(raw){
   }
 }
 // ---- Strum patterns ----
-// D down, U up, X muted down (chuck), . no hit; eight 8th-note slots per bar.
+// D down, U up, X muted down (chuck), . no hit; one slot per 8th note (8 slots in 4/4, 6 in 3/4).
 const STRUMS=[
-  {name:'4비트 다운',level:'입문',bpm:70,pattern:'D.D.D.D.',note:'박마다 한 번씩 아래로 쳐요. 코드 바꾸는 연습부터 할 때 좋아요.'},
-  {name:'4비트 + 마지막 업',level:'입문',bpm:70,pattern:'D.D.D.DU',note:'마지막 업을 치는 동안 왼손은 다음 코드로 옮겨요.'},
-  {name:'8비트',level:'초급',bpm:80,pattern:'DUDUDUDU',note:'모든 칸을 쳐요. 다운은 조금 세게, 업은 가볍게 치면 리듬이 살아나요.'},
-  {name:'포크 (칼립소)',level:'초급',bpm:90,pattern:'D.DU.UDU',note:'가장 많이 쓰는 패턴이에요. 3박에서는 손이 줄을 치지 않고 그냥 지나가요.'},
-  {name:'팝 발라드',level:'초급',bpm:72,pattern:'D.DUD.DU',note:'"쿵 짝짝 쿵 짝짝" 느낌으로 반복해요. 느린 곡 반주에 잘 어울려요.'},
-  {name:'고고',level:'중급',bpm:110,pattern:'D.XU.UXU',note:'2박과 4박에 오른손 옆면으로 줄을 눌러 "착" 소리를 내요. 신나는 곡에 좋아요.'},
-  {name:'셔플',level:'중급',bpm:90,pattern:'DUDUDUDU',note:'8비트처럼 치되 업을 살짝 늦게 쳐서 통통 튀는 느낌을 내요.'},
-  {name:'엇박 업 (스카)',level:'중급',bpm:120,pattern:'.U.U.U.U',note:'업만 엇박에 짧게 끊어 쳐요. 치자마자 왼손 힘을 빼서 소리를 끊어요.'},
+  {name:'4비트 다운',meter:'4/4',level:'입문',bpm:70,pattern:'D.D.D.D.',note:'박마다 한 번씩 아래로 쳐요. 코드 바꾸는 연습부터 할 때 좋아요.'},
+  {name:'4비트 + 마지막 업',meter:'4/4',level:'입문',bpm:70,pattern:'D.D.D.DU',note:'마지막 업을 치는 동안 왼손은 다음 코드로 옮겨요.'},
+  {name:'8비트',meter:'4/4',level:'초급',bpm:80,pattern:'DUDUDUDU',note:'모든 칸을 쳐요. 다운은 조금 세게, 업은 가볍게 치면 리듬이 살아나요.'},
+  {name:'포크 (칼립소)',meter:'4/4',level:'초급',bpm:90,pattern:'D.DU.UDU',note:'가장 많이 쓰는 패턴이에요. 3박에서는 손이 줄을 치지 않고 그냥 지나가요.'},
+  {name:'팝 발라드',meter:'4/4',level:'초급',bpm:72,pattern:'D.DUD.DU',note:'"쿵 짝짝 쿵 짝짝" 느낌으로 반복해요. 느린 곡 반주에 잘 어울려요.'},
+  {name:'고고',meter:'4/4',level:'중급',bpm:110,pattern:'D.XU.UXU',note:'2박과 4박에 오른손 옆면으로 줄을 눌러 "착" 소리를 내요. 신나는 곡에 좋아요.'},
+  {name:'셔플',meter:'4/4',level:'중급',bpm:90,pattern:'DUDUDUDU',swing:true,note:'8비트처럼 치되 업을 살짝 늦게 쳐서 통통 튀는 느낌을 내요.'},
+  {name:'엇박 업 (스카)',meter:'4/4',level:'중급',bpm:120,pattern:'.U.U.U.U',note:'업만 엇박에 짧게 끊어 쳐요. 치자마자 왼손 힘을 빼서 소리를 끊어요.'},
+  {name:'왈츠 기본',meter:'3/4',level:'입문',bpm:84,pattern:'D.D.D.',note:'첫 박을 조금 세게, 2·3박은 가볍게 쳐서 "쿵 짝 짝"을 만들어요.'},
+  {name:'왈츠 다운-업',meter:'3/4',level:'초급',bpm:90,pattern:'D.DUDU',note:'첫 박은 길게 울리고, 2·3박은 다운-업으로 가볍게 이어 쳐요.'},
+  {name:'3박 발라드',meter:'3/4',level:'초급',bpm:66,pattern:'D..UDU',note:'첫 박을 울린 뒤 2박 뒤의 업부터 이어 쳐요. 느린 3박자 곡에 잘 어울려요.'},
 ];
 const strumDialog=$('strum-dialog'),strumList=$('strum-list');
 const STRUM_MARK={D:['↓','다운'],U:['↑','업'],X:['✕','뮤트'],'.':['·','쉬기']};
+// Preview: two bars of the pattern on an open G chord, with a soft click on each beat.
+const STRUM_CHORD=[43,47,50,55,59,67];
+let strumAudio=null,strumPreview=null;
+// Seconds from the bar start to each 8th-note slot; swing pushes the up-beats to the last third of the beat.
+function strumTimes(strum,bars=2){
+  const beat=60/strum.bpm,slots=strum.pattern.length,times=[];
+  for(let bar=0;bar<bars;bar++)for(let i=0;i<slots;i++)times.push({c:strum.pattern[i],first:i===0,at:bar*slots/2*beat+Math.floor(i/2)*beat+(i%2?(strum.swing?2/3:1/2)*beat:0)});
+  return times;
+}
+function stopStrumPreview(){
+  if(!strumPreview)return;
+  for(const voice of strumPreview.voices){try{voice.stop();}catch(_){}}
+  clearTimeout(strumPreview.timer);strumPreview.button.textContent='▶ 들어보기';strumPreview.button.setAttribute('aria-pressed','false');strumPreview=null;
+}
+async function playStrumPreview(strum,button){
+  const again=strumPreview&&strumPreview.button===button;stopStrumPreview();if(again)return;
+  try{
+    const Audio=window.AudioContext||window.webkitAudioContext;
+    if(!strumAudio||strumAudio.state==='closed')strumAudio=new Audio();
+    if(strumAudio.state!=='running')await strumAudio.resume();
+  }catch(_){status.textContent='소리를 재생할 수 없어요. 다시 눌러 주세요.';return;}
+  const ctx=strumAudio,start=ctx.currentTime+.08,voices=[],beat=60/strum.bpm;
+  const hits=strumTimes(strum).filter(h=>h.c!=='.');
+  hits.forEach((hit,k)=>{
+    const at=start+hit.at,next=hits[k+1]?start+hits[k+1].at:at+1.6,ring=Math.max(.06,next-at+.02);
+    if(hit.c==='X'){
+      // Chuck: strings damped by the palm — a dead, short strum plus a little noise.
+      voices.push(...scheduleStrum(ctx,STRUM_CHORD.slice(0,5),at,{decay:.03,level:.7}).map(v=>v.voice));
+      const noise=ctx.createBuffer(1,Math.round(ctx.sampleRate*.05),ctx.sampleRate),d=noise.getChannelData(0);
+      for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,3);
+      const src=ctx.createBufferSource(),band=ctx.createBiquadFilter(),g=ctx.createGain();
+      src.buffer=noise;band.type='bandpass';band.frequency.value=1800;band.Q.value=.8;g.gain.value=.35;
+      src.connect(band);band.connect(g);g.connect(ctx.destination);src.start(at);
+      voices.push({stop(){try{src.stop();}catch(_){}}});
+    }else{
+      const up=hit.c==='U',notes=up?STRUM_CHORD.slice(2):STRUM_CHORD;
+      voices.push(...scheduleStrum(ctx,notes,at,{decay:Math.min(chordDecay,ring),level:up?.55:hit.first?1:.8,up}).map(v=>v.voice));
+    }
+  });
+  const beatsTotal=strum.pattern.length; // 2 bars × slots/2 beats
+  for(let b=0;b<beatsTotal;b++){
+    const at=start+b*beat,o=ctx.createOscillator(),g=ctx.createGain();
+    o.frequency.value=b%(strum.pattern.length/2)===0?1500:1100;g.gain.setValueAtTime(.06,at);g.gain.exponentialRampToValueAtTime(.0001,at+.04);
+    o.connect(g);g.connect(ctx.destination);o.start(at);o.stop(at+.05);voices.push({stop(){try{o.stop();}catch(_){}}});
+  }
+  const length=(beatsTotal*beat+1.6)*1000;
+  strumPreview={button,voices,timer:setTimeout(stopStrumPreview,length)};
+  button.textContent='■ 정지';button.setAttribute('aria-pressed','true');
+}
 function renderStrums(){
   if(strumList.childElementCount)return;
+  let meter=null;
   for(const strum of STRUMS){
+    if(strum.meter!==meter){meter=strum.meter;const head=document.createElement('li');head.className='strum-section';head.textContent=meter==='3/4'?'3/4 박자':'4/4 박자';strumList.append(head);}
     const li=document.createElement('li');li.className='strum-item';
-    const counts=['1','+','2','+','3','+','4','+'];
+    const counts=strum.pattern.length===6?['1','+','2','+','3','+']:['1','+','2','+','3','+','4','+'];
     const cells=[...strum.pattern].map(c=>`<b class="${c==='.'?'rest':c==='X'?'mute':''}">${STRUM_MARK[c][0]}</b>`).join('');
     li.innerHTML=`<div class="strum-title"><h3></h3><span class="strum-level"></span></div>
-<div class="strum-grid" role="img">${counts.map(n=>`<span>${n}</span>`).join('')}${cells}</div>
-<p></p><button class="strum-use" type="button"></button>`;
+<div class="strum-grid" role="img" style="grid-template-columns:repeat(${counts.length},minmax(0,1fr))">${counts.map(n=>`<span>${n}</span>`).join('')}${cells}</div>
+<p></p><div class="strum-actions"><button class="strum-play" type="button" aria-pressed="false">▶ 들어보기</button><button class="strum-use" type="button"></button></div>`;
     li.querySelector('.strum-grid').setAttribute('aria-label',[...strum.pattern].map(c=>STRUM_MARK[c][1]).join(', '));
     li.querySelector('h3').textContent=strum.name;
     li.querySelector('.strum-level').textContent=`${strum.level} · ${strum.bpm} BPM 추천`;
     li.querySelector('p').textContent=strum.note;
+    const play=li.querySelector('.strum-play');play.addEventListener('click',()=>playStrumPreview(strum,play));
     const use=li.querySelector('.strum-use');use.textContent=`${strum.bpm} BPM으로 맞추기`;
-    use.addEventListener('click',()=>{setTempo(strum.bpm);strumDialog.close();status.textContent=`템포를 ${strum.bpm} BPM으로 맞췄어요.`;});
+    use.addEventListener('click',()=>{stopStrumPreview();setTempo(strum.bpm);strumDialog.close();status.textContent=`템포를 ${strum.bpm} BPM으로 맞췄어요.`;});
     strumList.append(li);
   }
 }
@@ -469,6 +530,7 @@ $('strum-open').addEventListener('click',()=>{
   strumDialog.showModal();strumList.scrollTop=0;
 });
 $('strum-close').addEventListener('click',()=>strumDialog.close());
+strumDialog.addEventListener('close',stopStrumPreview);
 strumDialog.addEventListener('click',event=>{if(event.target===strumDialog)strumDialog.close();});
 
 tempoRange.addEventListener('input',()=>setTempo(tempoRange.value));
