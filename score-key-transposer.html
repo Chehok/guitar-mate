@@ -343,8 +343,8 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <div class="score-row score-preview-actions"><button id="score-add" type="button">코드 직접 추가</button><button id="score-intro-open" type="button" aria-haspopup="dialog" data-i18n-en="Intros" hidden>추천 전주</button><button id="score-download" type="button" class="primary">PNG 다운로드</button></div>
 </div>
 <div id="score-manual-position" tabindex="-1" hidden><p id="score-position-hint" class="hint"></p><div class="score-row"><label>가로 % <input id="score-pos-x" type="number" min="0" max="100" value="10" style="width:80px"></label><label>세로 % <input id="score-pos-y" type="number" min="0" max="100" value="10" style="width:80px"></label><button id="score-position-add" type="button">이 위치에 추가</button></div></div>
-<p id="score-edit-hint" class="hint">악보 위의 코드를 눌러 수정하세요. 직접 추가한 코드와 전주는 끌어서 옮길 수 있어요. 아래 목록에서도 편집할 수 있어요.<br><span id="score-size"></span></p>
 <div class="score-preview-scroll"><div id="score-stage" class="score-stage"><canvas id="score-canvas" aria-label="변환한 악보. 아래 코드 목록에서 인식 결과를 수정할 수 있습니다."></canvas><div id="score-hit-layer"></div></div></div>
+<p id="score-edit-hint" class="hint">악보 위의 코드를 눌러 수정하세요. 직접 추가한 코드와 전주는 끌어서 옮길 수 있어요. 아래 목록에서도 편집할 수 있어요.<br><span id="score-size"></span></p>
 </div>
 <details class="panel score-list"><summary id="score-count">악보 코드 0개 · 확인 및 수정</summary><div id="score-code-list" class="quick"></div></details>
 </div>
@@ -1503,9 +1503,9 @@ for(const [i,button] of [...$('score-frets').children].entries())button.setAttri
 // Sheet-side key control (same state as the neck's "−" below capo 0)
 // The sheet control shows the key the chords are drawn in, so it moves with the capo too.
 const drawn=keyShift-capo,step=`${drawn>0?'+':'−'}${Math.abs(drawn)}`;
-$('score-shift-value').textContent=!drawn&&!capo?(key?`${key.name} (원래 키)`:'원래 키')
-  :capo?(key?`${key.name} → ${destination.name} · 카포 ${capo}`:`카포 ${capo}`)
-  :key?`${key.name} → ${destination.name} (${step})`:`${step}반음`;
+// Only the drawn key here; the capo shows on the neck.
+$('score-shift-value').textContent=!drawn?(key?`${key.name} (원래 키)`:'원래 키')
+  :key?`${key.name} → ${destination.name}`:`${step}반음`;
 $('score-shift-down').disabled=$('score-capo-minus').disabled;$('score-shift-up').disabled=$('score-capo-plus').disabled;
 $('score-shift-reset').disabled=$('score-capo-reset').disabled=!(keyShift||capo);
 if(!scoreState.image)return;

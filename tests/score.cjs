@@ -188,12 +188,12 @@ assert(paint.find(p=>p[0]==='text')[3]<200,'Above mode draws above original chor
   vm.runInContext("scoreState.capo=0;scoreState.keyShift=0;",context);context.renderScore();
   assert.equal($('score-shift-value').textContent,'G (원래 키)');assert($('score-shift-reset').disabled&&$('score-capo-reset').disabled,'reset stays in place, disabled at the original key');
   click('score-shift-up');assert.deepEqual(state(),[1,0],'sheet + puts the capo on, like the neck +');assert.equal(shown('G'),'F#');
-  assert.equal($('score-shift-value').textContent,'G → F# · 카포 1');assert.equal($('score-capo-value').textContent,'카포 1');
+  assert.equal($('score-shift-value').textContent,'G → F#');assert.equal($('score-capo-value').textContent,'카포 1');
   assert.equal(vm.runInContext("scoreKeyStampText({pc:7,minor:false,name:'G'})",context),'F#폼 (Capo 1) / G키');
   click('score-shift-down');click('score-shift-down');assert.deepEqual(state(),[0,1],'sheet − takes the capo off, then lowers the key');
-  assert.equal($('score-shift-value').textContent,'G → F# (−1)');assert.equal($('score-capo-value').textContent,'카포 없음 · 키 −1반음');
+  assert.equal($('score-shift-value').textContent,'G → F#');assert.equal($('score-capo-value').textContent,'카포 없음 · 키 −1반음');
   click('score-capo-plus');assert.deepEqual(state(),[0,0]);click('score-capo-plus');click('score-capo-plus');
-  assert.equal($('score-shift-value').textContent,'G → F · 카포 2','neck + moves the sheet label too');
+  assert.equal($('score-shift-value').textContent,'G → F','neck + moves the sheet label too');
   assert(!$('score-capo-reset').disabled&&!$('score-shift-reset').disabled);
   click('score-shift-reset');assert.deepEqual(state(),[0,0]);
   for(let i=0;i<20;i++)click('score-shift-up');assert.deepEqual(state(),[11,0]);assert($('score-shift-up').disabled&&$('score-capo-plus').disabled);
