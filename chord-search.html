@@ -380,10 +380,23 @@ const stepRootOrder=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 let stepRoot=null;
 function stepButton(text,pressed,onClick){const b=document.createElement('button');b.type='button';b.textContent=text;b.setAttribute('aria-pressed',String(pressed));b.addEventListener('click',onClick);return b;}
 function stepResults(){return stepRoot?chordFilterResults(stepRoot,'all','none'):[];}
+// Switching roots keeps the picked chord type and slash bass (Csus4/G → Dsus4/G); a bass that
+// would equal the new root is dropped.
+function stepCarry(root){
+if(!root||!stepRoot||!current)return root;
+const base=current.label.split('/')[0];
+if(!stepResults().includes(base))return root;
+const bass=current.bassPc!==null&&current.bassPc!==filterPc[root]?'/'+stepRootOrder.find(n=>filterPc[n]===current.bassPc):'';
+return root+base.slice(stepRoot.length)+bass;
+}
 function setStep(root){
+const carried=stepCarry(root);
 stepRoot=root;
 const names=stepResults();
-if(names.length&&!(current&&names.includes(current.label))){$('chord-input').value=names[0];find(names[0]);}else renderSteps();
+if(!names.length){renderSteps();return;}
+const keep=current&&names.includes(current.label.split('/')[0])&&current.label.split('/')[0].startsWith(root);
+const next=keep&&carried===root||current&&current.label===carried?null:names.includes(carried.split('/')[0])?carried:names[0];
+if(next){$('chord-input').value=next;find(next);}else renderSteps();
 }
 function pickChord(name){$('chord-input').value=name;find(name);}
 function renderSteps(){

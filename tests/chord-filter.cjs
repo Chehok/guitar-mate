@@ -57,6 +57,10 @@ const steps=code=>run(`${code};stepResults()`);
 assert.deepEqual(steps('stepRoot=null'),[],'nothing before a root');
 assert.equal(steps("stepRoot='C'").length,17,'root: every kind, no slash');
 assert.equal(steps("stepRoot='C'")[0],'C','plain triad first');
+// Switching roots keeps the chord type and slash bass.
+assert.equal(run("stepRoot='C';current=parse('Csus4/G');stepCarry('D')"),'Dsus4/G');
+assert.equal(run("stepRoot='C';current=parse('Cm7/D');stepCarry('D')"),'Dm7','a bass equal to the new root is dropped');
+assert.equal(run("stepRoot=null;current=parse('Cm7');stepCarry('E')"),'E','first pick starts from the plain chord');
 assert.match(html,/id="bass-row"[^>]*hidden[\s\S]*?id="bass-quick"/,'slash bass row sits under the chord row');
 const fretboards=run("current=parse('C'); var grip=makeVoicings(current)[0]; [neck(grip,false),neck(grip,true)]");
 for(const board of fretboards){
