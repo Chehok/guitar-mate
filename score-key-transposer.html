@@ -316,7 +316,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 </div>
 <div class="panel score-controls">
 <div class="score-key-row"><p id="score-key" role="status">감지 키: —</p><label><input id="score-key-stamp" type="checkbox" checked> 악보에 표시</label></div>
-<div id="score-capo-controls"><div class="score-row score-capo-row"><button id="score-capo-minus" type="button" aria-label="카포 한 프렛 내리기 (카포 없음에서는 키를 반음 내림)">−</button><output id="score-capo-value" aria-live="polite">카포 없음</output><button id="score-capo-plus" type="button" aria-label="카포 한 프렛 올리기">+</button><button id="score-capo-reset" class="score-reset" type="button" hidden>원래 키로</button></div>
+<div id="score-capo-controls"><div class="score-row score-capo-row"><button id="score-capo-minus" type="button" aria-label="카포 한 프렛 내리기 (카포 없음에서는 키를 반음 내림)">−</button><output id="score-capo-value" aria-live="polite">카포 없음</output><button id="score-capo-plus" type="button" aria-label="카포 한 프렛 올리기">+</button><button id="score-capo-reset" class="score-reset" type="button" disabled>원래 키로</button></div>
 <div class="score-fret-scroll" tabindex="0" role="region" aria-label="카포 1부터 11프렛 선택, 좌우로 스크롤"><div class="score-neck">
 <svg class="score-headstock" viewBox="0 0 96 126" preserveAspectRatio="none" aria-hidden="true" focusable="false">
 <path d="M16 22 37 18q4-1 8 1l18 9 20-11 13-4v100l-13-4-20-11-18 9q-4 2-8 1l-21-4q-6-4-6-12V34q0-8 6-12Z" fill="var(--green)" stroke="var(--fret)"/>
@@ -338,7 +338,7 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 <div id="score-work" hidden>
 <div class="panel score-controls">
 <div class="score-preview-tools">
-<div class="score-row score-shift" role="group" aria-labelledby="score-shift-label"><strong id="score-shift-label">곡의 키</strong><button id="score-shift-down" type="button" aria-label="곡의 키를 반음 내리기">−</button><output id="score-shift-value" aria-live="polite">원래 키</output><button id="score-shift-up" type="button" aria-label="곡의 키를 반음 올리기">+</button><button id="score-shift-reset" class="score-reset" type="button" hidden>원래 키로</button></div>
+<div class="score-row score-shift" role="group" aria-labelledby="score-shift-label"><strong id="score-shift-label">곡의 키</strong><button id="score-shift-down" type="button" aria-label="곡의 키를 반음 내리기">−</button><output id="score-shift-value" aria-live="polite">원래 키</output><button id="score-shift-up" type="button" aria-label="곡의 키를 반음 올리기">+</button><button id="score-shift-reset" class="score-reset" type="button" disabled>원래 키로</button></div>
 <div class="score-row" role="group" aria-labelledby="score-overlay-label"><strong id="score-overlay-label">코드 표시</strong><label><input type="radio" name="score-overlay" value="replace" checked> 교체</label><label><input type="radio" name="score-overlay" value="above"> 위에</label><label><input id="score-original" type="checkbox"> 원본 보기</label></div>
 <div class="score-row score-preview-actions"><button id="score-add" type="button">코드 직접 추가</button><button id="score-intro-open" type="button" aria-haspopup="dialog" data-i18n-en="Intros" hidden>추천 전주</button><button id="score-download" type="button" class="primary">PNG 다운로드</button></div>
 </div>
@@ -1507,7 +1507,7 @@ $('score-shift-value').textContent=!drawn&&!capo?(key?`${key.name} (원래 키)`
   :capo?(key?`${key.name} → ${destination.name} · 카포 ${capo}`:`카포 ${capo}`)
   :key?`${key.name} → ${destination.name} (${step})`:`${step}반음`;
 $('score-shift-down').disabled=$('score-capo-minus').disabled;$('score-shift-up').disabled=$('score-capo-plus').disabled;
-$('score-shift-reset').hidden=$('score-capo-reset').hidden=!(keyShift||capo);
+$('score-shift-reset').disabled=$('score-capo-reset').disabled=!(keyShift||capo);
 if(!scoreState.image)return;
 $('score-stage').classList.toggle('adding',scoreState.adding);
 $('score-add').textContent=scoreState.adding?'위치 선택 취소':'코드 직접 추가';
