@@ -88,6 +88,10 @@ button.primary:active:not(:disabled) { background: var(--green-hover); border-co
 .find-mode { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin-bottom: 12px; padding: 3px; border-radius: 12px; background: var(--soft); }
 .find-mode button { min-height: 38px; padding: 4px 8px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); font-size: 14px; font-weight: 650; }
 .find-mode button[aria-selected=true] { background: var(--panel); color: var(--ink); box-shadow: 0 0 0 1px var(--line); }
+@media (min-width: 760px) {
+  /* Wide screens: a compact switch instead of a full-width bar */
+  .find-mode { width: 240px; }
+}
 .step-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
 .step-grid button { min-height: 40px; padding: 4px 10px; border-color: var(--line); font-size: 15px; font-weight: 600; }
 .step-grid button { padding-inline: 2px; }
