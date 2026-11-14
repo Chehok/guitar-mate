@@ -307,8 +307,6 @@ text: {
   '베이스음': 'Bass note',
   '없음': 'None',
   '종류': 'Type',
-  '메트로놈이 켜져 있어 넘기지 않았어요. 정지하거나 방을 나간 뒤 넘겨 주세요.': 'The metronome is on, so the page stayed. Stop it or leave the room, then swipe.',
-  '악보 작업 중이라 넘기지 않았어요. 위쪽 탭을 눌러 이동하세요.': 'You’re working on a sheet, so the page stayed. Use the tabs at the top to move.',
   '복사하지 못했어요': 'Couldn’t copy',
   '링크 복사됨': 'Link copied',
   '링크 공유': 'Share link',
