@@ -228,7 +228,7 @@ button,input { font:inherit; }
 <p class="sync-or" aria-hidden="true">또는</p>
 <form class="sync-join-form" id="sync-join-form" novalidate>
 <label for="sync-code-input">방 코드로 참여</label>
-<div class="sync-join-row"><input id="sync-code-input" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="0000" aria-describedby="sync-code-hint"><button class="btn tall" type="submit">참여하기</button></div>
+<div class="sync-join-row"><input id="sync-code-input" type="text" inputmode="numeric" pattern="[0-9]*" enterkeyhint="go" autocomplete="off" placeholder="0000" aria-describedby="sync-code-hint"><button class="btn tall" type="submit">참여하기</button></div>
 <p class="hint" id="sync-code-hint">리더 화면에 보이는 숫자 4자리를 입력하세요. QR을 찍어도 돼요.</p>
 </form>
 </div>
@@ -730,7 +730,12 @@ $('sync-join-form').addEventListener('submit',event=>{
   history.replaceState(null,'','#room='+code);
   joinRoom();
 });
-$('sync-code-input').addEventListener('input',event=>{event.target.value=event.target.value.replace(/[^0-9０-９]/g,'').slice(0,4);});
+// iPhone's number pad has no Go key: four digits join right away (Android's Go key also submits).
+$('sync-code-input').addEventListener('input',event=>{
+  const input=event.target;
+  input.value=input.value.replace(/[^0-9０-９]/g,'').slice(0,4);
+  if(sync.normalizeCode(input.value)&&event.inputType!=='deleteContentBackward'){input.blur();$('sync-join-form').requestSubmit();}
+});
 joinButton.addEventListener('click',()=>joinRoom());
 async function joinRoom(){
   joinButton.disabled=true;renderButtons();
