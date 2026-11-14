@@ -20,7 +20,7 @@ html { touch-action: manipulation; }
 footer { padding: 24px 0 8px; color: var(--muted); font-size: 12px; line-height: 1.8; }
 .install-action { display: flex; align-items: center; flex: none; gap: 8px; }
 .install-action button { min-width: 44px; min-height: 44px; white-space: nowrap; }
-.install-action button:not([hidden]) + .badge { display: none; }
+.install-action button:not([hidden]) ~ .badge { display: none; }
 .install-action button, .install-guide button { border-radius: 24px; font-size: 12px; padding: 8px 14px; }
 .install-guide { width: calc(100% - 32px); max-width: 352px; max-height: calc(100% - 32px); padding: 24px; border: 1px solid var(--line); border-radius: 24px; background: var(--panel); color: var(--ink); text-align: center; overflow-wrap: anywhere; }
 .install-guide::backdrop { background: #0006; }
