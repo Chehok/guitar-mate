@@ -338,7 +338,7 @@ function paintPendulum(){
   pendulum.setAttribute('transform',`rotate(${27*direction*Math.sin(Math.PI*phase)} 126 178)`);
 }
 // Auto match: while listening, my clicks become 2 kHz chirps half a beat later (see metronome-calibrate.js).
-let calibrating=null,lastCalibration=null,lastRecording=null,autoWait=false,autoWaitTimer=null;
+let calibrating=null,lastCalibration=null,lastRecording=null,autoWait=false,autoWaitTimer=null,autoQuiet=false;
 // Clicks play near full scale (peaks below 1, so nothing clips): the phone's own volume buttons decide
 // how loud they are, and the mic can hear them for auto match. Shapes are shared with the auto-match
 // analysis (metronome-calibrate.js SHAPES).
@@ -375,7 +375,7 @@ function schedule(){
       const beat=sync.beatInBar(nextK),interval=sync.intervalMs(grid.bpm)/1000;
       if(time>=now-.005){
         if(calibrating){calibrating.beatTimes.push(time);calibrating.beatKinds.push(beat);calibrating.ownTimes.push(time+interval/2);playChirp(time+interval/2);}
-        else playClick(time,beat);
+        else if(!autoQuiet)playClick(time,beat);
         scheduledBeats.push({time,beat,interval});
       }
       nextK++;
@@ -421,7 +421,7 @@ function renderButtons(){
   // Shown whenever I'm in a room as a follower; pressed before the leader starts, it waits.
   $('sync-auto').hidden=!(following&&joined);
   if(!(following&&joined)&&autoWait)cancelAutoWait();
-  if(autoWait&&following&&running&&grid&&!calibrating){autoWait=false;clearTimeout(autoWaitTimer);autoWaitTimer=setTimeout(autoMatch,1500);} // a beat or two to settle first
+  if(autoWait&&following&&running&&grid&&!calibrating){autoWait=false;clearTimeout(autoWaitTimer);autoQuiet=true;autoWaitTimer=setTimeout(autoMatch,300);} // a beat or two to settle first
   $('sync-tune').hidden=!(role==='leader'||following&&joined);
   if(following){
     // Followers join from here too, so the main button is never a dead end.
@@ -750,7 +750,7 @@ function applyRoomState(state){
 const calibrateButton=$('sync-calibrate'),calibrateLabel=$('sync-calibrate-label');
 const AUTO_HINT='어긋나게 들리면 리더 폰 가까이에서 자동 맞추기를 눌러 보세요. 6초 동안 마이크로 듣고 내 소리 타이밍을 맞춰요.';
 function cancelAutoWait(){
-  autoWait=false;clearTimeout(autoWaitTimer);
+  autoWait=false;autoQuiet=false;clearTimeout(autoWaitTimer);
   calibrateLabel.textContent='자동 맞추기';$('sync-match-text').textContent=AUTO_HINT;
 }
 // The output path's own latency as the browser reports it (null where unsupported).
@@ -786,9 +786,12 @@ calibrateButton.addEventListener('click',async()=>{
   renderButtons();
 });
 async function autoMatch(){
-  if(!(role==='follower'&&running&&grid&&audioContext)||calibrating)return;
+  if(calibrating)return;
+  if(!(role==='follower'&&running&&grid&&audioContext)){autoQuiet=false;return;}
   const text=$('sync-match-text');
   if(!navigator.mediaDevices?.getUserMedia){text.textContent='이 브라우저에서는 자동 맞추기를 쓸 수 없어요. 내 소리 타이밍을 직접 조절해 주세요.';calibrateLabel.textContent='자동 맞추기';return;}
+  // My own clicks stay silent from here until the measurement ends (only the leader should be heard).
+  autoQuiet=true;
   calibrateButton.disabled=true;calibrateLabel.textContent='듣는 중…';
   text.textContent='리더 폰 소리를 듣는 중이에요… 6초만 조용히 해 주세요.';
   window.metronomeAudio.setAudioSession('play-and-record');
@@ -843,7 +846,7 @@ async function autoMatch(){
     calibrating=null;
     text.textContent=error&&error.name==='NotAllowedError'?'마이크 권한이 필요해요. 브라우저 설정에서 마이크를 허용해 주세요.':`마이크를 시작하지 못했어요(${error?.name||'오류'}). 다시 해 보세요.`;
   }finally{
-    calibrating=null;
+    calibrating=null;autoQuiet=false;
     mic?.close();
     window.metronomeAudio.setAudioSession('playback');
     calibrateButton.disabled=false;calibrateLabel.textContent='자동 맞추기';
