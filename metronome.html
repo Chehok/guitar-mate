@@ -337,14 +337,26 @@ function paintPendulum(){
   // Each click is a center crossing; the swing reverses halfway between clicks.
   pendulum.setAttribute('transform',`rotate(${27*direction*Math.sin(Math.PI*phase)} 126 178)`);
 }
-// Auto match: while listening, my clicks become 2 kHz chirps half a beat later (see metronome-calibrate.js).
+// Auto match: while listening, my clicks become short chirps about half a beat later, at a pitch I pick
+// and with random jitter, so several followers can measure at once (see metronome-calibrate.js).
 let calibrating=null,lastCalibration=null,lastRecording=null,autoWait=false,autoWaitTimer=null,autoQuiet=false;
+// Another follower is auto matching: until then my clicks stay quiet too, so only the leader is heard.
+let othersMeasuringUntil=0,othersMeasuringTimer=null;
+const othersMeasuring=()=>role==='follower'&&performance.now()<othersMeasuringUntil;
+function onOthersMeasure(ms){
+  if(role!=='follower'||!ms)return;
+  othersMeasuringUntil=Math.max(othersMeasuringUntil,performance.now()+ms);
+  const text=$('sync-match-text'),note='다른 팀원이 자동 맞추는 중이라, 잠깐 리더 소리만 나요.';
+  if(!calibrating&&!autoQuiet)text.textContent=note;
+  clearTimeout(othersMeasuringTimer);
+  othersMeasuringTimer=setTimeout(()=>{if(text.textContent===note)text.textContent='';},othersMeasuringUntil-performance.now()+200);
+}
 // Clicks play near full scale (peaks below 1, so nothing clips): the phone's own volume buttons decide
 // how loud they are, and the mic can hear them for auto match. Shapes are shared with the auto-match
 // analysis (metronome-calibrate.js SHAPES).
-function playChirp(time){
+function playChirp(time,hz=window.metronomeCalibrate.CHIRP_HZ){
   const oscillator=audioContext.createOscillator(),gain=audioContext.createGain();
-  oscillator.type='sine';oscillator.frequency.setValueAtTime(window.metronomeCalibrate.CHIRP_HZ,time);
+  oscillator.type='sine';oscillator.frequency.setValueAtTime(hz,time);
   const shape=window.metronomeCalibrate.SHAPES.chirp;
   gain.gain.setValueAtTime(.0001,time);gain.gain.exponentialRampToValueAtTime(shape.peak,time+.002);gain.gain.exponentialRampToValueAtTime(.0001,time+.002+shape.fall);
   oscillator.connect(gain);gain.connect(audioContext.destination);sources.add(oscillator);oscillator.onended=()=>sources.delete(oscillator);oscillator.start(time);oscillator.stop(time+.045);
@@ -374,8 +386,10 @@ function schedule(){
       if(time>=now+.12)break;
       const beat=sync.beatInBar(nextK),interval=sync.intervalMs(grid.bpm)/1000;
       if(time>=now-.005){
-        if(calibrating){calibrating.beatTimes.push(time);calibrating.beatKinds.push(beat);calibrating.ownTimes.push(time+interval/2);playChirp(time+interval/2);}
-        else if(!autoQuiet)playClick(time,beat);
+        if(calibrating){
+          const own=time+interval*(.5+.15*(2*Math.random()-1));
+          calibrating.beatTimes.push(time);calibrating.beatKinds.push(beat);calibrating.ownTimes.push(own);playChirp(own,calibrating.chirpHz);
+        }else if(!autoQuiet&&!othersMeasuring())playClick(time,beat);
         scheduledBeats.push({time,beat,interval});
       }
       nextK++;
@@ -631,13 +645,14 @@ function openRoom(code,token){
     onState:applyRoomState,
     onError:onRoomError,
     onClosed:()=>{closeRoom();status.textContent='리더가 방을 닫았어요.';},
+    onMeasure:onOthersMeasure,
   });
   renderConn();
 }
 function closeRoom(){
   clearTimeout(publishTimer);startWhenSynced=false;
   const wasFollowing=role==='follower';
-  room?.close();room=null;role=null;roomState=null;roomCode=null;peers=0;joined=false;
+  room?.close();room=null;role=null;roomState=null;roomCode=null;peers=0;joined=false;othersMeasuringUntil=0;
   if(grid){grid=null;pending=null;if(running){stopLoop();status.textContent='메트로놈을 멈췄습니다.';}}
   if(wasFollowing&&!running)status.textContent='시작을 누르면 메트로놈이 재생됩니다.';
   $('sync-link').hidden=true;
@@ -792,6 +807,9 @@ async function autoMatch(){
   if(!navigator.mediaDevices?.getUserMedia){text.textContent='이 브라우저에서는 자동 맞추기를 쓸 수 없어요. 내 소리 타이밍을 직접 조절해 주세요.';calibrateLabel.textContent='자동 맞추기';return;}
   // My own clicks stay silent from here until the measurement ends (only the leader should be heard).
   autoQuiet=true;
+  const listenMs=Math.max(6000,sync.intervalMs(grid.bpm)*10)+400;
+  // Other followers keep quiet while I listen (mic start + settle + listening + tail, with some slack).
+  room?.measure(listenMs+3500);
   calibrateButton.disabled=true;calibrateLabel.textContent='듣는 중…';
   text.textContent='리더 폰 소리를 듣는 중이에요… 6초만 조용히 해 주세요.';
   window.metronomeAudio.setAudioSession('play-and-record');
@@ -807,8 +825,10 @@ async function autoMatch(){
     // the browser reports while recording, to correct for it once the normal path is back.
     const recLatency=[];
     const latencyTimer=setInterval(()=>{const v=reportedLatency();if(v!==null)recLatency.push(v);},250);
-    calibrating={beatTimes:[],beatKinds:[],ownTimes:[]};
-    await wait(Math.max(6000,interval*10000)+400); // at least ~10 beats, more at slow tempos
+    const chirps=window.metronomeCalibrate.CHIRPS;
+    calibrating={beatTimes:[],beatKinds:[],ownTimes:[],chirpHz:chirps[Math.floor(Math.random()*chirps.length)]};
+    room?.measure(listenMs+1500);
+    await wait(listenMs); // at least ~10 beats, more at slow tempos
     const data=calibrating;calibrating=null;
     await wait(Math.min(600,interval*1000)+300); // let the last chirps be heard
     clearInterval(latencyTimer);

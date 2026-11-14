@@ -99,8 +99,21 @@ export class Room extends DurableObject {
       const current = await this.ctx.storage.get('leaderToken');
       if (current && current !== token) { ws.send(JSON.stringify({ t: 'error', code: 'taken' })); return; }
       if (!current) { await this.ctx.storage.delete('closedAt'); await this.ctx.storage.put('leaderToken', token); }
-      ws.serializeAttachment({ leader: true });
+      ws.serializeAttachment({ ...(ws.deserializeAttachment() || {}), leader: true });
       ws.send(JSON.stringify({ t: 'leader' }));
+      return;
+    }
+    // A follower starts auto match: everyone else hears about it, so other followers keep quiet
+    // (the leader's clicks are what's being measured). Followers only, at most twice a second each.
+    if (msg.t === 'measure') {
+      const me = ws.deserializeAttachment() || {};
+      if (me.leader) return;
+      const now = Date.now();
+      if (me.measuredAt && now - me.measuredAt < 500) return;
+      ws.serializeAttachment({ ...me, measuredAt: now });
+      const ms = Math.max(1000, Math.min(20000, Math.round(Number(msg.ms) || 0)));
+      const out = JSON.stringify({ t: 'measure', ms });
+      for (const peer of this.ctx.getWebSockets()) { if (peer !== ws) { try { peer.send(out); } catch (_) {} } }
       return;
     }
     if (msg.t === 'close') {

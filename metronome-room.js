@@ -11,7 +11,7 @@
 
   function createRoom({ url, code, token = null, WebSocketImpl = root.WebSocket, now = () => root.performance.now(),
     setTimer = (fn, ms) => root.setTimeout(fn, ms), clearTimer = id => root.clearTimeout(id),
-    onState = () => {}, onPeers = () => {}, onStatus = () => {}, onLeader = () => {}, onError = () => {}, onClosed = () => {} } = {}) {
+    onState = () => {}, onPeers = () => {}, onStatus = () => {}, onLeader = () => {}, onError = () => {}, onClosed = () => {}, onMeasure = () => {} } = {}) {
     const pickOffset = root.metronomeSync.pickOffset;
     let ws = null, closed = false, attempts = 0;
     let samples = [], best = null, pending = new Map(), seq = 0;
@@ -53,6 +53,7 @@
       else if (msg.t === 'peers') onPeers(msg.n);
       else if (msg.t === 'leader') onLeader();
       else if (msg.t === 'error') onError(msg.code);
+      else if (msg.t === 'measure') onMeasure(Number(msg.ms) || 0);
       else if (msg.t === 'closed' && !token) roomClosed(); // a leader's own claim reopens a recently closed code
     }
 
@@ -108,6 +109,8 @@
       serverNow() { return best ? now() + best.offset : null; },
       offset() { return best ? best.offset : null; },
       publish(state) { if (token) send({ t: 'state', token, state }); },
+      // Follower: tell the room I'm auto matching for about ms milliseconds.
+      measure(ms) { if (!token) send({ t: 'measure', ms: Math.round(ms) }); },
       // Leader only: close the room for everyone, then leave.
       closeForAll() { if (token) send({ t: 'close', token }); this.close(); },
       resync() { burst(RESYNC_COUNT + 3); },

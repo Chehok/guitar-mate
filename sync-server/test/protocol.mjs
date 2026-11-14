@@ -142,5 +142,26 @@ fresh.close();
   reopen.close(); joiner.close();
 }
 
+// A follower's auto match is announced to everyone else (not back to itself); the leader can't announce,
+// and a repeat within a second is dropped.
+{
+  await sleep(500);
+  const lead = await connect(), a = await connect(), b = await connect();
+  lead.json({ t: 'claim', token: 'measure-leader-token-1' });
+  await lead.next(type('leader'));
+  a.json({ t: 'measure', ms: 9000 });
+  assert.equal((await b.next(type('measure'))).ms, 9000);
+  assert.equal((await lead.next(type('measure'))).ms, 9000);
+  a.json({ t: 'measure', ms: 99999 });
+  lead.json({ t: 'measure', ms: 5000 });
+  await sleep(400);
+  assert.equal(b.inbox.filter(type('measure')).length, 0, 'an immediate repeat and the leader are ignored');
+  assert(!a.inbox.some(type('measure')), 'not echoed back');
+  await sleep(800);
+  a.json({ t: 'measure', ms: 99999 });
+  assert.equal((await b.next(type('measure'))).ms, 20000, 'capped');
+  lead.close(); a.close(); b.close();
+}
+
 console.log(`Sync server protocol passed (room ${code}).`);
 process.exit(0);
