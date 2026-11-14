@@ -84,3 +84,11 @@ gm-footer a { color: var(--green); text-underline-offset: 3px; }
 
 /* Tool pages keep their <h1> for screen readers and search only; the active tab already names the page. */
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+/* Tab swipe: a short slide-out before the next tab opens, and a small notice when a page stays put. */
+html.swipe-out-left main, html.swipe-out-right main { transition: transform .14s ease-in, opacity .14s ease-in; opacity: .25; }
+html.swipe-out-left main { transform: translateX(-28px); }
+html.swipe-out-right main { transform: translateX(28px); }
+@media (prefers-reduced-motion: reduce) { html.swipe-out-left main, html.swipe-out-right main { transform: none; } }
+.swipe-toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); z-index: 50; max-width: min(90vw, 420px); padding: 10px 16px; border-radius: 12px; background: var(--ink); color: var(--panel); font-size: 14px; line-height: 1.4; text-align: center; transform: translate(-50%, 12px); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; }
+.swipe-toast.show { opacity: 1; transform: translate(-50%, 0); }

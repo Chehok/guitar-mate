@@ -1189,6 +1189,8 @@ return true;
 
 // Score editor: images and OCR results stay in memory on this device.
 const scoreState={chart:false,showKey:true,introTempo:100,introMeter:'4/4',image:null,codes:[],capo:0,keyShift:0,overlay:'replace',original:false,busy:false,adding:false,intro:null,drag:null,editIndex:null,pending:null,run:0};
+// Leaving (or reloading for an update) would drop the sheet and its edits.
+window.guitarMateBusy=()=>Boolean(scoreState.image);
 let scoreIntroPlayback=null;
 let scoreLibraryPromise=null,scoreRuntimePromise=null;
 function scoreStatus(message){$('score-status').textContent=message;$('score-work-status').textContent=message;}
