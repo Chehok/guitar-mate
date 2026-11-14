@@ -1,6 +1,6 @@
 'use strict';
 // Increment when changing any app-shell file so installed copies refresh together.
-const VERSION='v181-offset-reset';
+const VERSION='v182-tap-match';
 // Keep the storage namespace so activation also removes pre-rebrand caches.
 const CACHE_PREFIX=`six-strings:${self.registration.scope}:`;
 const CACHE_NAME=CACHE_PREFIX+VERSION;

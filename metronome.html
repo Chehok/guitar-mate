@@ -160,6 +160,13 @@ button,input { font:inherit; }
 .sync-tune > .hint { margin-top:10px; }
 .sync-auto { margin-top:16px; }
 .sync-auto .hint { margin-top:8px; }
+#sync-tap-start { margin-top:8px; }
+.sync-tap { display:grid; gap:10px; margin-top:8px; }
+.sync-tap-step { margin:0; font-weight:700; }
+.sync-tap-pad { display:grid; place-items:center; align-content:center; gap:6px; min-height:132px; padding:16px; border:2px dashed color-mix(in srgb,var(--green) 55%,transparent); border-radius:14px; background:color-mix(in srgb,var(--green) 8%,transparent); color:var(--ink); font:inherit; font-weight:700; touch-action:manipulation; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; cursor:pointer; }
+.sync-tap-pad.hit { background:color-mix(in srgb,var(--green) 26%,transparent); }
+.sync-tap-count { color:var(--muted); font-size:13px; font-variant-numeric:tabular-nums; }
+.sync-tap .btn.leave { justify-self:end; }
 .sync-debug { margin:16px 0 0; padding:10px; border-radius:8px; background:var(--soft); color:var(--muted); font-size:11px; line-height:1.5; white-space:pre-wrap; }
 @media (min-width:560px) {
   .sync-leader-body { grid-template-columns:minmax(0,1fr) auto; grid-template-areas:"code qr" "text qr" "share qr"; column-gap:20px; align-content:start; }
@@ -259,6 +266,12 @@ button,input { font:inherit; }
 <p class="hint" id="sync-offset-hint">내 소리가 다른 폰보다 늦게 들리면 빠르게 쪽으로, 일찍 들리면 느리게 쪽으로 옮기세요. 블루투스 이어폰은 많이 빠르게 해야 할 수 있어요. 이 기기에 저장돼요.</p>
 <div class="sync-auto" id="sync-auto" hidden>
 <button id="sync-calibrate" class="btn wide" type="button"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span id="sync-calibrate-label">자동 맞추기</span></button>
+<button id="sync-tap-start" class="btn wide" type="button"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="4" height="7" rx="1.5"/><rect x="17" y="14" width="4" height="7" rx="1.5"/></svg><span>이어폰이면 탭으로 맞추기</span></button>
+<div class="sync-tap" id="sync-tap" hidden>
+<p class="sync-tap-step" id="sync-tap-step" role="status" aria-live="polite"></p>
+<button id="sync-tap-pad" class="sync-tap-pad" type="button"><span>여기를 박자에 맞춰 두드리세요</span><span class="sync-tap-count" id="sync-tap-count"></span></button>
+<button id="sync-tap-cancel" class="btn leave" type="button">취소</button>
+</div>
 <p class="hint" id="sync-match-text" role="status" aria-live="polite">어긋나게 들리면 자동 맞추기를 눌러 보세요. 리더 폰과 내 폰 모두 소리를 키우고, 서로 가까이 붙여 두면 잘 맞아요.</p>
 </div>
 </div>
@@ -344,6 +357,8 @@ function paintPendulum(){
 let calibrating=null,lastCalibration=null,lastRecording=null,autoWait=false,autoWaitTimer=null,autoQuiet=false;
 // Another follower is auto matching: until then my clicks stay quiet too, so only the leader is heard.
 let othersMeasuringUntil=0,othersMeasuringTimer=null;
+// Tap match (earphones): two rounds of taps, to the leader (my clicks muted) and to my own clicks.
+let tapping=null;
 const othersMeasuring=()=>role==='follower'&&performance.now()<othersMeasuringUntil;
 function onOthersMeasure(ms){
   if(!ms)return;
@@ -400,7 +415,10 @@ function schedule(){
         if(calibrating){
           const own=time+interval*(.5+.15*(2*Math.random()-1));
           calibrating.beatTimes.push(time);calibrating.beatKinds.push(beat);calibrating.ownTimes.push(own);playChirp(own,calibrating.chirpHz);
-        }else if(!autoQuiet&&!othersMeasuring())playClick(time,beat);
+        }else{
+          if(tapping){tapping.beats.push(time);if(tapping.beats.length>200)tapping.beats.shift();}
+          if(!autoQuiet&&!othersMeasuring()&&!(tapping&&tapping.phase===1))playClick(time,beat);
+        }
         scheduledBeats.push({time,beat,interval});
       }
       nextK++;
@@ -446,6 +464,7 @@ function renderButtons(){
   // Shown whenever I'm in a room as a follower; pressed before the leader starts, it waits.
   $('sync-auto').hidden=!(following&&joined);
   if(!(following&&joined)&&autoWait)cancelAutoWait();
+  if(tapping&&!(following&&joined&&running&&grid))endTap('리더가 멈춰서 탭 맞추기를 그만뒀어요.');
   if(autoWait&&following&&running&&grid&&!calibrating){autoWait=false;clearTimeout(autoWaitTimer);autoQuiet=true;autoWaitTimer=setTimeout(autoMatch,300);} // a beat or two to settle first
   $('sync-tune').hidden=!(role==='leader'||following&&joined);
   if(following){
@@ -817,12 +836,12 @@ calibrateButton.addEventListener('click',async()=>{
   renderButtons();
 });
 async function autoMatch(){
-  if(calibrating)return;
+  if(calibrating||tapping)return;
   if(!(role==='follower'&&running&&grid&&audioContext)){autoQuiet=false;return;}
   const text=$('sync-match-text');
   if(!navigator.mediaDevices?.getUserMedia){text.textContent='이 브라우저에서는 자동 맞추기를 쓸 수 없어요. 내 소리 타이밍을 직접 조절해 주세요.';calibrateLabel.textContent='자동 맞추기';return;}
   // My own clicks stay silent from here until the measurement ends (only the leader should be heard).
-  autoQuiet=true;
+  autoQuiet=true;$('sync-tap-start').disabled=true;
   const listenMs=Math.max(6000,sync.intervalMs(grid.bpm)*10)+400;
   // Other followers keep quiet while I listen (mic start + settle + listening + tail, with some slack).
   room?.measure(listenMs+3500);
@@ -873,7 +892,7 @@ async function autoMatch(){
       const of=(n)=>`${n||0}/${result.total||0}박`;
       text.textContent={
         silent:'마이크로 아무 소리도 들어오지 않았어요. 다른 앱이 마이크를 쓰고 있지 않은지 확인하고 다시 해 보세요.',
-        own:`내 폰 소리가 마이크에 잘 안 잡혔어요(${of(result.ownHeard)}). 이어폰은 빼고, 이 폰 음량을 올려 다시 해 보세요.`,
+        own:`내 폰 소리가 마이크에 잘 안 잡혔어요(${of(result.ownHeard)}). 음량을 올려 다시 해 보세요. 이어폰을 끼고 있다면 탭으로 맞추기를 써 보세요.`,
         leader:`리더 폰 소리가 잘 안 들렸어요(${of(result.leaderHeard)}). 리더 폰 음량을 올리고, 가까이에서 다시 해 보세요.`,
         noisy:`박마다 들린 시간이 들쭉날쭉했어요(${of(result.leaderHeard)}). 조용한 곳에서 다시 해 보세요.`,
       }[result.reason]||'다시 해 보세요.';
@@ -882,12 +901,52 @@ async function autoMatch(){
     calibrating=null;
     text.textContent=error&&error.name==='NotAllowedError'?'마이크 권한이 필요해요. 브라우저 설정에서 마이크를 허용해 주세요.':`마이크를 시작하지 못했어요(${error?.name||'오류'}). 다시 해 보세요.`;
   }finally{
-    calibrating=null;autoQuiet=false;
+    calibrating=null;autoQuiet=false;$('sync-tap-start').disabled=false;
     mic?.close();
     window.metronomeAudio.setAudioSession('playback');
     calibrateButton.disabled=false;calibrateLabel.textContent='자동 맞추기';
   }
 }
+
+const TAP_SKIP=2,TAP_COUNT=12; // the first taps settle in and aren't counted
+function tapShow(){
+  const on=Boolean(tapping);
+  $('sync-tap').hidden=!on;$('sync-tap-start').hidden=on;calibrateButton.disabled=on||Boolean(calibrating);
+  if(!on)return;
+  $('sync-tap-step').textContent=tapping.phase===1?'1/2 · 내 소리를 잠시 껐어요. 리더 폰 소리에 맞춰 두드리세요.':'2/2 · 이제 이어폰에서 들리는 내 소리에 맞춰 두드리세요.';
+  $('sync-tap-count').textContent=`${tapping.taps.length}/${TAP_SKIP+TAP_COUNT}`;
+}
+function endTap(message){
+  tapping=null;tapShow();
+  if(message!==undefined)$('sync-match-text').textContent=message;
+}
+$('sync-tap-start').addEventListener('click',()=>{
+  if(calibrating||tapping)return;
+  if(autoWait)cancelAutoWait();
+  if(!(role==='follower'&&running&&grid&&audioContext)){$('sync-match-text').textContent='리더가 메트로놈을 시작한 뒤에 눌러 주세요.';return;}
+  tapping={phase:1,taps:[],beats:[],rounds:[],grid};
+  $('sync-match-text').textContent='박자마다 한 번씩, 들리는 소리에 맞춰 두드려 주세요.';
+  tapShow();
+});
+$('sync-tap-cancel').addEventListener('click',()=>endTap(AUTO_HINT));
+function tapHit(eventTime){
+  if(!tapping||!audioContext)return;
+  if(grid!==tapping.grid){endTap('템포가 바뀌어서 멈췄어요. 다시 해 보세요.');return;}
+  // When the finger came down, on the audio clock (the same delay applies to both rounds anyway).
+  tapping.taps.push(audioContext.currentTime-Math.max(0,performance.now()-eventTime)/1000);
+  const pad=$('sync-tap-pad');pad.classList.add('hit');setTimeout(()=>pad.classList.remove('hit'),90);
+  if(tapping.taps.length<TAP_SKIP+TAP_COUNT){tapShow();return;}
+  const interval=sync.intervalMs(grid.bpm)/1000;
+  const round=window.metronomeCalibrate.tapRound(tapping.taps,tapping.beats,interval,{skip:TAP_SKIP});
+  if(!round.ok){endTap('두드린 박자가 들쭉날쭉했어요. 소리에 집중해서 처음부터 다시 해 보세요.');return;}
+  if(tapping.phase===1){tapping.rounds.push(round);tapping.phase=2;tapping.taps=[];tapShow();return;}
+  const delta=window.metronomeCalibrate.tapDelta(tapping.rounds[0],round,interval);
+  endTap();
+  $('sync-match-text').textContent=applyMatch(delta*1000)+' (탭으로 맞춤)';
+}
+$('sync-tap-pad').addEventListener('pointerdown',event=>{event.preventDefault();tapHit(event.timeStamp);});
+$('sync-tap-pad').addEventListener('keydown',event=>{if(event.repeat||(event.key!==' '&&event.key!=='Enter'))return;event.preventDefault();tapHit(event.timeStamp);});
+$('sync-tap-pad').addEventListener('click',event=>event.preventDefault());
 
 function applyMatch(deltaMs){
   const before=offsetMs;
