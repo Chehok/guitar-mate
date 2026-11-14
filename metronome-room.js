@@ -11,7 +11,7 @@
 
   function createRoom({ url, code, token = null, WebSocketImpl = root.WebSocket, now = () => root.performance.now(),
     setTimer = (fn, ms) => root.setTimeout(fn, ms), clearTimer = id => root.clearTimeout(id),
-    onState = () => {}, onPeers = () => {}, onStatus = () => {}, onLeader = () => {}, onError = () => {} } = {}) {
+    onState = () => {}, onPeers = () => {}, onStatus = () => {}, onLeader = () => {}, onError = () => {}, onClosed = () => {} } = {}) {
     const pickOffset = root.metronomeSync.pickOffset;
     let ws = null, closed = false, attempts = 0;
     let samples = [], best = null, pending = new Map(), seq = 0;
@@ -53,6 +53,16 @@
       else if (msg.t === 'peers') onPeers(msg.n);
       else if (msg.t === 'leader') onLeader();
       else if (msg.t === 'error') onError(msg.code);
+      else if (msg.t === 'closed' && !token) roomClosed(); // a leader's own claim reopens a recently closed code
+    }
+
+    // The leader closed the room: stop for good (no reconnecting) and say so once.
+    function roomClosed() {
+      if (closed) return;
+      closed = true;
+      clearTimer(retry);
+      try { ws && ws.close(1000, 'closed'); } catch (_) {}
+      onClosed();
     }
 
     function open() {
@@ -70,9 +80,10 @@
         resync = setInterval(() => { if (active) burst(RESYNC_COUNT); }, RESYNC_MS);
       };
       socket.onmessage = event => onMessage(typeof event.data === 'string' ? event.data : String(event.data));
-      socket.onclose = () => {
+      socket.onclose = event => {
         clearInterval(keepalive); clearInterval(resync);
         if (ws === socket) ws = null;
+        if (event && event.code === 4001) { roomClosed(); return; }
         if (!closed) scheduleRetry();
       };
       socket.onerror = () => {};
@@ -97,6 +108,8 @@
       serverNow() { return best ? now() + best.offset : null; },
       offset() { return best ? best.offset : null; },
       publish(state) { if (token) send({ t: 'state', token, state }); },
+      // Leader only: close the room for everyone, then leave.
+      closeForAll() { if (token) send({ t: 'close', token }); this.close(); },
       resync() { burst(RESYNC_COUNT + 3); },
       setActive(next) { next = Boolean(next); if (next === active) return; active = next; if (active) burst(RESYNC_COUNT + 3); },
       reconnectNow() { if (!closed && (!ws || ws.readyState > 1)) { clearTimer(retry); attempts = 0; open(); } },

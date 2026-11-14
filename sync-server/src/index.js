@@ -9,11 +9,15 @@
 //   • lets one phone lead (token-protected)    {t:'claim', token}       → {t:'leader'} | {t:'error', code:'taken'}
 //   • stores and broadcasts the leader's beat  {t:'state', token, state} → everyone {t:'state', state}
 //   • tells everyone how many phones are in    → {t:'peers', n}
+//   • closes the room for everyone             {t:'close', token}       → everyone {t:'closed'}
+//     (a phone that reconnects within CLOSED_MS also hears {t:'closed'}; a new leader's claim reopens it)
 import { DurableObject } from 'cloudflare:workers';
 
 const ROOM_CODE = /^\d{4}$/;
 const MAX_MESSAGE = 512;
 const MAX_PEERS = 32;
+const CLOSED_MS = 10 * 60 * 1000;
+const CLOSED_CODE = 4001;
 
 function originAllowed(origin, allowed) {
   if (!origin) return true; // non-browser clients; browsers always send Origin on WebSocket upgrades
@@ -66,6 +70,13 @@ export class Room extends DurableObject {
     const { 0: client, 1: server } = new WebSocketPair();
     this.ctx.acceptWebSocket(server);
     server.serializeAttachment({ leader: false });
+    const closedAt = await this.ctx.storage.get('closedAt');
+    // Recently closed: tell the newcomer (a member reconnecting leaves). A new leader that happens to
+    // pick this code ignores it and its claim reopens the room.
+    if (closedAt && Date.now() - closedAt < CLOSED_MS) {
+      server.send(JSON.stringify({ t: 'closed' }));
+      return new Response(null, { status: 101, webSocket: client });
+    }
     const state = await this.ctx.storage.get('state');
     if (state) server.send(JSON.stringify({ t: 'state', state }));
     this.broadcastPeers();
@@ -87,9 +98,13 @@ export class Room extends DurableObject {
       if (!token) return;
       const current = await this.ctx.storage.get('leaderToken');
       if (current && current !== token) { ws.send(JSON.stringify({ t: 'error', code: 'taken' })); return; }
-      if (!current) await this.ctx.storage.put('leaderToken', token);
+      if (!current) { await this.ctx.storage.delete('closedAt'); await this.ctx.storage.put('leaderToken', token); }
       ws.serializeAttachment({ leader: true });
       ws.send(JSON.stringify({ t: 'leader' }));
+      return;
+    }
+    if (msg.t === 'close') {
+      if (await this.isLeader(msg.token)) await this.closeRoom();
       return;
     }
     if (msg.t === 'state') {
@@ -99,6 +114,17 @@ export class Room extends DurableObject {
       await this.ctx.storage.put('state', state);
       const out = JSON.stringify({ t: 'state', state });
       for (const peer of this.ctx.getWebSockets()) { try { peer.send(out); } catch (_) {} }
+    }
+  }
+
+  // The leader closes the room: everyone is told and disconnected, and the room forgets its beat.
+  async closeRoom() {
+    const out = JSON.stringify({ t: 'closed' });
+    await this.ctx.storage.deleteAll();
+    await this.ctx.storage.put('closedAt', Date.now());
+    for (const peer of this.ctx.getWebSockets()) {
+      try { peer.send(out); } catch (_) {}
+      try { peer.close(CLOSED_CODE, 'closed'); } catch (_) {}
     }
   }
 
@@ -114,7 +140,12 @@ export class Room extends DurableObject {
   async afterLeave(ws) {
     const others = this.ctx.getWebSockets().filter(peer => peer !== ws);
     // Empty room: forget everything so the code can be reused and nothing is stored.
-    if (others.length === 0) { await this.ctx.storage.deleteAll(); return; }
+    if (others.length === 0) {
+      const closedAt = await this.ctx.storage.get('closedAt');
+      await this.ctx.storage.deleteAll();
+      if (closedAt && Date.now() - closedAt < CLOSED_MS) await this.ctx.storage.put('closedAt', closedAt);
+      return;
+    }
     this.broadcastPeers(ws);
   }
 
