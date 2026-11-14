@@ -202,6 +202,9 @@ assert(paint.find(p=>p[0]==='text')[3]<200,'Above mode draws above original chor
     assert(!/var\(--/.test(chart.markup),'the PNG copy carries real colours');
     assert.equal((chart.markup.match(/<circle /g)||[]).length>=6,true,'dots drawn for the fingerings');
   }
+  for(const [bracketed,bare] of [['(D/F#)','D/F#'],['(Bm7)','Bm7'],['[C#m7]','C#m7'],[' (D) ','D']])
+    assert.equal(vm.runInContext(`JSON.stringify(chartVoicing(${JSON.stringify(bracketed)}))`,context),vm.runInContext(`JSON.stringify(chartVoicing(${JSON.stringify(bare)}))`,context),`${bracketed} uses the ${bare} fingering`);
+  assert.notEqual(vm.runInContext("chartVoicing('(Bm7)')",context),null);
   vm.runInContext('setScoreMode(true)',context);
   assert.equal($('score-chart').hidden,false);assert.equal($('score-add').hidden,true);assert.equal($('score-edit-hint').hidden,true);
   assert.match($('score-chart').innerHTML,/운지표: C, G, Am, F/);
