@@ -135,6 +135,7 @@ button,input { font:inherit; }
 .sync-code { grid-area:code; display:flex; gap:8px; margin:0; }
 .sync-code span { display:grid; place-items:center; width:52px; height:60px; border:1px solid var(--line); border-radius:12px; background:var(--panel); font-size:32px; font-weight:800; line-height:1; font-variant-numeric:tabular-nums; }
 .sync-leader-text { grid-area:text; margin:0; font-size:14px; }
+.sync-measure-note { margin:0 0 12px; padding:10px 12px; border-radius:10px; background:color-mix(in srgb, var(--green) 14%, transparent); border:1px solid color-mix(in srgb, var(--green) 45%, transparent); font-size:14px; font-weight:600; }
 .sync-qr { grid-area:qr; justify-self:center; width:168px; padding:8px; border-radius:10px; background:#fff; line-height:0; }
 .sync-qr svg { display:block; width:100%; height:auto; }
 .sync-share { grid-area:share; display:flex; gap:8px; }
@@ -227,13 +228,14 @@ button,input { font:inherit; }
 <p class="sync-or" aria-hidden="true">또는</p>
 <form class="sync-join-form" id="sync-join-form" novalidate>
 <label for="sync-code-input">방 코드로 참여</label>
-<div class="sync-join-row"><input id="sync-code-input" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="0000" aria-describedby="sync-code-hint"><button class="btn tall" type="submit">참여하기</button></div>
+<div class="sync-join-row"><input id="sync-code-input" type="text" inputmode="numeric" pattern="[0-9]*" enterkeyhint="go" autocomplete="off" placeholder="0000" aria-describedby="sync-code-hint"><button class="btn tall" type="submit">참여하기</button></div>
 <p class="hint" id="sync-code-hint">리더 화면에 보이는 숫자 4자리를 입력하세요. QR을 찍어도 돼요.</p>
 </form>
 </div>
 <p class="hint" id="sync-unavailable" hidden>메트로놈 싱크 서버가 아직 준비되지 않았어요.</p>
 <div class="sync-box" id="sync-leader" hidden>
 <div class="sync-box-head"><p class="sync-box-title label">방 코드</p><button id="sync-close-room" class="btn leave" type="button">방 닫기</button></div>
+<p class="sync-measure-note" id="sync-leader-measure" role="status" aria-live="polite" hidden>팀원이 자동 맞추는 중이에요. 소리를 키우고 팀원 폰 가까이에 두세요.</p>
 <div class="sync-leader-body">
 <p class="sync-code" id="sync-leader-code" translate="no"></p>
 <p class="sync-leader-text">다른 폰에서 이 숫자를 입력하거나 QR을 찍게 해 주세요.</p>
@@ -257,7 +259,7 @@ button,input { font:inherit; }
 <p class="hint" id="sync-offset-hint">내 소리가 다른 폰보다 늦게 들리면 빠르게 쪽으로, 일찍 들리면 느리게 쪽으로 옮기세요. 블루투스 이어폰은 많이 빠르게 해야 할 수 있어요. 이 기기에 저장돼요.</p>
 <div class="sync-auto" id="sync-auto" hidden>
 <button id="sync-calibrate" class="btn wide" type="button"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span id="sync-calibrate-label">자동 맞추기</span></button>
-<p class="hint" id="sync-match-text" role="status" aria-live="polite">어긋나게 들리면 리더 폰 가까이에서 자동 맞추기를 눌러 보세요. 6초 동안 마이크로 듣고 내 소리 타이밍을 맞춰요.</p>
+<p class="hint" id="sync-match-text" role="status" aria-live="polite">어긋나게 들리면 자동 맞추기를 눌러 보세요. 리더 폰과 내 폰 모두 소리를 키우고, 서로 가까이 붙여 두면 잘 맞아요.</p>
 </div>
 </div>
 </div>
@@ -344,7 +346,16 @@ let calibrating=null,lastCalibration=null,lastRecording=null,autoWait=false,auto
 let othersMeasuringUntil=0,othersMeasuringTimer=null;
 const othersMeasuring=()=>role==='follower'&&performance.now()<othersMeasuringUntil;
 function onOthersMeasure(ms){
-  if(role!=='follower'||!ms)return;
+  if(!ms)return;
+  if(role==='leader'){
+    // The leader's clicks are what's being measured: ask for them loud and close.
+    const note=$('sync-leader-measure');note.hidden=false;
+    othersMeasuringUntil=Math.max(othersMeasuringUntil,performance.now()+ms);
+    clearTimeout(othersMeasuringTimer);
+    othersMeasuringTimer=setTimeout(()=>{note.hidden=true;},othersMeasuringUntil-performance.now());
+    return;
+  }
+  if(role!=='follower')return;
   othersMeasuringUntil=Math.max(othersMeasuringUntil,performance.now()+ms);
   const text=$('sync-match-text'),note='다른 팀원이 자동 맞추는 중이라, 잠깐 리더 소리만 나요.';
   if(!calibrating&&!autoQuiet)text.textContent=note;
@@ -652,7 +663,7 @@ function openRoom(code,token){
 function closeRoom(){
   clearTimeout(publishTimer);startWhenSynced=false;
   const wasFollowing=role==='follower';
-  room?.close();room=null;role=null;roomState=null;roomCode=null;peers=0;joined=false;othersMeasuringUntil=0;
+  room?.close();room=null;role=null;roomState=null;roomCode=null;peers=0;joined=false;othersMeasuringUntil=0;clearTimeout(othersMeasuringTimer);$('sync-leader-measure').hidden=true;
   if(grid){grid=null;pending=null;if(running){stopLoop();status.textContent='메트로놈을 멈췄습니다.';}}
   if(wasFollowing&&!running)status.textContent='시작을 누르면 메트로놈이 재생됩니다.';
   $('sync-link').hidden=true;
@@ -719,7 +730,12 @@ $('sync-join-form').addEventListener('submit',event=>{
   history.replaceState(null,'','#room='+code);
   joinRoom();
 });
-$('sync-code-input').addEventListener('input',event=>{event.target.value=event.target.value.replace(/[^0-9０-９]/g,'').slice(0,4);});
+// iPhone's number pad has no Go key: four digits join right away (Android's Go key also submits).
+$('sync-code-input').addEventListener('input',event=>{
+  const input=event.target;
+  input.value=input.value.replace(/[^0-9０-９]/g,'').slice(0,4);
+  if(sync.normalizeCode(input.value)&&event.inputType!=='deleteContentBackward'){input.blur();$('sync-join-form').requestSubmit();}
+});
 joinButton.addEventListener('click',()=>joinRoom());
 async function joinRoom(){
   joinButton.disabled=true;renderButtons();
@@ -763,7 +779,7 @@ function applyRoomState(state){
   if(!running)startLoop();
 }
 const calibrateButton=$('sync-calibrate'),calibrateLabel=$('sync-calibrate-label');
-const AUTO_HINT='어긋나게 들리면 리더 폰 가까이에서 자동 맞추기를 눌러 보세요. 6초 동안 마이크로 듣고 내 소리 타이밍을 맞춰요.';
+const AUTO_HINT='어긋나게 들리면 자동 맞추기를 눌러 보세요. 리더 폰과 내 폰 모두 소리를 키우고, 서로 가까이 붙여 두면 잘 맞아요.';
 function cancelAutoWait(){
   autoWait=false;autoQuiet=false;clearTimeout(autoWaitTimer);
   calibrateLabel.textContent='자동 맞추기';$('sync-match-text').textContent=AUTO_HINT;
@@ -797,7 +813,7 @@ calibrateButton.addEventListener('click',async()=>{
   }
   autoWait=true;
   calibrateLabel.textContent='리더 시작 기다리는 중… (누르면 취소)';
-  $('sync-match-text').textContent='리더가 메트로놈을 시작하면 바로 들을게요. 리더 폰 가까이에 있어 주세요.';
+  $('sync-match-text').textContent='리더가 시작하면 바로 들을게요. 리더 폰과 내 폰 소리를 키우고, 가까이 붙여 두세요.';
   renderButtons();
 });
 async function autoMatch(){
@@ -811,7 +827,7 @@ async function autoMatch(){
   // Other followers keep quiet while I listen (mic start + settle + listening + tail, with some slack).
   room?.measure(listenMs+3500);
   calibrateButton.disabled=true;calibrateLabel.textContent='듣는 중…';
-  text.textContent='리더 폰 소리를 듣는 중이에요… 6초만 조용히 해 주세요.';
+  text.textContent='듣는 중이에요… 6초만 조용히 해 주세요. 두 폰 모두 소리를 키우고 가까이 붙여 두세요.';
   window.metronomeAudio.setAudioSession('play-and-record');
   let mic=null;
   try{

@@ -158,3 +158,36 @@ if ('serviceWorker' in navigator && window.isSecureContext) {
   });
   window.addEventListener('pageshow', event => { if (event.persisted) { check(); reloadIfIdle(); } });
 }
+
+// On phones the on-screen keyboard can cover the field being typed in (and its button and hint).
+// Once the keyboard is up, scroll so the field's whole form — or the element marked
+// data-keyboard-keep — sits just above it.
+if (typeof window !== 'undefined' && window.visualViewport && typeof document !== 'undefined') {
+  const viewport = window.visualViewport;
+  const typing = el => el && el.matches && el.matches('input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([type=button]):not([type=submit]),textarea');
+  let field = null, timer = 0, spacer = null;
+  // A field near the end of the page can't scroll any higher by itself: while the keyboard is up,
+  // a spacer as tall as the keyboard goes after the page.
+  const space = () => {
+    const covered = Math.max(0, Math.round(window.innerHeight - viewport.height));
+    if (field && covered > 80) {
+      if (!spacer) { spacer = document.createElement('div'); spacer.setAttribute('aria-hidden', 'true'); spacer.className = 'keyboard-space'; }
+      spacer.style.height = covered + 'px';
+      if (!spacer.isConnected) document.body.appendChild(spacer);
+    } else if (spacer && spacer.isConnected) spacer.remove();
+  };
+  const fit = () => {
+    space();
+    if (!field || document.activeElement !== field) return;
+    const box = (field.closest('[data-keyboard-keep]') || field.closest('form') || field).getBoundingClientRect();
+    const top = viewport.offsetTop + 12, bottom = viewport.offsetTop + viewport.height - 12;
+    let by = 0;
+    if (box.bottom > bottom) by = Math.min(box.bottom - bottom, box.top - top); // keep its top in view too
+    else if (box.top < top) by = box.top - top;
+    if (Math.abs(by) > 2) window.scrollBy({top: by, behavior: 'smooth'});
+  };
+  const later = ms => { clearTimeout(timer); timer = setTimeout(fit, ms); };
+  document.addEventListener('focusin', event => { if (typing(event.target)) { field = event.target; later(350); } });
+  document.addEventListener('focusout', () => { field = null; clearTimeout(timer); later(250); });
+  viewport.addEventListener('resize', () => later(field ? 120 : 0));
+}
