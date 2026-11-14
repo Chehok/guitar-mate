@@ -1426,7 +1426,8 @@ const CHART_LIGHT={ink:'#203a33',muted:'#596b62',green:'#245b47',onGreen:'#fffef
 const CHART_THEME={ink:'var(--ink)',muted:'var(--muted)',green:'var(--green)',onGreen:'var(--on-green)',fret:'var(--fret)',string:'var(--string)',panel:'var(--panel)',line:'var(--line)'};
 const chartVoicings=new Map();
 function chartVoicing(text){
-if(!chartVoicings.has(text)){let v=null;try{v=makeVoicings(parse(text))[0]||null;}catch(_){}chartVoicings.set(text,v);}
+// Sheets often bracket optional chords — "(D/F#)", "[Bm7]": look the chord up without the brackets.
+if(!chartVoicings.has(text)){let v=null;const bare=String(text).trim().replace(/^[(\[{]+|[)\]}]+$/g,'').trim();try{v=makeVoicings(parse(bare))[0]||null;}catch(_){}chartVoicings.set(text,v);}
 return chartVoicings.get(text);
 }
 function scoreChartRows(){
