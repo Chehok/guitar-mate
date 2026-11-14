@@ -572,6 +572,7 @@ htmlPatterns: [
   ['기본음 {0} · 종류 {1} · 베이스 {2} → {3}개{4}', 'Root {0} · type {1} · bass {2} → {3}{4}'],
 ],
 patterns: [
+    ['마이크를 시작하지 못했어요({0}). 다시 해 보세요.', 'Couldn’t start the mic ({0}). Please try again.'],
   ['{0} ({1}/{2}박 확인)', '{0} ({1}/{2} beats checked)'],
   ['리더 폰 소리가 잘 안 들렸어요({0}/{1}박). 리더 폰 음량을 올리고, 가까이에서 다시 해 보세요.', 'The leader’s phone was hard to hear ({0}/{1} beats). Turn the leader up and try again close to it.'],
   ['내 폰 소리가 마이크에 잘 안 잡혔어요({0}/{1}박). 이어폰은 빼고, 이 폰 음량을 올려 다시 해 보세요.', 'The mic barely picked up this phone ({0}/{1} beats). Unplug any earphones, turn this phone up and try again.'],
