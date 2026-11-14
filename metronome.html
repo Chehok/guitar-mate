@@ -151,8 +151,8 @@ button,input { font:inherit; }
 .sync-tune { padding-top:20px; border-top:1px solid var(--line); }
 .offset-row { display:flex; align-items:center; justify-content:space-between; gap:8px; }
 .offset-row label { font-weight:700; }
-.offset-meta { display:flex; align-items:center; gap:2px; margin-right:-8px; }
-.offset-row output { min-width:64px; padding-right:8px; font-weight:700; text-align:right; font-variant-numeric:tabular-nums; }
+.offset-meta { display:flex; align-items:center; gap:10px; }
+.offset-row output { min-width:64px; font-weight:700; text-align:right; font-variant-numeric:tabular-nums; }
 .offset-slider { display:block; width:100%; margin:8px 0 2px; accent-color:var(--green); }
 .offset-limits { display:flex; justify-content:space-between; color:var(--muted); font-size:12px; }
 .offset-nudge { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:10px; }
@@ -252,7 +252,7 @@ button,input { font:inherit; }
 <p class="sync-conn" id="sync-conn" role="status" aria-live="polite" hidden><span class="sync-dot" aria-hidden="true"></span><span id="sync-conn-text"></span></p>
 </div>
 <div class="sync-tune" id="sync-tune" hidden>
-<div class="offset-row"><label for="sync-offset">내 소리 타이밍</label><span class="offset-meta"><button id="sync-offset-reset" class="btn quiet" type="button" aria-label="내 소리 타이밍 초기화" hidden>초기화</button><output id="sync-offset-value" for="sync-offset">0 ms</output></span></div>
+<div class="offset-row"><label for="sync-offset">내 소리 타이밍</label><span class="offset-meta"><output id="sync-offset-value" for="sync-offset">0 ms</output><button id="sync-offset-reset" class="btn leave" type="button" aria-label="내 소리 타이밍 초기화" disabled>초기화</button></span></div>
 <input class="offset-slider" id="sync-offset" type="range" min="-300" max="300" step="5" value="0" aria-describedby="sync-offset-hint">
 <div class="offset-limits" aria-hidden="true"><span>← 느리게</span><span>빠르게 →</span></div>
 <div class="offset-nudge" role="group" aria-label="내 소리 타이밍 미세 조절"><button class="btn" type="button" data-faster="-20" aria-label="20ms 느리게">−20</button><button class="btn" type="button" data-faster="-5" aria-label="5ms 느리게">−5</button><button class="btn" type="button" data-faster="5" aria-label="5ms 빠르게">+5</button><button class="btn" type="button" data-faster="20" aria-label="20ms 빠르게">+20</button></div>
@@ -919,8 +919,8 @@ if(navigator.share){
   $('sync-share').hidden=false;
   $('sync-share').addEventListener('click',()=>navigator.share({title:'기타메이트 메트로놈',url:roomLink()}).catch(()=>{}));
 }
-function showOffset(){const faster=-offsetMs||0;offsetInput.value=faster;offsetValue.textContent=(faster>0?'+':'')+faster+' ms';$('sync-offset-reset').hidden=!faster;}
-$('sync-offset-reset').addEventListener('click',()=>{offsetMs=0;showOffset();saveOffset();offsetInput.focus();});
+function showOffset(){const faster=-offsetMs||0;offsetInput.value=faster;offsetValue.textContent=(faster>0?'+':'')+faster+' ms';$('sync-offset-reset').disabled=!faster;}
+$('sync-offset-reset').addEventListener('click',()=>{offsetMs=0;showOffset();saveOffset();});
 offsetInput.addEventListener('input',()=>{
   offsetMs=sync.clampOffset(-offsetInput.value);showOffset();saveOffset();
 });
