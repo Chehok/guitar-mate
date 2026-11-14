@@ -8,7 +8,7 @@ const vm = require('vm');
 const context = {};
 vm.createContext(context);
 vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'metronome-calibrate.js'), 'utf8'), context);
-const { analyze } = context.metronomeCalibrate;
+const { analyze, tapRound, tapDelta } = context.metronomeCalibrate;
 
 let seed = 7;
 const random = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
@@ -87,5 +87,22 @@ assert.equal(analyze(silent).ok, false);
     assert(r.ok, `${sc.name}: not ok (${r.reason})`);
     close(r.delta, sc.delta, 0.004, `room: ${sc.name}`);
   }
+}
+// Tap match: taps to the leader and to my own clicks; human lag and jitter cancel out.
+{
+  const interval = 0.6, beats = Array.from({ length: 40 }, (_, k) => 100 + k * interval);
+  const round = (shift, lag, jitter, from) => beats.slice(from, from + 14).map(b => b + shift + lag + jitter * gauss());
+  for (const [delta, lag] of [[0.18, -0.02], [-0.05, 0.03], [0.25, 0.06], [0.08, 0.0]]) {
+    const own = 0.21; // my clicks reach my ears 210 ms after scheduling (Bluetooth)
+    const leader = tapRound(round(own + delta, lag, 0.012, 2), beats, interval);
+    const mine = tapRound(round(own, lag, 0.012, 20), beats, interval);
+    assert(leader.ok && mine.ok, 'tap rounds ok');
+    close(tapDelta(leader, mine, interval), delta, 0.015, `tap match ${delta}`);
+  }
+  // one wild tap is dropped; scattered tapping is reported
+  const taps = round(0.1, 0, 0.008, 2); taps[6] += 0.2;
+  assert(Math.abs(tapRound(taps, beats, interval).mean - 0.1) < 0.01, 'stray tap dropped');
+  assert.equal(tapRound(round(0, 0, 0.15, 2), beats, interval).ok, false, 'scattered taps');
+  assert.equal(tapRound(round(0, 0, 0, 2).slice(0, 5), beats, interval).reason, 'few');
 }
 console.log(`Metronome auto match: ${cases.length} synthetic rooms within 3 ms; missing sounds reported.`);

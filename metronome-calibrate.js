@@ -208,6 +208,37 @@
     return { ok: true, delta: d - loopback, loopback, spread, heard: keep.length, ownHeard: loop.length, leaderHeard: keep.length, total };
   }
 
+  // ---- Tap match (earphones: my sound never reaches the mic) ----
+  // The person taps along twice: first to the leader's phone (my clicks muted), then to my own clicks
+  // (in the earphones). Each tap is timed against the nearest of my scheduled beats; the same person,
+  // screen and timing path are used both times, so reaction time and touch delay cancel out and
+  //   δ = (leader taps) − (my taps)
+  // is how much later my clicks should play. Returns {ok, mean, spread, used} for one round.
+  const wrap = (v, interval) => v - Math.round(v / interval) * interval;
+  // How much later my clicks should play, from a leader round and a my-clicks round (within half a beat).
+  const tapDelta = (leader, mine, interval) => wrap(leader.mean - mine.mean, interval);
+  function tapRound(taps, beats, interval, { skip = 2 } = {}) {
+    const rel = [];
+    for (const t of taps.slice(skip)) {
+      let best = null;
+      for (const b of beats) if (best === null || Math.abs(t - b) < Math.abs(t - best)) best = b;
+      if (best === null) continue;
+      rel.push(t - best);
+    }
+    if (rel.length < 5) return { ok: false, reason: 'few', used: rel.length };
+    // Taps sit around one point of the beat cycle, which may be near the half-beat edge (a Bluetooth
+    // delay can be 0.2–0.3 s): unwrap them around their circular mean so the cluster isn't split.
+    let sin = 0, cos = 0;
+    for (const r of rel) { sin += Math.sin(2 * Math.PI * r / interval); cos += Math.cos(2 * Math.PI * r / interval); }
+    const centre = Math.atan2(sin, cos) * interval / (2 * Math.PI);
+    for (let i = 0; i < rel.length; i++) rel[i] = centre + wrap(rel[i] - centre, interval);
+    const m = median(rel);
+    const spread = median(rel.map(v => Math.abs(v - m)));
+    const keep = rel.filter(v => Math.abs(v - m) <= Math.max(0.03, spread * 3));
+    if (spread > 0.035 || keep.length < 5) return { ok: false, reason: 'noisy', spread, used: keep.length };
+    return { ok: true, mean: keep.reduce((a, b) => a + b, 0) / keep.length, spread, used: keep.length };
+  }
+
   // ---- Browser side: record the microphone with sample-accurate audio-clock timestamps ----
 
   // iOS Safari: recording needs the play-and-record audio session before getUserMedia, and an
@@ -258,6 +289,6 @@
     };
   }
 
-  root.metronomeCalibrate = { analyze, openMic, envelope, CHIRP_HZ, CHIRPS, SHAPES };
+  root.metronomeCalibrate = { analyze, tapRound, tapDelta, openMic, envelope, CHIRP_HZ, CHIRPS, SHAPES };
 })(typeof window !== 'undefined' ? window : globalThis);
 
