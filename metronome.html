@@ -769,11 +769,12 @@ calibrateButton.addEventListener('click',async()=>{
   if(navigator.mediaDevices?.getUserMedia){
     calibrateButton.disabled=true;calibrateLabel.textContent='마이크 확인 중…';
     try{
+      window.metronomeAudio.setAudioSession('play-and-record'); // iOS won't record in the playback session
       const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
       stream.getTracks().forEach(track=>track.stop());
     }catch(error){
       calibrateButton.disabled=false;calibrateLabel.textContent='자동 맞추기';
-      $('sync-match-text').textContent=error&&error.name==='NotAllowedError'?'마이크 권한이 필요해요. 브라우저 설정에서 마이크를 허용해 주세요.':'마이크를 시작하지 못했어요. 다시 해 보세요.';
+      $('sync-match-text').textContent=error&&error.name==='NotAllowedError'?'마이크 권한이 필요해요. 브라우저 설정에서 마이크를 허용해 주세요.':`마이크를 시작하지 못했어요(${error?.name||'오류'}). 다시 해 보세요.`;
       return;
     }finally{window.metronomeAudio.setAudioSession('playback');}
     calibrateButton.disabled=false;
@@ -787,7 +788,7 @@ calibrateButton.addEventListener('click',async()=>{
 async function autoMatch(){
   if(!(role==='follower'&&running&&grid&&audioContext)||calibrating)return;
   const text=$('sync-match-text');
-  if(!(navigator.mediaDevices?.getUserMedia&&window.AudioWorkletNode)){text.textContent='이 브라우저에서는 자동 맞추기를 쓸 수 없어요. 내 소리 타이밍을 직접 조절해 주세요.';calibrateLabel.textContent='자동 맞추기';return;}
+  if(!navigator.mediaDevices?.getUserMedia){text.textContent='이 브라우저에서는 자동 맞추기를 쓸 수 없어요. 내 소리 타이밍을 직접 조절해 주세요.';calibrateLabel.textContent='자동 맞추기';return;}
   calibrateButton.disabled=true;calibrateLabel.textContent='듣는 중…';
   text.textContent='리더 폰 소리를 듣는 중이에요… 6초만 조용히 해 주세요.';
   window.metronomeAudio.setAudioSession('play-and-record');
@@ -840,7 +841,7 @@ async function autoMatch(){
     }
   }catch(error){
     calibrating=null;
-    text.textContent=error&&error.name==='NotAllowedError'?'마이크 권한이 필요해요. 브라우저 설정에서 마이크를 허용해 주세요.':'마이크를 시작하지 못했어요. 다시 해 보세요.';
+    text.textContent=error&&error.name==='NotAllowedError'?'마이크 권한이 필요해요. 브라우저 설정에서 마이크를 허용해 주세요.':`마이크를 시작하지 못했어요(${error?.name||'오류'}). 다시 해 보세요.`;
   }finally{
     calibrating=null;
     mic?.close();

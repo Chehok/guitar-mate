@@ -160,24 +160,38 @@
   }
 
   // ---- Browser side: record the microphone with sample-accurate audio-clock timestamps ----
-  const WORKLET = `class GmRecorder extends AudioWorkletProcessor{process(inputs){const c=inputs[0]&&inputs[0][0];if(c&&c.length)this.port.postMessage({t:currentTime,d:c.slice(0)});return true;}}registerProcessor('gm-recorder',GmRecorder);`;
 
+  // iOS Safari: recording needs the play-and-record audio session before getUserMedia, and an
+  // AudioWorklet module from a blob: URL can fail to load — so the worklet comes from a real file, and
+  // if it still won't load, a ScriptProcessor records instead. Either way each chunk carries a
+  // context-clock time; any fixed offset in that time cancels out (own and leader sounds share it).
   async function openMic(context) {
+    if (root.metronomeAudio?.setAudioSession) root.metronomeAudio.setAudioSession('play-and-record');
     const stream = await root.navigator.mediaDevices.getUserMedia({
       audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
     });
-    if (!context.__gmRecorderLoaded) {
-      const url = root.URL.createObjectURL(new root.Blob([WORKLET], { type: 'application/javascript' }));
-      await context.audioWorklet.addModule(url);
-      context.__gmRecorderLoaded = true;
-    }
+    if (context.state !== 'running') { try { await context.resume(); } catch (_) {} }
     const source = context.createMediaStreamSource(stream);
-    const node = new root.AudioWorkletNode(context, 'gm-recorder');
     const sink = context.createGain();
     sink.gain.value = 0;
-    source.connect(node); node.connect(sink); sink.connect(context.destination);
+    sink.connect(context.destination);
     const chunks = [];
-    node.port.onmessage = event => chunks.push(event.data);
+    let node = null;
+    if (root.AudioWorkletNode && context.audioWorklet) {
+      try {
+        if (!context.__gmRecorderLoaded) {
+          await context.audioWorklet.addModule('./metronome-recorder.js');
+          context.__gmRecorderLoaded = true;
+        }
+        node = new root.AudioWorkletNode(context, 'gm-recorder');
+        node.port.onmessage = event => chunks.push(event.data);
+      } catch (_) { node = null; }
+    }
+    if (!node) {
+      node = context.createScriptProcessor(2048, 1, 1);
+      node.onaudioprocess = event => chunks.push({ t: event.playbackTime || context.currentTime, d: event.inputBuffer.getChannelData(0).slice(0) });
+    }
+    source.connect(node); node.connect(sink);
     return {
       // Joins the recorded chunks into one buffer (gaps, if any, are filled with silence).
       take() {
