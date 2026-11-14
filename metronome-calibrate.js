@@ -3,7 +3,8 @@
 // with the leader's, as actually heard in the room.
 //
 // While calibrating, the follower stays on the leader's beat grid but swaps its own clicks for short
-// 2 kHz chirps half a beat later. The leader's clicks are 880/1320 Hz square waves (odd harmonics only:
+// chirps (2 kHz, or another pitch from CHIRPS) about half a beat later, jittered randomly beat to beat
+// so several phones can measure at the same time without mistaking each other's chirps for their own. The leader's clicks are 880/1320 Hz square waves (odd harmonics only:
 // 2640, 3960 Hz…), so the two are told apart by pitch as well as by time.
 //   R = when my chirp is heard − when I scheduled it      → my own output + input latency
 //   D = when the leader's click is heard − when I'd schedule my click for that beat
@@ -12,6 +13,9 @@
 // both sounds go through the same microphone path, so only consistent timestamps are needed.
 (function (root) {
   const CHIRP_HZ = 2000;
+  // Chirp pitches a phone can pick: each sits between the leader's click bands (880/1320 Hz and their
+  // 2640/3960 Hz harmonics), so it barely shows up in them.
+  const CHIRPS = [2000, 3250, 1700];
   // The leader's square-wave clicks; their 3rd harmonics are listened to as well, since small phone
   // speakers barely play 880 Hz but 2640 Hz comes through.
   const LEADER_HZ = [880, 1320];
@@ -63,17 +67,21 @@
 
   const median = values => { const s = [...values].sort((a, b) => a - b); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
 
-  // Onset of the loudest sound in [from, to) (seconds): find its peak, walk back down its rising edge
-  // to the dip before it, then take where it climbs 30% of the way from that dip to the peak.
+  // Onset of the loudest sound in [peakFrom, peakTo) (seconds; the whole [from, to) by default): find
+  // its peak, walk back down its rising edge to the dip before it, then take where it climbs 30% of the
+  // way from that dip to the peak. The noise floor comes from the whole [from, to) window.
   // Anchoring on the loudest sound (the phone right next to the mic) keeps a quieter phone that clicks
   // a little earlier or later from being mistaken for it; the low 30% mark keeps room reverb, which
   // keeps the level rising after the direct sound, from pushing the onset late.
-  function onset(env, sampleRate, startTime, from, to, filterDelay) {
+  function onset(env, sampleRate, startTime, from, to, filterDelay, peakFrom = from, peakTo = to) {
     const i0 = Math.max(0, Math.floor((from - startTime) * sampleRate));
     const i1 = Math.min(env.length, Math.ceil((to - startTime) * sampleRate));
     if (i1 - i0 < sampleRate * 0.01) return null;
-    let peak = 0, p = i0;
-    for (let i = i0; i < i1; i++) if (env[i] > peak) { peak = env[i]; p = i; }
+    const p0 = Math.max(i0, Math.floor((peakFrom - startTime) * sampleRate));
+    const p1 = Math.min(i1, Math.ceil((peakTo - startTime) * sampleRate));
+    if (p1 <= p0) return null;
+    let peak = 0, p = p0;
+    for (let i = p0; i < p1; i++) if (env[i] > peak) { peak = env[i]; p = i; }
     // Noise floor: a quiet slice of the window (a loud click's own reverb can fill half of it).
     const levels = Array.from(env.subarray(i0, i1)).filter((_, i) => i % 16 === 0).sort((a, b) => a - b);
     const floor = levels[Math.floor(levels.length * 0.15)] || 0, typical = levels[levels.length >> 1] || 0;
@@ -96,12 +104,45 @@
     return null;
   }
 
+  // The lag at which a sound repeats across all the given times: for each time, the envelope over
+  // [time + from, time + to] is scaled so its loudest point is 1, and the slices are summed. My own
+  // sounds line up at one lag on every beat; other phones (playing at other moments, or with randomly
+  // jittered chirps) spread out, and a single loud knock counts for one beat at most.
+  // envFor(k) gives the envelope to use for times[k]. Returns the lag of the summed peak, or null.
+  function commonLag(envFor, times, sampleRate, startTime, from, to) {
+    const bin = 0.0005, bins = Math.max(1, Math.ceil((to - from) / bin)), score = new Float64Array(bins);
+    const per = Math.max(1, Math.round(bin * sampleRate));
+    let used = 0;
+    times.forEach((t, k) => {
+      const env = envFor(k);
+      const a = Math.round((t + from - startTime) * sampleRate);
+      if (a < 0 || a + bins * per > env.length) return;
+      const slice = new Float64Array(bins);
+      let top = 0;
+      for (let b = 0; b < bins; b++) {
+        let m = 0;
+        for (let i = a + b * per, e = i + per; i < e; i++) if (env[i] > m) m = env[i];
+        slice[b] = m; if (m > top) top = m;
+      }
+      if (!(top > 0)) return;
+      for (let b = 0; b < bins; b++) score[b] += slice[b] / top;
+      used++;
+    });
+    if (!used) return null;
+    let best = 0;
+    for (let b = 1; b < bins; b++) if (score[b] > score[best]) best = b;
+    return from + (best + 0.5) * bin;
+  }
+
   // samples: Float32Array from the mic; startTime: audio time of samples[0].
   // ownTimes: when my chirps were scheduled; beatTimes: when my clicks for the leader's beats would be scheduled.
   // interval: beat length (s). Returns {ok, delta, loopback, spread, heard, reason}.
-  function analyze({ samples, sampleRate, startTime, ownTimes, beatTimes, beatKinds, interval }) {
+  // chirpHz: the pitch of my chirps (each phone picks one of CHIRPS, so phones measuring together are
+  // told apart by pitch as well as by their randomly jittered timing).
+  function analyze({ samples, sampleRate, startTime, ownTimes, beatTimes, beatKinds, interval, chirpHz = CHIRP_HZ }) {
     const Q = 10;
-    const chirpPath = signal => envelope(bandpass(signal, sampleRate, CHIRP_HZ, Q), sampleRate);
+    const chirpShape = { ...SHAPES.chirp, hz: chirpHz };
+    const chirpPath = signal => envelope(bandpass(signal, sampleRate, chirpHz, Q), sampleRate);
     // Each kind of click is looked for in its own bands (accent: 1320 + 3960 Hz, other beats: 880 +
     // 2640 Hz). Wider than the chirp's band, so they ring up fast and agree on timing.
     const leaderPath = (signal, accent) => {
@@ -120,12 +161,16 @@
       return at === null ? 0 : at - lead;
     };
     const chirpEnv = chirpPath(samples), leaderEnvs = [leaderPath(samples, true), leaderPath(samples, false)];
-    const delayChirp = pathDelay(SHAPES.chirp, chirpPath);
+    const delayChirp = pathDelay(chirpShape, chirpPath);
     const delayLeader = [pathDelay(SHAPES.accent, s => leaderPath(s, true)), pathDelay(SHAPES.beat, s => leaderPath(s, false))];
 
+    // Where my chirps repeat (other phones' chirps don't line up with my timing), then each chirp's
+    // onset close to that lag.
+    const ownSpan = Math.min(0.4, interval * 0.65);
+    const ownLag = commonLag(() => chirpEnv, ownTimes, sampleRate, startTime, 0, ownSpan);
     const loop = [];
-    for (const t of ownTimes) {
-      const heard = onset(chirpEnv, sampleRate, startTime, t, t + Math.min(0.4, interval * 0.9), delayChirp);
+    if (ownLag !== null) for (const t of ownTimes) {
+      const heard = onset(chirpEnv, sampleRate, startTime, t, t + ownSpan, delayChirp, t + ownLag - 0.012, t + ownLag + 0.012);
       if (heard !== null) loop.push(heard - t);
     }
     const total = ownTimes.length;
@@ -141,10 +186,14 @@
     // A leader click hidden under my chirp would show up as a rise right where the blank ends: not trusted.
     const atBlankEdge = heard => blankEnds.some(end => heard + delayLeader[1] - end >= -0.001 && heard + delayLeader[1] - end < 0.004);
 
+    // The leader's clicks: where they repeat beat after beat, then each one's onset near that lag.
+    const isAccent = k => (beatKinds ? beatKinds[k] === 0 : false);
+    const span = interval * 0.45;
+    const leaderLag = commonLag(k => leaderEnvs[isAccent(k) ? 0 : 1], beatTimes, sampleRate, startTime, loopback - span, loopback + span);
     const offsets = [];
-    beatTimes.forEach((t, k) => {
-      const centre = t + loopback, accent = beatKinds ? beatKinds[k] === 0 : false;
-      const heard = onset(leaderEnvs[accent ? 0 : 1], sampleRate, startTime, centre - interval * 0.45, centre + interval * 0.45, delayLeader[accent ? 0 : 1]);
+    if (leaderLag !== null) beatTimes.forEach((t, k) => {
+      const centre = t + loopback, accent = isAccent(k);
+      const heard = onset(leaderEnvs[accent ? 0 : 1], sampleRate, startTime, centre - span, centre + span, delayLeader[accent ? 0 : 1], t + leaderLag - 0.015, t + leaderLag + 0.015);
       if (heard !== null && !atBlankEdge(heard)) offsets.push(heard - t);
     });
     if (offsets.length < 3) return { ok: false, reason: 'leader', loopback, ownHeard: loop.length, leaderHeard: offsets.length, total };
@@ -209,6 +258,6 @@
     };
   }
 
-  root.metronomeCalibrate = { analyze, openMic, envelope, CHIRP_HZ, SHAPES };
+  root.metronomeCalibrate = { analyze, openMic, envelope, CHIRP_HZ, CHIRPS, SHAPES };
 })(typeof window !== 'undefined' ? window : globalThis);
 

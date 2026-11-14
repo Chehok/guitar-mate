@@ -15,17 +15,19 @@ function convolveAdd(out,sig,at,ir,gain){for(let k=0;k<ir.length;k++){const g=ir
 function sparse(ir){const out=[];for(let k=0;k<ir.length;k++)if(Math.abs(ir[k])>1e-4)out.push([k,ir[k]]);return out;}
 function addThrough(out,sig,at,irs,gain){for(const [k,g] of irs){const base=at+k,gg=g*gain;for(let i=0;i<sig.length;i++){const j=base+i;if(j>=0&&j<out.length)out[j]+=sig[i]*gg;}}}
 function speaker(sig,rate,{hp=700,lp=9000}){return biquadLP(biquadHP(sig,rate,hp,1.1),rate,lp);}
-function record({bpm=100,beats=10,loopback=.12,delta=.065,rate=48000,leaderGain=1,ownGain=2,noise=.002,start=12.345,leaderSpk={hp:900},ownSpk={hp:700},others=[],rt60=.35,tail=.15,agc=false}){
+function record({bpm=100,beats=10,loopback=.12,delta=.065,rate=48000,leaderGain=1,ownGain=2,noise=.002,start=12.345,leaderSpk={hp:900},ownSpk={hp:700},others=[],rt60=.35,tail=.15,agc=false,ownHz=2000,jitter=0,measurers=[]}){
 const interval=60/bpm,first=start+.3,dur=.3+beats*interval+.8,s=new Float32Array(Math.ceil(dur*rate));
 const irL=sparse(room(rate,{rt60,tail})),irO=sparse(room(rate,{rt60:rt60*.6,tail:tail*.4,early:[[.002,.6]]}));
 const beatTimes=[],ownTimes=[],beatKinds=[];
 for(let k=0;k<beats;k++){const t=first+k*interval;beatTimes.push(t);beatKinds.push(k%4);const lc=speaker(click(rate,k%4),rate,leaderSpk);
 addThrough(s,lc,Math.round((t+loopback+delta-start)*rate),irL,leaderGain);
 for(const o of others){addThrough(s,speaker(click(rate,k%4),rate,{hp:800}),Math.round((t+loopback+delta+o.at-start)*rate),irL,o.gain);}
-const own=t+interval/2;ownTimes.push(own);addThrough(s,speaker(chirp(rate),rate,ownSpk),Math.round((own+loopback-start)*rate),irO,ownGain);}
+const own=t+interval*(.5+jitter*(2*random()-1));ownTimes.push(own);addThrough(s,speaker(chirp(rate,ownHz),rate,ownSpk),Math.round((own+loopback-start)*rate),irO,ownGain);
+// Other phones measuring at the same time: their own chirps, randomly jittered like mine.
+for(const m of measurers){const at=t+interval*(.5+.15*(2*random()-1))+m.at;addThrough(s,speaker(chirp(rate,m.hz),rate,{hp:800}),Math.round((at-start)*rate),irL,m.gain);}}
 for(let i=0;i<s.length;i++)s[i]+=noise*gauss();
 if(agc){let g=1;for(let i=0;i<s.length;i++){const a=Math.abs(s[i]*g);g+= (a>.3?-.0005:.000002);g=Math.max(.2,Math.min(3,g));s[i]*=g;}}
-return {samples:s,sampleRate:rate,startTime:start,ownTimes,beatTimes,beatKinds,interval};}
+return {samples:s,sampleRate:rate,startTime:start,ownTimes,beatTimes,beatKinds,interval,chirpHz:ownHz};}
 const scenarios=[
 {name:'typical',delta:.065},
 {name:'late',delta:-.09},
@@ -43,5 +45,12 @@ const scenarios=[
 {name:'agc',delta:.06,agc:true},
 {name:'noisy',delta:-.04,noise:.02},
 {name:'44.1k',rate:44100,delta:.07},
+// Several followers pressing auto match together (all others silent except their chirps)
+{name:'together: one other, same pitch',delta:.05,jitter:.15,measurers:[{hz:2000,gain:.7,at:.12}]},
+{name:'together: two others, same pitch',delta:-.04,jitter:.15,measurers:[{hz:2000,gain:.8,at:.09},{hz:2000,gain:.5,at:.2}]},
+{name:'together: three others, mixed pitch',delta:.03,jitter:.15,ownHz:3250,measurers:[{hz:2000,gain:.9,at:.1},{hz:1700,gain:.7,at:.15},{hz:3250,gain:.5,at:.06}]},
+{name:'together: my speaker quieter than a neighbour',delta:.06,jitter:.15,ownGain:.5,measurers:[{hz:2000,gain:.8,at:.11}]},
+{name:'together: five others, fast tempo',bpm:160,beats:16,delta:.02,jitter:.15,ownHz:1700,measurers:[{hz:2000,gain:.6,at:.1},{hz:1700,gain:.6,at:.14},{hz:3250,gain:.6,at:.08},{hz:2000,gain:.4,at:.18},{hz:1700,gain:.4,at:.05}]},
+{name:'together: slow 70',bpm:70,beats:8,delta:.1,jitter:.15,measurers:[{hz:2000,gain:.8,at:.13},{hz:3250,gain:.6,at:.2}]},
 ];
 module.exports={load,record,scenarios};
