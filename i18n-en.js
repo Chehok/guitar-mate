@@ -307,6 +307,7 @@ text: {
   '베이스음': 'Bass note',
   '없음': 'None',
   '종류': 'Type',
+  '리더가 방을 닫았어요.': 'The leader closed the room.',
   '복사하지 못했어요': 'Couldn’t copy',
   '링크 복사됨': 'Link copied',
   '링크 공유': 'Share link',

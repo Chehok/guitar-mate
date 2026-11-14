@@ -630,6 +630,7 @@ function openRoom(code,token){
     onPeers:n=>{peers=n;renderConn();},
     onState:applyRoomState,
     onError:onRoomError,
+    onClosed:()=>{closeRoom();status.textContent='리더가 방을 닫았어요.';},
   });
   renderConn();
 }
@@ -864,8 +865,9 @@ document.querySelectorAll('[data-faster]').forEach(button=>button.addEventListen
   offsetMs=sync.clampOffset(offsetMs-Number(button.dataset.faster));showOffset();saveOffset();
 }));
 leadButton.addEventListener('click',startLeading);
+// The leader closing the room closes it for everyone (their screens say so).
 $('sync-close-room').addEventListener('click',()=>{
-  if(role==='leader'&&grid&&room)room.publish({...grid,playing:false});
+  if(role==='leader'&&room)room.closeForAll();
   closeRoom();
 });
 $('sync-leave').addEventListener('click',closeRoom);
@@ -908,7 +910,7 @@ function armIdle(){
 }
 function checkIdle(){
   if(!room||!idleSince||Date.now()-idleSince<IDLE_MS){armIdle();return;}
-  if(role==='leader'&&grid)room.publish({...grid,playing:false});
+  if(role==='leader')room.closeForAll();
   closeRoom();
   status.textContent='1시간 동안 재생하지 않아 방을 닫았어요.';
 }

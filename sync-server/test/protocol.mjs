@@ -112,5 +112,35 @@ fresh.json({ t: 'claim', token: 'brand-new-leader-token' });
 await fresh.next(type('leader'));
 fresh.close();
 
+// The leader closes the room: everyone hears 'closed' and is disconnected; a late reconnect hears it too;
+// a new leader's claim reopens the code.
+{
+  const lead = await connect(), member = await connect();
+  lead.json({ t: 'claim', token: 'closing-leader-token-1' });
+  await lead.next(type('leader'));
+  member.json({ t: 'claim', token: 'not-the-leader-token-1' });
+  await member.next(type('error'));
+  member.json({ t: 'close', token: 'not-the-leader-token-1' });
+  member.json({ t: 'time', c: 9 });
+  assert.equal((await member.next(type('time'))).c, 9, 'only the leader can close');
+  const closedCode = new Promise(resolve => member.on('close', code => resolve(code)));
+  lead.json({ t: 'close', token: 'closing-leader-token-1' });
+  await member.next(type('closed'));
+  assert.equal(await closedCode, 4001);
+  await sleep(300);
+  const late = await connect();
+  await late.next(type('closed'));
+  await sleep(200);
+  late.close();
+  const reopen = await connect();
+  await reopen.next(type('closed'));
+  reopen.json({ t: 'claim', token: 'reopening-leader-token' });
+  await reopen.next(type('leader'));
+  const joiner = await connect();
+  await sleep(300);
+  assert(!joiner.inbox.some(type('closed')), 'a reopened room is open again');
+  reopen.close(); joiner.close();
+}
+
 console.log(`Sync server protocol passed (room ${code}).`);
 process.exit(0);
