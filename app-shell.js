@@ -24,6 +24,7 @@ class GuitarMateHeader extends HTMLElement {
             <button class="lang-toggle" type="button" translate="no" data-lang-toggle></button>
             <a class="guide-launch" href="${guide}">가이드</a>
             <button id="install-button" type="button" data-i18n-en="Install" hidden>앱 설치</button>
+            <button id="share-button" type="button" hidden>링크 공유</button>
             <span class="badge">오프라인 지원</span>
           </div>
         </div>
@@ -40,7 +41,7 @@ class GuitarMateHeader extends HTMLElement {
         <p class="install-note">그림은 이해를 돕는 설명용이며 실제 화면과 다를 수 있어요. iOS 16.4 이상이 필요하고, 추가된 아이콘이 앱처럼 열릴지는 iOS 설정에 따라 달라요. 직접 따라 해야 추가됩니다.</p>
         <form method="dialog"><button type="submit" autofocus>닫기</button></form>
       </dialog>`;
-    setupHomeScreenInstall(this.querySelector('#install-button'), this.querySelector('#install-guide'));
+    setupHomeScreenInstall(this.querySelector('#install-button'), this.querySelector('#install-guide'), this.querySelector('#share-button'));
   }
 }
 
@@ -54,7 +55,7 @@ class GuitarMateFooter extends HTMLElement {
   }
 }
 
-function setupHomeScreenInstall(installButton, installGuide) {
+function setupHomeScreenInstall(installButton, installGuide, shareButton) {
   const standalone = window.matchMedia('(display-mode: standalone)');
   const userAgent = navigator.userAgent;
   const iosDevice = /iPhone|iPad|iPod/.test(userAgent) || (/Macintosh/.test(userAgent) && navigator.maxTouchPoints > 1);
@@ -67,6 +68,8 @@ function setupHomeScreenInstall(installButton, installGuide) {
 
   function updateInstallButton() {
     installButton.hidden = isInstalled() || (!installPrompt && !iosGuide);
+    // In the installed app there's no address bar, so offer a way to pass the link on instead.
+    if (shareButton) shareButton.hidden = !isInstalled();
     if (isInstalled() && installGuide.open) installGuide.close();
   }
 
@@ -81,6 +84,21 @@ function setupHomeScreenInstall(installButton, installGuide) {
     updateInstallButton();
   });
   standalone.addEventListener('change', updateInstallButton);
+  shareButton?.addEventListener('click', async () => {
+    const link = location.origin + location.pathname;
+    let copied = false;
+    try { await navigator.clipboard.writeText(link); copied = true; } catch (_) {
+      // Older WebViews: copy through a hidden text field.
+      const field = document.createElement('textarea');
+      field.value = link; field.setAttribute('readonly', ''); field.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+      document.body.append(field); field.select();
+      try { copied = document.execCommand('copy'); } catch (_) {}
+      field.remove();
+    }
+    shareButton.textContent = copied ? '링크 복사됨' : '복사하지 못했어요';
+    clearTimeout(shareButton._reset);
+    shareButton._reset = setTimeout(() => { shareButton.textContent = '링크 공유'; }, 2000);
+  });
   installButton.addEventListener('click', async () => {
     if (isInstalled()) {
       updateInstallButton();
